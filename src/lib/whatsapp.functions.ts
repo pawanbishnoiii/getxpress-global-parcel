@@ -33,7 +33,7 @@ export const saveWhatsappAdmin = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const patch: Record<string, unknown> = { ...data, updated_at: new Date().toISOString() };
     if (!data.api_key || data.api_key.startsWith("••••")) delete patch["api_key"];
-    const { error } = await context.supabase.from("whatsapp_settings").update(patch).eq("id", true);
+    const { error } = await context.supabase.from("whatsapp_settings").update(patch as never).eq("id", true);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -50,7 +50,7 @@ export const sendWhatsappAdmin = createServerFn({ method: "POST" })
     const { sendWhatsapp } = await import("./whatsapp.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const results = await Promise.allSettled(data.numbers.map((n) => sendWhatsapp({ to: n, message: data.message, mediaUrl: data.mediaUrl ?? null, linkUrl: data.linkUrl ?? null }, { force: true })));
-    const rows = results.map((r, i) => ({ kind: "whatsapp", channel: "whatsapp", subject: "WhatsApp message", body: data.message, recipient: data.numbers[i], status: r.status === "fulfilled" && r.value ? "sent" : "failed", error: r.status === "rejected" ? String(r.reason).slice(0, 300) : null, sent_at: new Date().toISOString(), meta: { mediaUrl: data.mediaUrl ?? null, linkUrl: data.linkUrl ?? null } }));
-    await supabaseAdmin.from("notifications").insert(rows);
+    const rows = results.map((r, i) => ({ kind: "whatsapp", channel: "whatsapp", subject: "WhatsApp message", body: data.message, recipient: data.numbers[i] ?? null, status: r.status === "fulfilled" && r.value ? "sent" : "failed", error: r.status === "rejected" ? String(r.reason).slice(0, 300) : null, sent_at: new Date().toISOString(), meta: { mediaUrl: data.mediaUrl ?? null, linkUrl: data.linkUrl ?? null } }));
+    await supabaseAdmin.from("notifications").insert(rows as never);
     return { sent: rows.filter((r) => r.status === "sent").length, failed: rows.filter((r) => r.status === "failed").map((r) => `${r.recipient}: ${r.error}`) };
   });
