@@ -84,7 +84,22 @@ export type Database = {
           id?: string
           piece_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bag_items_bag_fk"
+            columns: ["bag_id"]
+            isOneToOne: false
+            referencedRelation: "bags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bag_items_piece_fk"
+            columns: ["piece_id"]
+            isOneToOne: true
+            referencedRelation: "shipment_pieces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bags: {
         Row: {
@@ -123,7 +138,15 @@ export type Database = {
           sealed_at?: string | null
           status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bags_manifest_fk"
+            columns: ["manifest_id"]
+            isOneToOne: false
+            referencedRelation: "manifests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       coupon_redemptions: {
         Row: {
@@ -342,7 +365,15 @@ export type Database = {
           printed_by?: string
           reason?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "labels_piece_fk"
+            columns: ["piece_id"]
+            isOneToOne: false
+            referencedRelation: "shipment_pieces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       login_otps: {
         Row: {
@@ -495,7 +526,15 @@ export type Database = {
           status?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payments_shipment_fk"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       phone_otps: {
         Row: {
@@ -567,7 +606,15 @@ export type Database = {
           pincode?: string
           status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "alloc_pincode_fk"
+            columns: ["pincode"]
+            isOneToOne: false
+            referencedRelation: "pincodes"
+            referencedColumns: ["pincode"]
+          },
+        ]
       }
       pincodes: {
         Row: {
@@ -708,7 +755,15 @@ export type Database = {
           shipment_id?: string
           status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "commissions_shipment_fk"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -825,7 +880,15 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "returns_shipment_fk"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seal_codes: {
         Row: {
@@ -915,7 +978,15 @@ export type Database = {
           total?: number
           weight_kg?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pieces_shipment_fk"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shipments: {
         Row: {
@@ -1110,7 +1181,15 @@ export type Database = {
           shipment_id?: string
           status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_shipment_fk"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

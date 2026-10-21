@@ -1,45 +1,46 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Home, PackageSearch, Send, Store, UserRound } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { BrandMark } from "./BrandMark";
 import { useSession } from "@/hooks/use-session";
 
+const LINKS = [
+  { to: "/track", label: "Track" },
+  { to: "/ship", label: "Ship now" },
+  { to: "/point-partner", label: "Become a Hub" },
+] as const;
+
 export function SiteNav() {
   const { user } = useSession();
+  const [open, setOpen] = useState(false);
   return (
     <nav className="fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6 md:pt-5">
-      <div className="mx-auto flex max-w-[1240px] items-center justify-between rounded-[22px] border border-card/80 bg-background/80 px-4 py-3 shadow-soft backdrop-blur-2xl md:px-6">
-        <Link to="/" aria-label="Get Xpress home"><BrandMark /></Link>
-        <div className="hidden items-center gap-7 text-sm font-semibold text-muted-foreground md:flex">
-          <Link to="/track" className="hover:text-ink" activeProps={{ className: "text-ink" }}>Track</Link>
-          <Link to="/ship" className="hover:text-ink" activeProps={{ className: "text-ink" }}>Ship now</Link>
-          <Link to="/point-partner" className="hover:text-ink" activeProps={{ className: "text-ink" }}>Become a Hub</Link>
+      <div className="mx-auto max-w-[1240px] rounded-[22px] border border-card/80 bg-background/85 px-4 py-3 shadow-soft backdrop-blur-2xl md:px-6">
+        <div className="flex items-center justify-between">
+          <Link to="/" aria-label="Get Xpress home"><BrandMark /></Link>
+          <div className="hidden items-center gap-7 text-sm font-semibold text-muted-foreground md:flex">
+            {LINKS.map((l) => <Link key={l.to} to={l.to} className="hover:text-ink" activeProps={{ className: "text-ink" }}>{l.label}</Link>)}
+          </div>
+          <div className="flex items-center gap-2">
+            <Link to={user ? "/dashboard" : "/auth"} className="group flex items-center gap-2 rounded-[14px] bg-ink px-4 py-2.5 text-sm font-bold text-ink-foreground transition-transform hover:-translate-y-0.5">
+              {user ? "Dashboard" : "Sign in"} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <button onClick={() => setOpen((v) => !v)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="grid h-10 w-10 place-items-center rounded-[14px] border bg-card md:hidden">
+              {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
-        <Link to={user ? "/dashboard" : "/auth"} className="group flex items-center gap-2 rounded-[14px] bg-ink px-4 py-2.5 text-sm font-bold text-ink-foreground transition-transform hover:-translate-y-0.5">
-          {user ? "My shipments" : "Sign in"} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </Link>
+        {open && (
+          <div className="mt-3 grid gap-1 border-t pt-3 md:hidden animate-in fade-in slide-in-from-top-2 duration-200">
+            {LINKS.map((l) => <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="rounded-xl px-3 py-3 text-base font-bold" activeProps={{ className: "bg-secondary" }}>{l.label}</Link>)}
+          </div>
+        )}
       </div>
     </nav>
   );
 }
 
-/** App-like bottom bar on phones. */
+/** Bottom bar removed on phones by request; kept as a no-op for existing imports. */
 export function MobileTabBar() {
-  const items = [
-    { to: "/", icon: Home, label: "Home" },
-    { to: "/track", icon: PackageSearch, label: "Track" },
-    { to: "/ship", icon: Send, label: "Ship" },
-    { to: "/point-partner", icon: Store, label: "Partner" },
-    { to: "/dashboard", icon: UserRound, label: "Me" },
-  ] as const;
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-50 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] md:hidden">
-      <div className="mx-auto flex max-w-md items-center justify-around rounded-[24px] border bg-card/90 p-1.5 shadow-soft backdrop-blur-2xl">
-        {items.map(({ to, icon: Icon, label }) => (
-          <Link key={to} to={to} activeOptions={{ exact: to === "/" }} className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl py-2 text-[10px] font-bold text-muted-foreground" activeProps={{ className: "bg-primary text-primary-foreground" }}>
-            <Icon className="h-5 w-5" />{label}
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
+  return null;
 }
