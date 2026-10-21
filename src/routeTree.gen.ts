@@ -10,33 +10,511 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DemoRouteImport } from './routes/demo'
+import { Route as PointPartnerRouteImport } from './routes/point-partner'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RefundsRouteImport } from './routes/refunds'
+import { Route as ShipRouteImport } from './routes/ship'
+import { Route as ShippingPolicyRouteImport } from './routes/shipping-policy'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as TrackRouteImport } from './routes/track'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedApplicationsRouteImport } from './routes/_authenticated/applications'
+import { Route as AuthenticatedBagsRouteImport } from './routes/_authenticated/bags'
+import { Route as AuthenticatedCommissionsRouteImport } from './routes/_authenticated/commissions'
+import { Route as AuthenticatedConsoleRouteImport } from './routes/_authenticated/console'
+import { Route as AuthenticatedCouponsRouteImport } from './routes/_authenticated/coupons'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDiagnosticsRouteImport } from './routes/_authenticated/diagnostics'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
+import { Route as AuthenticatedPincodesRouteImport } from './routes/_authenticated/pincodes'
+import { Route as AuthenticatedReturnsRouteImport } from './routes/_authenticated/returns'
+import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated/scan'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedTallyRouteImport } from './routes/_authenticated/tally'
+import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AuthenticatedTeamPricesRouteImport } from './routes/_authenticated/team-prices'
+import { Route as AuthenticatedVerifyPhoneRouteImport } from './routes/_authenticated/verify-phone'
+import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
+import { Route as AuthenticatedLabelsShipmentIdRouteImport } from './routes/_authenticated/labels.$shipmentId'
+import { Route as AuthenticatedPayShipmentIdRouteImport } from './routes/_authenticated/pay.$shipmentId'
+import { Route as AuthenticatedUsersAddorderRouteImport } from './routes/_authenticated/users.addorder'
+import { Route as AuthenticatedUsersDashboardRouteImport } from './routes/_authenticated/users.dashboard'
+import { Route as AuthenticatedUsersOrdersRouteImport } from './routes/_authenticated/users.orders'
+import { Route as AuthenticatedUsersReturnsRouteImport } from './routes/_authenticated/users.returns'
+import { Route as ApiPublicHealthCheckRouteImport } from './routes/api/public/health-check'
+import { Route as ApiPublicTrackAssistantRouteImport } from './routes/api/public/track-assistant'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PointPartnerRoute = PointPartnerRouteImport.update({
+  id: '/point-partner',
+  path: '/point-partner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundsRoute = RefundsRouteImport.update({
+  id: '/refunds',
+  path: '/refunds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShipRoute = ShipRouteImport.update({
+  id: '/ship',
+  path: '/ship',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShippingPolicyRoute = ShippingPolicyRouteImport.update({
+  id: '/shipping-policy',
+  path: '/shipping-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackRoute = TrackRouteImport.update({
+  id: '/track',
+  path: '/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedApplicationsRoute =
+  AuthenticatedApplicationsRouteImport.update({
+    id: '/applications',
+    path: '/applications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedBagsRoute = AuthenticatedBagsRouteImport.update({
+  id: '/bags',
+  path: '/bags',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCommissionsRoute =
+  AuthenticatedCommissionsRouteImport.update({
+    id: '/commissions',
+    path: '/commissions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConsoleRoute = AuthenticatedConsoleRouteImport.update({
+  id: '/console',
+  path: '/console',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCouponsRoute = AuthenticatedCouponsRouteImport.update({
+  id: '/coupons',
+  path: '/coupons',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDiagnosticsRoute =
+  AuthenticatedDiagnosticsRouteImport.update({
+    id: '/diagnostics',
+    path: '/diagnostics',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOrdersRoute = AuthenticatedOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPincodesRoute = AuthenticatedPincodesRouteImport.update({
+  id: '/pincodes',
+  path: '/pincodes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReturnsRoute = AuthenticatedReturnsRouteImport.update({
+  id: '/returns',
+  path: '/returns',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedScanRoute = AuthenticatedScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTallyRoute = AuthenticatedTallyRouteImport.update({
+  id: '/tally',
+  path: '/tally',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTeamPricesRoute = AuthenticatedTeamPricesRouteImport.update({
+  id: '/team-prices',
+  path: '/team-prices',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVerifyPhoneRoute =
+  AuthenticatedVerifyPhoneRouteImport.update({
+    id: '/verify-phone',
+    path: '/verify-phone',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWalletRoute = AuthenticatedWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLabelsShipmentIdRoute =
+  AuthenticatedLabelsShipmentIdRouteImport.update({
+    id: '/labels/$shipmentId',
+    path: '/labels/$shipmentId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPayShipmentIdRoute =
+  AuthenticatedPayShipmentIdRouteImport.update({
+    id: '/pay/$shipmentId',
+    path: '/pay/$shipmentId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedUsersAddorderRoute =
+  AuthenticatedUsersAddorderRouteImport.update({
+    id: '/users/addorder',
+    path: '/users/addorder',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedUsersDashboardRoute =
+  AuthenticatedUsersDashboardRouteImport.update({
+    id: '/users/dashboard',
+    path: '/users/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedUsersOrdersRoute =
+  AuthenticatedUsersOrdersRouteImport.update({
+    id: '/users/orders',
+    path: '/users/orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedUsersReturnsRoute =
+  AuthenticatedUsersReturnsRouteImport.update({
+    id: '/users/returns',
+    path: '/users/returns',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicHealthCheckRoute = ApiPublicHealthCheckRouteImport.update({
+  id: '/api/public/health-check',
+  path: '/api/public/health-check',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTrackAssistantRoute = ApiPublicTrackAssistantRouteImport.update({
+  id: '/api/public/track-assistant',
+  path: '/api/public/track-assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
+  '/point-partner': typeof PointPartnerRoute
+  '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
+  '/ship': typeof ShipRoute
+  '/shipping-policy': typeof ShippingPolicyRoute
+  '/terms': typeof TermsRoute
+  '/track': typeof TrackRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/applications': typeof AuthenticatedApplicationsRoute
+  '/bags': typeof AuthenticatedBagsRoute
+  '/commissions': typeof AuthenticatedCommissionsRoute
+  '/console': typeof AuthenticatedConsoleRoute
+  '/coupons': typeof AuthenticatedCouponsRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/diagnostics': typeof AuthenticatedDiagnosticsRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/orders': typeof AuthenticatedOrdersRoute
+  '/pincodes': typeof AuthenticatedPincodesRoute
+  '/returns': typeof AuthenticatedReturnsRoute
+  '/scan': typeof AuthenticatedScanRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/tally': typeof AuthenticatedTallyRoute
+  '/team': typeof AuthenticatedTeamRoute
+  '/team-prices': typeof AuthenticatedTeamPricesRoute
+  '/verify-phone': typeof AuthenticatedVerifyPhoneRoute
+  '/wallet': typeof AuthenticatedWalletRoute
+  '/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
+  '/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
+  '/users/addorder': typeof AuthenticatedUsersAddorderRoute
+  '/users/dashboard': typeof AuthenticatedUsersDashboardRoute
+  '/users/orders': typeof AuthenticatedUsersOrdersRoute
+  '/users/returns': typeof AuthenticatedUsersReturnsRoute
+  '/api/public/health-check': typeof ApiPublicHealthCheckRoute
+  '/api/public/track-assistant': typeof ApiPublicTrackAssistantRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
+  '/point-partner': typeof PointPartnerRoute
+  '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
+  '/ship': typeof ShipRoute
+  '/shipping-policy': typeof ShippingPolicyRoute
+  '/terms': typeof TermsRoute
+  '/track': typeof TrackRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/applications': typeof AuthenticatedApplicationsRoute
+  '/bags': typeof AuthenticatedBagsRoute
+  '/commissions': typeof AuthenticatedCommissionsRoute
+  '/console': typeof AuthenticatedConsoleRoute
+  '/coupons': typeof AuthenticatedCouponsRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/diagnostics': typeof AuthenticatedDiagnosticsRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/orders': typeof AuthenticatedOrdersRoute
+  '/pincodes': typeof AuthenticatedPincodesRoute
+  '/returns': typeof AuthenticatedReturnsRoute
+  '/scan': typeof AuthenticatedScanRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/tally': typeof AuthenticatedTallyRoute
+  '/team': typeof AuthenticatedTeamRoute
+  '/team-prices': typeof AuthenticatedTeamPricesRoute
+  '/verify-phone': typeof AuthenticatedVerifyPhoneRoute
+  '/wallet': typeof AuthenticatedWalletRoute
+  '/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
+  '/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
+  '/users/addorder': typeof AuthenticatedUsersAddorderRoute
+  '/users/dashboard': typeof AuthenticatedUsersDashboardRoute
+  '/users/orders': typeof AuthenticatedUsersOrdersRoute
+  '/users/returns': typeof AuthenticatedUsersReturnsRoute
+  '/api/public/health-check': typeof ApiPublicHealthCheckRoute
+  '/api/public/track-assistant': typeof ApiPublicTrackAssistantRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
+  '/point-partner': typeof PointPartnerRoute
+  '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
+  '/ship': typeof ShipRoute
+  '/shipping-policy': typeof ShippingPolicyRoute
+  '/terms': typeof TermsRoute
+  '/track': typeof TrackRoute
+  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
+  '/_authenticated/applications': typeof AuthenticatedApplicationsRoute
+  '/_authenticated/bags': typeof AuthenticatedBagsRoute
+  '/_authenticated/commissions': typeof AuthenticatedCommissionsRoute
+  '/_authenticated/console': typeof AuthenticatedConsoleRoute
+  '/_authenticated/coupons': typeof AuthenticatedCouponsRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/diagnostics': typeof AuthenticatedDiagnosticsRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/orders': typeof AuthenticatedOrdersRoute
+  '/_authenticated/pincodes': typeof AuthenticatedPincodesRoute
+  '/_authenticated/returns': typeof AuthenticatedReturnsRoute
+  '/_authenticated/scan': typeof AuthenticatedScanRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/tally': typeof AuthenticatedTallyRoute
+  '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/_authenticated/team-prices': typeof AuthenticatedTeamPricesRoute
+  '/_authenticated/verify-phone': typeof AuthenticatedVerifyPhoneRoute
+  '/_authenticated/wallet': typeof AuthenticatedWalletRoute
+  '/_authenticated/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
+  '/_authenticated/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
+  '/_authenticated/users/addorder': typeof AuthenticatedUsersAddorderRoute
+  '/_authenticated/users/dashboard': typeof AuthenticatedUsersDashboardRoute
+  '/_authenticated/users/orders': typeof AuthenticatedUsersOrdersRoute
+  '/_authenticated/users/returns': typeof AuthenticatedUsersReturnsRoute
+  '/api/public/health-check': typeof ApiPublicHealthCheckRoute
+  '/api/public/track-assistant': typeof ApiPublicTrackAssistantRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/demo'
+    | '/point-partner'
+    | '/privacy'
+    | '/refunds'
+    | '/ship'
+    | '/shipping-policy'
+    | '/terms'
+    | '/track'
+    | '/analytics'
+    | '/applications'
+    | '/bags'
+    | '/commissions'
+    | '/console'
+    | '/coupons'
+    | '/dashboard'
+    | '/diagnostics'
+    | '/notifications'
+    | '/onboarding'
+    | '/orders'
+    | '/pincodes'
+    | '/returns'
+    | '/scan'
+    | '/settings'
+    | '/tally'
+    | '/team'
+    | '/team-prices'
+    | '/verify-phone'
+    | '/wallet'
+    | '/labels/$shipmentId'
+    | '/pay/$shipmentId'
+    | '/users/addorder'
+    | '/users/dashboard'
+    | '/users/orders'
+    | '/users/returns'
+    | '/api/public/health-check'
+    | '/api/public/track-assistant'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/demo'
+    | '/point-partner'
+    | '/privacy'
+    | '/refunds'
+    | '/ship'
+    | '/shipping-policy'
+    | '/terms'
+    | '/track'
+    | '/analytics'
+    | '/applications'
+    | '/bags'
+    | '/commissions'
+    | '/console'
+    | '/coupons'
+    | '/dashboard'
+    | '/diagnostics'
+    | '/notifications'
+    | '/onboarding'
+    | '/orders'
+    | '/pincodes'
+    | '/returns'
+    | '/scan'
+    | '/settings'
+    | '/tally'
+    | '/team'
+    | '/team-prices'
+    | '/verify-phone'
+    | '/wallet'
+    | '/labels/$shipmentId'
+    | '/pay/$shipmentId'
+    | '/users/addorder'
+    | '/users/dashboard'
+    | '/users/orders'
+    | '/users/returns'
+    | '/api/public/health-check'
+    | '/api/public/track-assistant'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/demo'
+    | '/point-partner'
+    | '/privacy'
+    | '/refunds'
+    | '/ship'
+    | '/shipping-policy'
+    | '/terms'
+    | '/track'
+    | '/_authenticated/analytics'
+    | '/_authenticated/applications'
+    | '/_authenticated/bags'
+    | '/_authenticated/commissions'
+    | '/_authenticated/console'
+    | '/_authenticated/coupons'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/diagnostics'
+    | '/_authenticated/notifications'
+    | '/_authenticated/onboarding'
+    | '/_authenticated/orders'
+    | '/_authenticated/pincodes'
+    | '/_authenticated/returns'
+    | '/_authenticated/scan'
+    | '/_authenticated/settings'
+    | '/_authenticated/tally'
+    | '/_authenticated/team'
+    | '/_authenticated/team-prices'
+    | '/_authenticated/verify-phone'
+    | '/_authenticated/wallet'
+    | '/_authenticated/labels/$shipmentId'
+    | '/_authenticated/pay/$shipmentId'
+    | '/_authenticated/users/addorder'
+    | '/_authenticated/users/dashboard'
+    | '/_authenticated/users/orders'
+    | '/_authenticated/users/returns'
+    | '/api/public/health-check'
+    | '/api/public/track-assistant'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  DemoRoute: typeof DemoRoute
+  PointPartnerRoute: typeof PointPartnerRoute
+  PrivacyRoute: typeof PrivacyRoute
+  RefundsRoute: typeof RefundsRoute
+  ShipRoute: typeof ShipRoute
+  ShippingPolicyRoute: typeof ShippingPolicyRoute
+  TermsRoute: typeof TermsRoute
+  TrackRoute: typeof TrackRoute
+  ApiPublicHealthCheckRoute: typeof ApiPublicHealthCheckRoute
+  ApiPublicTrackAssistantRoute: typeof ApiPublicTrackAssistantRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +526,350 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/point-partner': {
+      id: '/point-partner'
+      path: '/point-partner'
+      fullPath: '/point-partner'
+      preLoaderRoute: typeof PointPartnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refunds': {
+      id: '/refunds'
+      path: '/refunds'
+      fullPath: '/refunds'
+      preLoaderRoute: typeof RefundsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ship': {
+      id: '/ship'
+      path: '/ship'
+      fullPath: '/ship'
+      preLoaderRoute: typeof ShipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shipping-policy': {
+      id: '/shipping-policy'
+      path: '/shipping-policy'
+      fullPath: '/shipping-policy'
+      preLoaderRoute: typeof ShippingPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track': {
+      id: '/track'
+      path: '/track'
+      fullPath: '/track'
+      preLoaderRoute: typeof TrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/applications': {
+      id: '/_authenticated/applications'
+      path: '/applications'
+      fullPath: '/applications'
+      preLoaderRoute: typeof AuthenticatedApplicationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bags': {
+      id: '/_authenticated/bags'
+      path: '/bags'
+      fullPath: '/bags'
+      preLoaderRoute: typeof AuthenticatedBagsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/commissions': {
+      id: '/_authenticated/commissions'
+      path: '/commissions'
+      fullPath: '/commissions'
+      preLoaderRoute: typeof AuthenticatedCommissionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/console': {
+      id: '/_authenticated/console'
+      path: '/console'
+      fullPath: '/console'
+      preLoaderRoute: typeof AuthenticatedConsoleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/coupons': {
+      id: '/_authenticated/coupons'
+      path: '/coupons'
+      fullPath: '/coupons'
+      preLoaderRoute: typeof AuthenticatedCouponsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/diagnostics': {
+      id: '/_authenticated/diagnostics'
+      path: '/diagnostics'
+      fullPath: '/diagnostics'
+      preLoaderRoute: typeof AuthenticatedDiagnosticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/orders': {
+      id: '/_authenticated/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof AuthenticatedOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pincodes': {
+      id: '/_authenticated/pincodes'
+      path: '/pincodes'
+      fullPath: '/pincodes'
+      preLoaderRoute: typeof AuthenticatedPincodesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/returns': {
+      id: '/_authenticated/returns'
+      path: '/returns'
+      fullPath: '/returns'
+      preLoaderRoute: typeof AuthenticatedReturnsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/scan': {
+      id: '/_authenticated/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof AuthenticatedScanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tally': {
+      id: '/_authenticated/tally'
+      path: '/tally'
+      fullPath: '/tally'
+      preLoaderRoute: typeof AuthenticatedTallyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/team': {
+      id: '/_authenticated/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof AuthenticatedTeamRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/team-prices': {
+      id: '/_authenticated/team-prices'
+      path: '/team-prices'
+      fullPath: '/team-prices'
+      preLoaderRoute: typeof AuthenticatedTeamPricesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/verify-phone': {
+      id: '/_authenticated/verify-phone'
+      path: '/verify-phone'
+      fullPath: '/verify-phone'
+      preLoaderRoute: typeof AuthenticatedVerifyPhoneRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/wallet': {
+      id: '/_authenticated/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof AuthenticatedWalletRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/labels/$shipmentId': {
+      id: '/_authenticated/labels/$shipmentId'
+      path: '/labels/$shipmentId'
+      fullPath: '/labels/$shipmentId'
+      preLoaderRoute: typeof AuthenticatedLabelsShipmentIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pay/$shipmentId': {
+      id: '/_authenticated/pay/$shipmentId'
+      path: '/pay/$shipmentId'
+      fullPath: '/pay/$shipmentId'
+      preLoaderRoute: typeof AuthenticatedPayShipmentIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/users/addorder': {
+      id: '/_authenticated/users/addorder'
+      path: '/users/addorder'
+      fullPath: '/users/addorder'
+      preLoaderRoute: typeof AuthenticatedUsersAddorderRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/users/dashboard': {
+      id: '/_authenticated/users/dashboard'
+      path: '/users/dashboard'
+      fullPath: '/users/dashboard'
+      preLoaderRoute: typeof AuthenticatedUsersDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/users/orders': {
+      id: '/_authenticated/users/orders'
+      path: '/users/orders'
+      fullPath: '/users/orders'
+      preLoaderRoute: typeof AuthenticatedUsersOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/users/returns': {
+      id: '/_authenticated/users/returns'
+      path: '/users/returns'
+      fullPath: '/users/returns'
+      preLoaderRoute: typeof AuthenticatedUsersReturnsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/health-check': {
+      id: '/api/public/health-check'
+      path: '/api/public/health-check'
+      fullPath: '/api/public/health-check'
+      preLoaderRoute: typeof ApiPublicHealthCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/track-assistant': {
+      id: '/api/public/track-assistant'
+      path: '/api/public/track-assistant'
+      fullPath: '/api/public/track-assistant'
+      preLoaderRoute: typeof ApiPublicTrackAssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
+  AuthenticatedApplicationsRoute: typeof AuthenticatedApplicationsRoute
+  AuthenticatedBagsRoute: typeof AuthenticatedBagsRoute
+  AuthenticatedCommissionsRoute: typeof AuthenticatedCommissionsRoute
+  AuthenticatedConsoleRoute: typeof AuthenticatedConsoleRoute
+  AuthenticatedCouponsRoute: typeof AuthenticatedCouponsRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDiagnosticsRoute: typeof AuthenticatedDiagnosticsRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRoute
+  AuthenticatedPincodesRoute: typeof AuthenticatedPincodesRoute
+  AuthenticatedReturnsRoute: typeof AuthenticatedReturnsRoute
+  AuthenticatedScanRoute: typeof AuthenticatedScanRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTallyRoute: typeof AuthenticatedTallyRoute
+  AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedTeamPricesRoute: typeof AuthenticatedTeamPricesRoute
+  AuthenticatedVerifyPhoneRoute: typeof AuthenticatedVerifyPhoneRoute
+  AuthenticatedWalletRoute: typeof AuthenticatedWalletRoute
+  AuthenticatedLabelsShipmentIdRoute: typeof AuthenticatedLabelsShipmentIdRoute
+  AuthenticatedPayShipmentIdRoute: typeof AuthenticatedPayShipmentIdRoute
+  AuthenticatedUsersAddorderRoute: typeof AuthenticatedUsersAddorderRoute
+  AuthenticatedUsersDashboardRoute: typeof AuthenticatedUsersDashboardRoute
+  AuthenticatedUsersOrdersRoute: typeof AuthenticatedUsersOrdersRoute
+  AuthenticatedUsersReturnsRoute: typeof AuthenticatedUsersReturnsRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
+  AuthenticatedApplicationsRoute: AuthenticatedApplicationsRoute,
+  AuthenticatedBagsRoute: AuthenticatedBagsRoute,
+  AuthenticatedCommissionsRoute: AuthenticatedCommissionsRoute,
+  AuthenticatedConsoleRoute: AuthenticatedConsoleRoute,
+  AuthenticatedCouponsRoute: AuthenticatedCouponsRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDiagnosticsRoute: AuthenticatedDiagnosticsRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedOrdersRoute: AuthenticatedOrdersRoute,
+  AuthenticatedPincodesRoute: AuthenticatedPincodesRoute,
+  AuthenticatedReturnsRoute: AuthenticatedReturnsRoute,
+  AuthenticatedScanRoute: AuthenticatedScanRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTallyRoute: AuthenticatedTallyRoute,
+  AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedTeamPricesRoute: AuthenticatedTeamPricesRoute,
+  AuthenticatedVerifyPhoneRoute: AuthenticatedVerifyPhoneRoute,
+  AuthenticatedWalletRoute: AuthenticatedWalletRoute,
+  AuthenticatedLabelsShipmentIdRoute: AuthenticatedLabelsShipmentIdRoute,
+  AuthenticatedPayShipmentIdRoute: AuthenticatedPayShipmentIdRoute,
+  AuthenticatedUsersAddorderRoute: AuthenticatedUsersAddorderRoute,
+  AuthenticatedUsersDashboardRoute: AuthenticatedUsersDashboardRoute,
+  AuthenticatedUsersOrdersRoute: AuthenticatedUsersOrdersRoute,
+  AuthenticatedUsersReturnsRoute: AuthenticatedUsersReturnsRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  DemoRoute: DemoRoute,
+  PointPartnerRoute: PointPartnerRoute,
+  PrivacyRoute: PrivacyRoute,
+  RefundsRoute: RefundsRoute,
+  ShipRoute: ShipRoute,
+  ShippingPolicyRoute: ShippingPolicyRoute,
+  TermsRoute: TermsRoute,
+  TrackRoute: TrackRoute,
+  ApiPublicHealthCheckRoute: ApiPublicHealthCheckRoute,
+  ApiPublicTrackAssistantRoute: ApiPublicTrackAssistantRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
