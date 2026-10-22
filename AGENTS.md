@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## Database migration history
+- This remix starts with an empty PostgreSQL migration journal; add future schema changes through the migration tool rather than restoring the source project history, to avoid replaying copied schema changes.
