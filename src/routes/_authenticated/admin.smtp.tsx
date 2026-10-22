@@ -39,7 +39,7 @@ function Company() {
   if (!isAdmin) return <AppShell><p>Admin access required.</p></AppShell>;
   return (
     <AppShell wide>
-      <PageHeader title="SMTP title="Company & email" sub="Brand, website status, SMTP, templates and offers" email" sub="Mail server, templates, offers and delivery log" />
+      <PageHeader title="SMTP & email" sub="Mail server, templates, offers and delivery log" />
       <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl border bg-card p-1">
         {TABS.map(([k, l]) => <button key={k} onClick={() => setTab(k)} className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold ${tab === k ? "bg-ink text-ink-foreground" : "text-muted-foreground"}`}>{l}</button>)}
       </div>
