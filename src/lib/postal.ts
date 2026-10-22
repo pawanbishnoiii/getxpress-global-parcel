@@ -7,7 +7,7 @@ export function postalLookup(pin: string): Promise<PostalInfo | null> {
   if (!/^\d{6}$/.test(pin)) return Promise.resolve(null);
   return cache.get(pin, async () => {
     const local=(await directorySearch(pin)).find(p=>p.pincode===pin);
-    if(local) return { ...local, district:'', areas:[local.city] };
+    if(local) return local;
     try {
       const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 6000);
       const r = await fetch(`https://api.postalpincode.in/pincode/${pin}`, { signal: ctl.signal }).then((x) => x.json()); clearTimeout(t);
