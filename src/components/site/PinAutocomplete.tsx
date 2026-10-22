@@ -13,6 +13,7 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [active, setActive] = useState(0);
+  const [failed, setFailed] = useState(false);
   const seq = useRef(0);
   useEffect(() => { if(value || !open) setText(value); }, [value]);
 
@@ -23,8 +24,9 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
     if (q.length < 2) { setHits([]); return; }
     const t = setTimeout(async () => {
       setBusy(true);
-      const r = await lookupPins(q).catch(() => []);
-      if (my === seq.current) { setHits(r); setActive(0); setBusy(false); }
+      let err = false;
+      const r = await lookupPins(q).catch(() => { err = true; return [] as PinHit[]; });
+      if (my === seq.current) { setFailed(err); setHits(r); setActive(0); setBusy(false); }
     }, /^\d+$/.test(q) ? 90 : 220);
     return () => { clearTimeout(t); seq.current++; };
   }, [text, open]);
@@ -48,6 +50,9 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
           className="w-full bg-transparent text-base font-bold text-ink outline-none placeholder:font-medium placeholder:text-muted-foreground/60" />
         {city && !compact && <span className="block truncate text-xs text-muted-foreground">{city}</span>}
       </label>
+      {open && !busy && hits.length === 0 && text.trim().length >= 2 && (
+        <p role="status" className="absolute z-50 mt-1 w-full rounded-lg border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-soft">{failed ? "Location search is unavailable right now. Type the 6-digit PIN and pick state and district below." : /^\d{6}$/.test(text.trim()) ? "This PIN isn't in our list yet — you can still continue and pick state and district below." : "No match. Try a 6-digit PIN or another spelling of the town."}</p>
+      )}
       {open && hits.length > 0 && (
         <div className="absolute z-50 mt-1 max-h-72 w-full overflow-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-soft">
           {hits.map((h, i) => (
