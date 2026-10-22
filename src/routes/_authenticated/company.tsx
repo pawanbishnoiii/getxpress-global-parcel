@@ -70,7 +70,7 @@ function CompanyForm() {
       const r = await supabase.from("app_settings").update(patch as never).eq("id", true);
       if (r.error) toast.error(r.error.message); else { toast.success("Company info saved"); qc.invalidateQueries({ queryKey: ["company"] }); }
     }}>
-      {F.map(([k, l]) => <label key={k} className="text-sm font-semibold">{l}<input name={k} defaultValue={(s as Record<string, string | null>)[k] ?? ""} className={field} /></label>)}
+      {F.map(([k, l]) => <label key={k} className="text-sm font-semibold">{l}<input name={k} defaultValue={(s as unknown as Record<string, string | null>)[k] ?? ""} className={field} /></label>)}
       {(["description", "meta_description", "address"] as const).map((k) => <label key={k} className="text-sm font-semibold capitalize md:col-span-2">{k.replace("_", " ")}<textarea name={k} defaultValue={s[k] ?? ""} rows={3} className="mt-1 w-full rounded-md border bg-background p-3 text-sm" /></label>)}
       <label className="text-sm font-semibold">Icon (the logo stays the same)<input type="file" accept="image/*" className={field + " pt-2"} onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return; try { setLogo(await uploadImage(file)); toast.success("Icon uploaded — save to apply"); } catch (err) { toast.error((err as Error).message); } }} /></label>
       <div className="flex items-center gap-3">{(logo ?? s.icon_url) && <img src={logo ?? s.icon_url!} alt="Icon" className="h-12 w-12 rounded-lg border object-contain" />}</div>
