@@ -253,6 +253,36 @@ export type Database = {
         }
         Relationships: []
       }
+      gateway_configs: {
+        Row: {
+          category: string
+          config: Json
+          enabled: boolean
+          live_mode: boolean
+          provider: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          config?: Json
+          enabled?: boolean
+          live_mode?: boolean
+          provider: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          config?: Json
+          enabled?: boolean
+          live_mode?: boolean
+          provider?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       health_checks: {
         Row: {
           checked_at: string
@@ -1487,6 +1517,7 @@ export type Database = {
       }
       next_awb: { Args: never; Returns: string }
       next_piece_code: { Args: never; Returns: string }
+      otp_channel: { Args: never; Returns: string }
       receive_manifest: { Args: { _manifest_id: string }; Returns: undefined }
       release_pincode: { Args: { _allocation_id: string }; Returns: undefined }
       scan_bag_code: { Args: { _code: string }; Returns: Json }
