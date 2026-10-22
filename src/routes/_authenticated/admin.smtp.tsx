@@ -7,7 +7,7 @@ import { AppShell, PageHeader } from "@/components/site/AppShell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoles } from "@/hooks/use-roles";
-import { sendOfferEmail, sendTestEmail } from "@/lib/email.functions";
+import { getSmtpStatus, saveSmtpSettings, sendOfferEmail, sendTestEmail } from "@/lib/email.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/smtp")({
   head: () => ({ meta: [
@@ -52,38 +52,12 @@ function Company() {
   );
 }
 
-function CompanyForm() {
-  const qc = useQueryClient();
-  const { data: s } = useQuery({ queryKey: ["company"], queryFn: async () => (await supabase.from("app_settings").select("*").eq("id", true).single()).data });
-  const [logo, setLogo] = useState<string | null>(null);
-  if (!s) return null;
-  const F = [["company_name", "Company name"], ["company_type", "Company type (Pvt Ltd, LLP…)"], ["tagline", "Tagline"], ["support_email", "Company email"], ["support_whatsapp", "WhatsApp number"], ["gstin", "GSTIN"], ["meta_title", "Meta title"], ["meta_keywords", "Meta keywords"]] as const;
-  return (
-    <form className="grid gap-4 rounded-xl border bg-card p-5 md:grid-cols-2" onSubmit={async (e) => {
-      e.preventDefault();
-      const f = new FormData(e.currentTarget);
-      const patch: Record<string, unknown> = { updated_at: new Date().toISOString(), site_live: f.get("site_live") === "on" };
-      for (const [k] of F) patch[k] = String(f.get(k) ?? "").trim() || null;
-      for (const k of ["description", "meta_description", "address"]) patch[k] = String(f.get(k) ?? "").trim() || null;
-      if (logo) patch["icon_url"] = logo;
-      if (!patch["company_name"]) { toast.error("Company name is required"); return; }
-      const r = await supabase.from("app_settings").update(patch as never).eq("id", true);
-      if (r.error) toast.error(r.error.message); else { toast.success("Company info saved"); qc.invalidateQueries({ queryKey: ["company"] }); }
-    }}>
-      {F.map(([k, l]) => <label key={k} className="text-sm font-semibold">{l}<input name={k} defaultValue={(s as unknown as Record<string, string | null>)[k] ?? ""} className={field} /></label>)}
-      {(["description", "meta_description", "address"] as const).map((k) => <label key={k} className="text-sm font-semibold capitalize md:col-span-2">{k.replace("_", " ")}<textarea name={k} defaultValue={s[k] ?? ""} rows={3} className="mt-1 w-full rounded-md border bg-background p-3 text-sm" /></label>)}
-      <label className="text-sm font-semibold">Icon (the logo stays the same)<input type="file" accept="image/*" className={field + " pt-2"} onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return; try { setLogo(await uploadImage(file)); toast.success("Icon uploaded — save to apply"); } catch (err) { toast.error((err as Error).message); } }} /></label>
-      <div className="flex items-center gap-3">{(logo ?? s.icon_url) && <img src={logo ?? s.icon_url!} alt="Icon" className="h-12 w-12 rounded-lg border object-contain" />}</div>
-      <label className="flex items-center gap-3 rounded-lg border p-4 md:col-span-2"><input name="site_live" type="checkbox" defaultChecked={s.site_live} className="h-5 w-5" /><span><b>Website live</b><span className="block text-xs text-muted-foreground">Turn off to show a maintenance notice to visitors</span></span></label>
-      <Button type="submit" className="md:col-span-2 md:w-fit">Save company info</Button>
-    </form>
-  );
-}
-
 function SmtpForm() {
   const qc = useQueryClient();
   const test = useServerFn(sendTestEmail);
-  const { data: s } = useQuery({ queryKey: ["smtp"], queryFn: async () => (await supabase.from("smtp_settings").select("*").eq("id", true).single()).data });
+  const status = useServerFn(getSmtpStatus);
+  const saveFn = useServerFn(saveSmtpSettings);
+  const { data: s } = useQuery({ queryKey: ["smtp"], queryFn: () => status() });
   const [provider, setProvider] = useState<keyof typeof PRESETS | null>(null);
   const [to, setTo] = useState("");
   if (!s) return null;
@@ -94,8 +68,7 @@ function SmtpForm() {
       <form key={p} className="grid gap-4 rounded-xl border bg-card p-5 md:grid-cols-2" onSubmit={async (e) => {
         e.preventDefault();
         const f = new FormData(e.currentTarget);
-        const r = await supabase.from("smtp_settings").update({ provider: p, host: String(f.get("host")), port: Number(f.get("port")), secure: String(f.get("secure")), username: String(f.get("username")).trim(), from_name: String(f.get("from_name")), from_email: String(f.get("from_email")).trim() || null, enabled: f.get("enabled") === "on", updated_at: new Date().toISOString() }).eq("id", true);
-        if (r.error) toast.error(r.error.message); else { toast.success("SMTP saved"); qc.invalidateQueries({ queryKey: ["smtp"] }); }
+        try { await saveFn({ data: { provider: p, host: String(f.get("host")).trim(), port: Number(f.get("port")), secure: String(f.get("secure")) as "ssl", username: String(f.get("username")).trim(), from_name: String(f.get("from_name")), from_email: String(f.get("from_email")).trim(), enabled: f.get("enabled") === "on" } }); toast.success("SMTP saved"); qc.invalidateQueries({ queryKey: ["smtp"] }); } catch (err) { toast.error((err as Error).message); }
       }}>
         <div className="flex gap-2 md:col-span-2">{(Object.keys(PRESETS) as (keyof typeof PRESETS)[]).map((k) => <button type="button" key={k} onClick={() => setProvider(k)} className={`rounded-lg border px-4 py-2 text-sm font-semibold capitalize ${p === k ? "border-primary bg-primary/10 text-primary" : ""}`}>{k}</button>)}</div>
         <label className="text-sm font-semibold">SMTP host<input name="host" required defaultValue={preset.host} className={field} /></label>
@@ -104,7 +77,7 @@ function SmtpForm() {
         <label className="text-sm font-semibold">Username / email<input name="username" required defaultValue={s.username ?? ""} className={field} /></label>
         <label className="text-sm font-semibold">From name<input name="from_name" defaultValue={s.from_name ?? "GetXpress"} className={field} /></label>
         <label className="text-sm font-semibold">From email (company email)<input name="from_email" defaultValue={s.from_email ?? ""} className={field} /></label>
-        <p className="rounded-lg bg-secondary p-3 text-xs md:col-span-2">The password is stored securely on the server, not in this form. For Gmail use a 16-letter App Password; spaces are removed automatically.</p>
+        <p className="rounded-lg bg-secondary p-3 text-xs md:col-span-2"><b>{s.passwordSet ? "Password saved on server ✓" : "Password missing"}</b> — the password is stored securely on the server, not in this form. For Gmail use a 16-letter App Password; spaces are removed automatically.</p>
         <label className="flex items-center gap-2 text-sm md:col-span-2"><input name="enabled" type="checkbox" defaultChecked={s.enabled} className="h-5 w-5" />Send emails through this account</label>
         <Button type="submit" className="md:w-fit">Save SMTP</Button>
       </form>
