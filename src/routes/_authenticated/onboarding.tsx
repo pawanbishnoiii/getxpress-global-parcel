@@ -1,25 +1,104 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ArrowLeft,ArrowRight,Check,Loader2,ShieldCheck } from 'lucide-react';
-import { AppShell,PageHeader } from '@/components/site/AppShell';
+import { ArrowLeft, ArrowRight, Check, Loader2, ShieldCheck } from 'lucide-react';
+import { AppShell, PageHeader } from '@/components/site/AppShell';
 import { PhoneVerify } from '@/components/site/PhoneVerify';
 import { Button } from '@/components/ui/button';
 import { useProfile } from '@/hooks/use-profile';
 import { contactSchema } from '@/lib/contact-schema';
-import { saveContactDetails,finishOnboarding } from '@/lib/onboarding.functions';
-export const Route=createFileRoute('/_authenticated/onboarding')({head:()=>({meta:[{title:'Your details & contact verification — Get Xpress'},{name:'description',content:'Set up your Get Xpress customer profile and pickup address in two steps.'},{property:'og:title',content:'Your Get Xpress profile'},{property:'og:description',content:'Personal details, contact verification and pickup address.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),component:Onboarding});
-function Onboarding(){
- const {data}=useProfile();const p=data?.profile;const qc=useQueryClient();const navigate=useNavigate();
- const saveDetails=useServerFn(saveContactDetails);const finish=useServerFn(finishOnboarding);
- const [step,setStep]=useState(1);const [busy,setBusy]=useState(false);const [number,setNumber]=useState('');
- const [f,setF]=useState({first_name:'',last_name:'',age:'',gender:'',contact_email:'',phone:'',whatsapp:'',address:'',pincode:'',city:''});
- useEffect(()=>{if(p)setF({first_name:p.first_name??p.full_name?.split(' ')[0]??'',last_name:p.last_name??p.full_name?.split(' ').slice(1).join(' ')??'',age:String(p.age??''),gender:p.gender??'',contact_email:p.contact_email??data?.user.email??'',phone:p.phone?.replace(/^\+91/,'')??'',whatsapp:p.whatsapp?.replace(/^\+91/,'')??'',address:p.address??'',pincode:p.pincode??'',city:p.city??''})},[p,data?.user.email]);
- const set=(k:keyof typeof f)=>(v:string)=>setF(x=>({...x,[k]:v}));
- const next=async(e:React.FormEvent)=>{e.preventDefault();const result=contactSchema.safeParse(f);if(!result.success){toast.error(result.error.issues[0]?.message??'Check your details');return;}setBusy(true);try{const r=await saveDetails({data:result.data});setNumber(r.number);await qc.invalidateQueries({queryKey:['profile']});setStep(2);}catch(e){toast.error((e as Error).message)}finally{setBusy(false)}};
- const complete=async(e:React.FormEvent)=>{e.preventDefault();setBusy(true);try{await finish({data:{address:f.address,pincode:f.pincode,city:f.city}});await qc.invalidateQueries({queryKey:['profile']});toast.success('Your profile is ready');navigate({to:'/dashboard'});}catch(e){toast.error((e as Error).message)}finally{setBusy(false)}};
- const input='mt-1 h-12 w-full min-w-0 rounded-md border bg-card px-3';
- return <AppShell skipOnboarding requirePhone={false}><PageHeader title='Welcome to Get Xpress' sub='Your profile'/><div className='max-w-2xl'><div className='mb-8 flex items-center gap-4 border-b pb-5'>{['Personal details','Verify & pickup address'].map((s,i)=><div key={s} className={`flex items-center gap-2 text-sm font-semibold ${step===i+1?'text-primary':'text-muted-foreground'}`}><span className='grid h-8 w-8 shrink-0 place-items-center rounded-full border'>{step>i+1?<Check className='h-4 w-4'/>:i+1}</span>{s}</div>)}</div>{step===1?<form onSubmit={next} className='grid gap-4 sm:grid-cols-2'><label className='text-sm font-semibold'>First name<input aria-label='First name' maxLength={60} autoComplete='given-name' value={f.first_name} onChange={e=>set('first_name')(e.target.value)} required className={input}/></label><label className='text-sm font-semibold'>Last name<input aria-label='Last name' maxLength={60} autoComplete='family-name' value={f.last_name} onChange={e=>set('last_name')(e.target.value)} required className={input}/></label><label className='text-sm font-semibold'>Age<input aria-label='Age' type='number' min={13} max={100} required value={f.age} onChange={e=>set('age')(e.target.value)} className={input}/></label><label className='text-sm font-semibold'>Gender<select aria-label='Gender' required value={f.gender} onChange={e=>set('gender')(e.target.value)} className={input}><option value=''>Select</option><option value='female'>Female</option><option value='male'>Male</option><option value='other'>Other</option></select></label><label className='text-sm font-semibold sm:col-span-2'>Email<input aria-label='Email' type='email' autoComplete='email' maxLength={255} required value={f.contact_email} onChange={e=>set('contact_email')(e.target.value)} className={input}/></label>{(['phone','whatsapp'] as const).map(k=><label key={k} className='text-sm font-semibold'>{k==='phone'?'Phone number':'WhatsApp number'}<div className='relative'><span className='absolute left-3 top-5 text-muted-foreground'>+91</span><input aria-label={k==='phone'?'Phone number':'WhatsApp number'} inputMode='numeric' maxLength={10} value={f[k]} onChange={e=>set(k)(e.target.value.replace(/\D/g,''))} className={`${input} pl-12`}/></div></label>)}<p className='text-xs text-muted-foreground sm:col-span-2'>Phone or WhatsApp — at least one is required.</p><Button disabled={busy} type='submit' className='mt-2 h-12 sm:col-span-2'>{busy?<Loader2 className='animate-spin'/>:<ArrowRight/>}Continue</Button></form>:<div><Button variant='ghost' onClick={()=>setStep(1)}><ArrowLeft/>Personal details</Button>{!p?.phone_verified?<PhoneVerify key={number} initialPhone={number} onDone={()=>qc.invalidateQueries({queryKey:['profile']})}/>:<p className='my-5 flex items-center gap-2 text-sm font-semibold text-primary'><ShieldCheck/>Contact verified · {p.phone}</p>}<form onSubmit={complete} className='mt-4 grid gap-4 sm:grid-cols-2'><h2 className='text-xl font-bold sm:col-span-2'>Pickup address</h2><label className='text-sm font-semibold'>Pincode<input aria-label='Pincode' inputMode='numeric' maxLength={6} required pattern='[0-9]{6}' value={f.pincode} onChange={e=>set('pincode')(e.target.value.replace(/\D/g,''))} className={input}/></label><label className='text-sm font-semibold'>City<input aria-label='City' required maxLength={80} value={f.city} onChange={e=>set('city')(e.target.value)} className={input}/></label><label className='text-sm font-semibold sm:col-span-2'>Full address<textarea aria-label='Full address' required minLength={8} maxLength={400} rows={3} value={f.address} onChange={e=>set('address')(e.target.value)} className='mt-1 w-full rounded-md border bg-card p-3'/></label><Button disabled={busy||!p?.phone_verified} type='submit' className='h-12 sm:col-span-2'>{busy?<Loader2 className='animate-spin'/>:<Check/>}Finish setup</Button></form></div>}</div></AppShell>;
+import { saveContactDetails, finishOnboarding } from '@/lib/onboarding.functions';
+import { INDIAN_STATES, isSyntheticEmail } from '@/lib/india-regions';
+
+export const Route = createFileRoute('/_authenticated/onboarding')({
+  head: () => ({ meta: [
+    { title: 'Your profile — GetXpress' },
+    { name: 'description', content: 'Set up your GetXpress customer profile in under a minute.' },
+    { property: 'og:title', content: 'Your GetXpress profile' },
+    { property: 'og:description', content: 'Personal details, state and district for your GetXpress account.' },
+    { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' },
+  ] }),
+  component: Onboarding,
+});
+
+function Onboarding() {
+  const { data } = useProfile(); const p = data?.profile as (NonNullable<typeof data>['profile'] & { state?: string | null; district?: string | null }) | undefined;
+  const qc = useQueryClient(); const navigate = useNavigate();
+  const saveDetails = useServerFn(saveContactDetails); const finish = useServerFn(finishOnboarding);
+  const [step, setStep] = useState(1); const [busy, setBusy] = useState(false); const [number, setNumber] = useState('');
+  const [f, setF] = useState({ first_name: '', last_name: '', age: '', gender: '', contact_email: '', phone: '', whatsapp: '', state: '', district: '' });
+  const verified = Boolean(p?.phone_verified && p?.phone);
+  useEffect(() => {
+    if (!p) return;
+    const authEmail = data?.user.email ?? '';
+    setF({
+      first_name: p.first_name ?? p.full_name?.split(' ')[0] ?? '', last_name: p.last_name ?? p.full_name?.split(' ').slice(1).join(' ') ?? '',
+      age: String(p.age ?? ''), gender: p.gender ?? '',
+      contact_email: [p.contact_email, authEmail].find((e) => e && !isSyntheticEmail(e)) ?? '',
+      phone: p.phone?.replace(/^\+91/, '') ?? '', whatsapp: p.whatsapp?.replace(/^\+91/, '') ?? '',
+      state: p.state ?? '', district: p.district ?? p.city ?? '',
+    });
+  }, [p, data?.user.email]);
+  const set = (k: keyof typeof f) => (v: string) => setF((x) => ({ ...x, [k]: v }));
+
+  const done = async () => {
+    await finish({ data: { state: f.state, district: f.district } });
+    await qc.invalidateQueries({ queryKey: ['profile'] });
+    toast.success('Your profile is ready'); navigate({ to: '/dashboard' });
+  };
+  const next = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSyntheticEmail(f.contact_email)) { toast.error('Please enter your real email address'); return; }
+    if (!f.state || f.district.trim().length < 2) { toast.error('Select your state and district'); return; }
+    const result = contactSchema.safeParse(f);
+    if (!result.success) { toast.error(result.error.issues[0]?.message ?? 'Check your details'); return; }
+    setBusy(true);
+    try {
+      const r = await saveDetails({ data: result.data }); setNumber(r.number);
+      await qc.invalidateQueries({ queryKey: ['profile'] });
+      if (r.verified) await done(); else setStep(2);
+    } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
+  };
+  const complete = async () => { setBusy(true); try { await done(); } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); } };
+  const input = 'mt-1 h-12 w-full min-w-0 rounded-md border bg-card px-3';
+  const steps = verified ? ['Personal details'] : ['Personal details', 'Verify phone'];
+
+  return (
+    <AppShell skipOnboarding requirePhone={false}>
+      <PageHeader title='Welcome to GetXpress' sub='Your profile' />
+      <div className='max-w-2xl'>
+        <div className='mb-8 flex items-center gap-4 border-b pb-5'>
+          {steps.map((s, i) => <div key={s} className={`flex items-center gap-2 text-sm font-semibold ${step === i + 1 ? 'text-primary' : 'text-muted-foreground'}`}><span className='grid h-8 w-8 shrink-0 place-items-center rounded-full border'>{step > i + 1 ? <Check className='h-4 w-4' /> : i + 1}</span>{s}</div>)}
+        </div>
+        {step === 1 ? (
+          <form onSubmit={next} className='grid gap-4 sm:grid-cols-2'>
+            <label className='text-sm font-semibold'>First name<input maxLength={60} autoComplete='given-name' value={f.first_name} onChange={(e) => set('first_name')(e.target.value)} required className={input} /></label>
+            <label className='text-sm font-semibold'>Last name<input maxLength={60} autoComplete='family-name' value={f.last_name} onChange={(e) => set('last_name')(e.target.value)} required className={input} /></label>
+            <label className='text-sm font-semibold'>Age<input type='number' min={13} max={100} required value={f.age} onChange={(e) => set('age')(e.target.value)} className={input} /></label>
+            <label className='text-sm font-semibold'>Gender<select required value={f.gender} onChange={(e) => set('gender')(e.target.value)} className={input}><option value=''>Select</option><option value='female'>Female</option><option value='male'>Male</option><option value='other'>Other</option></select></label>
+            <label className='text-sm font-semibold sm:col-span-2'>Email<input type='email' autoComplete='email' maxLength={255} required placeholder='you@example.com' value={f.contact_email} onChange={(e) => set('contact_email')(e.target.value)} className={input} /></label>
+            {verified ? (
+              <div className='sm:col-span-2 flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary w-fit'><ShieldCheck className='h-4 w-4' />Verified phone · {p?.phone}</div>
+            ) : (
+              <label className='text-sm font-semibold'>Phone number<div className='relative'><span className='absolute left-3 top-5 text-muted-foreground'>+91</span><input inputMode='numeric' maxLength={10} value={f.phone} onChange={(e) => set('phone')(e.target.value.replace(/\D/g, ''))} className={`${input} pl-12`} /></div></label>
+            )}
+            <label className='text-sm font-semibold'>WhatsApp number (optional)<div className='relative'><span className='absolute left-3 top-5 text-muted-foreground'>+91</span><input inputMode='numeric' maxLength={10} value={f.whatsapp} onChange={(e) => set('whatsapp')(e.target.value.replace(/\D/g, ''))} className={`${input} pl-12`} /></div></label>
+            <label className='text-sm font-semibold'>State<select required value={f.state} onChange={(e) => set('state')(e.target.value)} className={input}><option value=''>Select state</option>{INDIAN_STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
+            <label className='text-sm font-semibold'>District<input required maxLength={80} value={f.district} onChange={(e) => set('district')(e.target.value)} placeholder='e.g. Jaipur' className={input} /></label>
+            <Button disabled={busy} type='submit' className='mt-2 h-12 sm:col-span-2'>{busy ? <Loader2 className='animate-spin' /> : verified ? <Check /> : <ArrowRight />}{verified ? 'Finish setup' : 'Continue'}</Button>
+          </form>
+        ) : (
+          <div>
+            <Button variant='ghost' onClick={() => setStep(1)}><ArrowLeft />Personal details</Button>
+            {!p?.phone_verified
+              ? <PhoneVerify key={number} initialPhone={number} onDone={() => qc.invalidateQueries({ queryKey: ['profile'] })} />
+              : <p className='my-5 flex items-center gap-2 text-sm font-semibold text-primary'><ShieldCheck />Phone verified · {p.phone}</p>}
+            <Button disabled={busy || !p?.phone_verified} onClick={complete} className='mt-4 h-12 w-full'>{busy ? <Loader2 className='animate-spin' /> : <Check />}Finish setup</Button>
+          </div>
+        )}
+      </div>
+    </AppShell>
+  );
 }
