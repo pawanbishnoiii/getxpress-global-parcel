@@ -19,3 +19,4 @@
 - District reference names permit manual entry because public datasets can lag administrative changes.
 - Outgoing email uses admin-managed SMTP (smtp_settings + SMTP_PASSWORD/SMTP_USERNAME secrets) via worker-mailer in src/lib/email.functions.ts; worker-mailer uses Cloudflare sockets, so sends only work on the deployed worker.
 - Hub (point role) non-cash bookings debit the hub wallet via a database trigger, so the ledger cannot be skipped by client code.
+- `cloudflare:sockets` is aliased in vite.config.ts to src/lib/cloudflare-sockets-shim.ts, which loads the real module at runtime; bundlers cannot resolve the `cloudflare:` scheme and preview builds fail otherwise.
