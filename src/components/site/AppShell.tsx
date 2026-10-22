@@ -2,7 +2,7 @@ import { Link, Navigate, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  BarChart3, Bell, ClipboardList, Home, Loader2, LogOut, MapPin, PackagePlus, ScanLine, ShieldCheck, Store, Ticket, UserRound, RotateCcw, Boxes, Coins, Settings, Wallet, Users, ClipboardCheck, Menu, Maximize2, Minimize2, History, Wand2,
+  BarChart3, Bell, ClipboardList, Home, Loader2, LogOut, MapPin, PackagePlus, ScanLine, ShieldCheck, Store, Ticket, UserRound, RotateCcw, Boxes, Coins, Settings, Wallet, Users, ClipboardCheck, Menu, Maximize2, Minimize2, History, Wand2, CreditCard, Barcode, Building2, Mail, Activity, Search,
 } from "lucide-react";
 import { BrandMark } from "./BrandMark";
 import { useProfile } from "@/hooks/use-profile";
@@ -42,12 +42,12 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     { to: "/coupons", label: "Offers & coupons", icon: Ticket, admin: true },
     { to: "/pincodes", label: "Pincode master", icon: MapPin, admin: true },
     { to: "/settings", label: "Prices & integrations", icon: Settings, admin: true },
-    { to: "/admin/gateways/payment", label: "Gateways", icon: Settings, admin: true },
-    { to: "/admin/barcode", label: "Barcodes", icon: Settings, admin: true },
-    { to: "/admin/company", label: "Company profile", icon: Settings, admin: true },
-    { to: "/admin/smtp", label: "SMTP & email", icon: Settings, admin: true },
+    { to: "/admin/gateways/payment", label: "Gateways", icon: CreditCard, admin: true },
+    { to: "/admin/barcode", label: "Barcodes", icon: Barcode, admin: true },
+    { to: "/admin/company", label: "Company profile", icon: Building2, admin: true },
+    { to: "/admin/smtp", label: "SMTP & email", icon: Mail, admin: true },
     { to: "/audit", label: "Audit log", icon: History, admin: true },
-    { to: "/diagnostics", label: "Diagnostics", icon: Settings, admin: true },
+    { to: "/diagnostics", label: "Diagnostics", icon: Activity, admin: true },
   ] },
 ];
 
@@ -71,6 +71,7 @@ export function AppShell({ children, requirePhone = true, wide = false, skipOnbo
   const isManager = roles.some((r) => r === "state_manager" || r === "state_director");
   useEffect(() => { supabase.rpc("touch_last_seen").then(() => {}); }, []);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [navQ, setNavQ] = useState("");
   const qc = useQueryClient();
   const navigate = useNavigate();
   if (isLoading) return <div className="grid min-h-screen place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -92,16 +93,17 @@ export function AppShell({ children, requirePhone = true, wide = false, skipOnbo
     <div className="min-h-screen bg-background">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-ink text-ink-foreground lg:flex">
         <Link to="/" className="mx-5 mb-2 mt-6 block"><BrandMark light className="w-44" /></Link>
-        <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-6">
+        <div className="mx-3 mb-3 flex items-center gap-2 rounded-xl bg-ink-foreground/10 px-3"><Search className="h-4 w-4 opacity-60" /><input value={navQ} onChange={(e) => setNavQ(e.target.value)} placeholder="Find a page…" aria-label="Find a page" className="h-9 w-full bg-transparent text-sm outline-none placeholder:text-ink-foreground/50" /></div>
+        <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-6">
           {NAV.map((g) => {
-            const items = g.items.filter(visible);
+            const items = g.items.filter(visible).filter((i) => !navQ || i.label.toLowerCase().includes(navQ.toLowerCase()));
             if (!items.length) return null;
             return (
               <div key={g.group}>
                 <p className="px-3 pb-2 text-[11px] font-bold uppercase tracking-widest text-ink-foreground/50">{g.group}</p>
                 {items.map(({ to, label, icon: Icon }) => (
-                  <Link key={to} to={to} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-foreground/75 transition-colors hover:bg-ink-foreground/10 hover:text-ink-foreground"
-                    activeProps={{ className: "bg-primary !text-primary-foreground" }}>
+                  <Link key={to} to={to} className="group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink-foreground/70 transition-all hover:translate-x-0.5 hover:bg-ink-foreground/10 hover:text-ink-foreground"
+                    activeProps={{ className: "bg-primary !text-primary-foreground shadow-lg shadow-primary/30" }}>
                     <Icon className="h-4 w-4" />{label}
                   </Link>
                 ))}
