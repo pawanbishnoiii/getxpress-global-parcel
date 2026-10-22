@@ -31,7 +31,7 @@ const input = z.object({
   dims: z.object({ l: z.number().min(1).max(300), w: z.number().min(1).max(300), h: z.number().min(1).max(300) }).optional(),
   is_fragile: z.boolean().default(false),
   has_electronics: z.boolean().default(false),
-  photos: z.array(z.string().url().max(500)).max(3).default([]),
+  photos: z.array(z.string().max(300).regex(/^[0-9a-f-]+\/[\w.-]+$/)).max(3).default([]),
 });
 
 async function resolveCoupon(code: string, userId: string, total: number) {
