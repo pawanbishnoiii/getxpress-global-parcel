@@ -1,10 +1,11 @@
-ALTER TABLE public.shipments ADD COLUMN IF NOT EXISTS sender_state text, ADD COLUMN IF NOT EXISTS receiver_state text, ADD COLUMN IF NOT EXISTS sender_district text, ADD COLUMN IF NOT EXISTS receiver_district text, ADD COLUMN IF NOT EXISTS sender_email text, ADD COLUMN IF NOT EXISTS receiver_email text, ADD COLUMN IF NOT EXISTS policy_accepted_at timestamptz;
-CREATE TABLE public.international_quote_requests (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL, reference text NOT NULL UNIQUE DEFAULT ('GXQ-' || upper(substr(gen_random_uuid()::text,1,8))), sender jsonb NOT NULL, receiver jsonb NOT NULL, contents text NOT NULL, weight_kg numeric NOT NULL, declared_value numeric NOT NULL DEFAULT 0, status text NOT NULL DEFAULT 'requested', created_at timestamptz NOT NULL DEFAULT now());
-GRANT SELECT, INSERT ON public.international_quote_requests TO authenticated;
-GRANT ALL ON public.international_quote_requests TO service_role;
-ALTER TABLE public.international_quote_requests ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Own quote requests" ON public.international_quote_requests FOR SELECT TO authenticated USING (user_id=auth.uid() OR public.has_role(auth.uid(),'admin'));
-CREATE POLICY "Create own quote request" ON public.international_quote_requests FOR INSERT TO authenticated WITH CHECK (user_id=auth.uid());
-CREATE INDEX international_quotes_owner ON public.international_quote_requests(user_id,created_at DESC);
-CREATE OR REPLACE FUNCTION public.guard_shipping_policy() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$ BEGIN IF NEW.policy_accepted_at IS NULL THEN RAISE EXCEPTION 'Accept the shipping policies before booking'; END IF; IF coalesce(NEW.contents,'') ~* '\m(arms|weapons|firearms|ammunition|explosives|narcotics|cocaine|heroin|methamphetamine|illegal drugs)\M' THEN RAISE EXCEPTION 'Prohibited items cannot be shipped'; END IF; RETURN NEW; END $$;
-CREATE TRIGGER shipping_policy_guard BEFORE INSERT ON public.shipments FOR EACH ROW EXECUTE FUNCTION public.guard_shipping_policy();
+-- The content of this migration cannot be applied: its changes were copied from the source project and already exist in this database.
+-- ALTER TABLE public.shipments ADD COLUMN IF NOT EXISTS sender_state text, ADD COLUMN IF NOT EXISTS receiver_state text, ADD COLUMN IF NOT EXISTS sender_district text, ADD COLUMN IF NOT EXISTS receiver_district text, ADD COLUMN IF NOT EXISTS sender_email text, ADD COLUMN IF NOT EXISTS receiver_email text, ADD COLUMN IF NOT EXISTS policy_accepted_at timestamptz;
+-- CREATE TABLE public.international_quote_requests (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL, reference text NOT NULL UNIQUE DEFAULT ('GXQ-' || upper(substr(gen_random_uuid()::text,1,8))), sender jsonb NOT NULL, receiver jsonb NOT NULL, contents text NOT NULL, weight_kg numeric NOT NULL, declared_value numeric NOT NULL DEFAULT 0, status text NOT NULL DEFAULT 'requested', created_at timestamptz NOT NULL DEFAULT now());
+-- GRANT SELECT, INSERT ON public.international_quote_requests TO authenticated;
+-- GRANT ALL ON public.international_quote_requests TO service_role;
+-- ALTER TABLE public.international_quote_requests ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Own quote requests" ON public.international_quote_requests FOR SELECT TO authenticated USING (user_id=auth.uid() OR public.has_role(auth.uid(),'admin'));
+-- CREATE POLICY "Create own quote request" ON public.international_quote_requests FOR INSERT TO authenticated WITH CHECK (user_id=auth.uid());
+-- CREATE INDEX international_quotes_owner ON public.international_quote_requests(user_id,created_at DESC);
+-- CREATE OR REPLACE FUNCTION public.guard_shipping_policy() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$ BEGIN IF NEW.policy_accepted_at IS NULL THEN RAISE EXCEPTION 'Accept the shipping policies before booking'; END IF; IF coalesce(NEW.contents,'') ~* '\m(arms|weapons|firearms|ammunition|explosives|narcotics|cocaine|heroin|methamphetamine|illegal drugs)\M' THEN RAISE EXCEPTION 'Prohibited items cannot be shipped'; END IF; RETURN NEW; END $$;
+-- CREATE TRIGGER shipping_policy_guard BEFORE INSERT ON public.shipments FOR EACH ROW EXECUTE FUNCTION public.guard_shipping_policy();
