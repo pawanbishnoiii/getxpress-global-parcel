@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { QuoteRequests } from "@/components/site/QuoteRequests";
 import { TrackPanel } from "@/components/site/TrackPanel";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -108,6 +109,7 @@ function Dashboard() {
       {isAdmin && <BookingScores />}
       {isAdmin && <AdminShipmentTable />}
 
+      {isAdmin && <QuoteRequests/>}
       <div className="mt-8"><TrackPanel /></div>
       <div className="mt-10 flex items-center justify-between">
         <h2 className="font-display text-2xl font-extrabold">Recent orders</h2>

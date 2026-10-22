@@ -4,6 +4,7 @@ import { z } from "zod";
 import { brand } from "@/lib/brand";
 import { FileDown, Globe2, MessageCircle, Printer, Search, ClipboardList, MapPin, PackagePlus, Phone, RotateCcw, Truck, UserRound } from "lucide-react";
 import { AppShell, PageHeader, Stat } from "@/components/site/AppShell";
+import { QuoteRequests } from "@/components/site/QuoteRequests";
 import { TrackPanel } from "@/components/site/TrackPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -57,6 +58,7 @@ function UserDashboard() {
         <Stat label="Delivered" value={count(["delivered"])} tone="lime" />
         <Stat label="Spent (₹)" value={spent.toLocaleString("en-IN")} />
       </div>
+      <QuoteRequests/>
       <h2 className="mt-8 font-display text-2xl font-extrabold">Recent orders</h2>
       <div className="mt-3 space-y-2">
         {rows.length === 0 && <p className="rounded-2xl border border-dashed p-8 text-center text-muted-foreground">No orders yet — add your first order.</p>}
