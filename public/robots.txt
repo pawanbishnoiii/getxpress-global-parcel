@@ -12,3 +12,7 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /users/
+Disallow: /settings
+Disallow: /console
+Sitemap: https://pinpoint-parcel-pilot.lovable.app/sitemap.xml
