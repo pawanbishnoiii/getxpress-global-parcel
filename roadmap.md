@@ -29,3 +29,9 @@
 - [ ] Real payment/SMS/courier API calls + partner webhooks (blocked: partner API keys/docs)
 - [ ] Per-role test accounts check (blocked: needs isolated test environment)
 - [ ] New landing photography + advanced GSAP motion pass
+
+## Remix setup
+- [x] Update SMTP_PASSWORD and SMTP_USERNAME through secure forms
+- [x] Link managed Google Maps to this remix
+- [x] Remove copied migrations and snapshots; initialize empty PostgreSQL journal without changing stored data
+- [x] Repair malformed SMTP page header blocking preview

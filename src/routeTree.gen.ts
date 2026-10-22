@@ -45,6 +45,9 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedTeamPricesRouteImport } from './routes/_authenticated/team-prices'
 import { Route as AuthenticatedVerifyPhoneRouteImport } from './routes/_authenticated/verify-phone'
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
+import { Route as AuthenticatedAdminBarcodeRouteImport } from './routes/_authenticated/admin.barcode'
+import { Route as AuthenticatedAdminCompanyRouteImport } from './routes/_authenticated/admin.company'
+import { Route as AuthenticatedAdminSmtpRouteImport } from './routes/_authenticated/admin.smtp'
 import { Route as AuthenticatedLabelsShipmentIdRouteImport } from './routes/_authenticated/labels.$shipmentId'
 import { Route as AuthenticatedPayShipmentIdRouteImport } from './routes/_authenticated/pay.$shipmentId'
 import { Route as AuthenticatedUsersAddorderRouteImport } from './routes/_authenticated/users.addorder'
@@ -53,6 +56,7 @@ import { Route as AuthenticatedUsersOrdersRouteImport } from './routes/_authenti
 import { Route as AuthenticatedUsersReturnsRouteImport } from './routes/_authenticated/users.returns'
 import { Route as ApiPublicHealthCheckRouteImport } from './routes/api/public/health-check'
 import { Route as ApiPublicTrackAssistantRouteImport } from './routes/api/public/track-assistant'
+import { Route as AuthenticatedAdminGatewaysCategoryRouteImport } from './routes/_authenticated/admin.gateways.$category'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -240,6 +244,23 @@ const AuthenticatedWalletRoute = AuthenticatedWalletRouteImport.update({
   path: '/wallet',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminBarcodeRoute =
+  AuthenticatedAdminBarcodeRouteImport.update({
+    id: '/admin/barcode',
+    path: '/admin/barcode',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminCompanyRoute =
+  AuthenticatedAdminCompanyRouteImport.update({
+    id: '/admin/company',
+    path: '/admin/company',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminSmtpRoute = AuthenticatedAdminSmtpRouteImport.update({
+  id: '/admin/smtp',
+  path: '/admin/smtp',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLabelsShipmentIdRoute =
   AuthenticatedLabelsShipmentIdRouteImport.update({
     id: '/labels/$shipmentId',
@@ -286,6 +307,12 @@ const ApiPublicTrackAssistantRoute = ApiPublicTrackAssistantRouteImport.update({
   path: '/api/public/track-assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminGatewaysCategoryRoute =
+  AuthenticatedAdminGatewaysCategoryRouteImport.update({
+    id: '/admin/gateways/$category',
+    path: '/admin/gateways/$category',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicWhatsappWebhookRoute =
   ApiPublicWhatsappWebhookRouteImport.update({
     id: '/api/public/whatsapp/webhook',
@@ -329,6 +356,9 @@ export interface FileRoutesByFullPath {
   '/team-prices': typeof AuthenticatedTeamPricesRoute
   '/verify-phone': typeof AuthenticatedVerifyPhoneRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/admin/barcode': typeof AuthenticatedAdminBarcodeRoute
+  '/admin/company': typeof AuthenticatedAdminCompanyRoute
+  '/admin/smtp': typeof AuthenticatedAdminSmtpRoute
   '/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
   '/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
   '/users/addorder': typeof AuthenticatedUsersAddorderRoute
@@ -337,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/users/returns': typeof AuthenticatedUsersReturnsRoute
   '/api/public/health-check': typeof ApiPublicHealthCheckRoute
   '/api/public/track-assistant': typeof ApiPublicTrackAssistantRoute
+  '/admin/gateways/$category': typeof AuthenticatedAdminGatewaysCategoryRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -375,6 +406,9 @@ export interface FileRoutesByTo {
   '/team-prices': typeof AuthenticatedTeamPricesRoute
   '/verify-phone': typeof AuthenticatedVerifyPhoneRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/admin/barcode': typeof AuthenticatedAdminBarcodeRoute
+  '/admin/company': typeof AuthenticatedAdminCompanyRoute
+  '/admin/smtp': typeof AuthenticatedAdminSmtpRoute
   '/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
   '/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
   '/users/addorder': typeof AuthenticatedUsersAddorderRoute
@@ -383,6 +417,7 @@ export interface FileRoutesByTo {
   '/users/returns': typeof AuthenticatedUsersReturnsRoute
   '/api/public/health-check': typeof ApiPublicHealthCheckRoute
   '/api/public/track-assistant': typeof ApiPublicTrackAssistantRoute
+  '/admin/gateways/$category': typeof AuthenticatedAdminGatewaysCategoryRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesById {
@@ -423,6 +458,9 @@ export interface FileRoutesById {
   '/_authenticated/team-prices': typeof AuthenticatedTeamPricesRoute
   '/_authenticated/verify-phone': typeof AuthenticatedVerifyPhoneRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
+  '/_authenticated/admin/barcode': typeof AuthenticatedAdminBarcodeRoute
+  '/_authenticated/admin/company': typeof AuthenticatedAdminCompanyRoute
+  '/_authenticated/admin/smtp': typeof AuthenticatedAdminSmtpRoute
   '/_authenticated/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
   '/_authenticated/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
   '/_authenticated/users/addorder': typeof AuthenticatedUsersAddorderRoute
@@ -431,6 +469,7 @@ export interface FileRoutesById {
   '/_authenticated/users/returns': typeof AuthenticatedUsersReturnsRoute
   '/api/public/health-check': typeof ApiPublicHealthCheckRoute
   '/api/public/track-assistant': typeof ApiPublicTrackAssistantRoute
+  '/_authenticated/admin/gateways/$category': typeof AuthenticatedAdminGatewaysCategoryRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRouteTypes {
@@ -471,6 +510,9 @@ export interface FileRouteTypes {
     | '/team-prices'
     | '/verify-phone'
     | '/wallet'
+    | '/admin/barcode'
+    | '/admin/company'
+    | '/admin/smtp'
     | '/labels/$shipmentId'
     | '/pay/$shipmentId'
     | '/users/addorder'
@@ -479,6 +521,7 @@ export interface FileRouteTypes {
     | '/users/returns'
     | '/api/public/health-check'
     | '/api/public/track-assistant'
+    | '/admin/gateways/$category'
     | '/api/public/whatsapp/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -517,6 +560,9 @@ export interface FileRouteTypes {
     | '/team-prices'
     | '/verify-phone'
     | '/wallet'
+    | '/admin/barcode'
+    | '/admin/company'
+    | '/admin/smtp'
     | '/labels/$shipmentId'
     | '/pay/$shipmentId'
     | '/users/addorder'
@@ -525,6 +571,7 @@ export interface FileRouteTypes {
     | '/users/returns'
     | '/api/public/health-check'
     | '/api/public/track-assistant'
+    | '/admin/gateways/$category'
     | '/api/public/whatsapp/webhook'
   id:
     | '__root__'
@@ -564,6 +611,9 @@ export interface FileRouteTypes {
     | '/_authenticated/team-prices'
     | '/_authenticated/verify-phone'
     | '/_authenticated/wallet'
+    | '/_authenticated/admin/barcode'
+    | '/_authenticated/admin/company'
+    | '/_authenticated/admin/smtp'
     | '/_authenticated/labels/$shipmentId'
     | '/_authenticated/pay/$shipmentId'
     | '/_authenticated/users/addorder'
@@ -572,6 +622,7 @@ export interface FileRouteTypes {
     | '/_authenticated/users/returns'
     | '/api/public/health-check'
     | '/api/public/track-assistant'
+    | '/_authenticated/admin/gateways/$category'
     | '/api/public/whatsapp/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -847,6 +898,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWalletRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/barcode': {
+      id: '/_authenticated/admin/barcode'
+      path: '/admin/barcode'
+      fullPath: '/admin/barcode'
+      preLoaderRoute: typeof AuthenticatedAdminBarcodeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/company': {
+      id: '/_authenticated/admin/company'
+      path: '/admin/company'
+      fullPath: '/admin/company'
+      preLoaderRoute: typeof AuthenticatedAdminCompanyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/smtp': {
+      id: '/_authenticated/admin/smtp'
+      path: '/admin/smtp'
+      fullPath: '/admin/smtp'
+      preLoaderRoute: typeof AuthenticatedAdminSmtpRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/labels/$shipmentId': {
       id: '/_authenticated/labels/$shipmentId'
       path: '/labels/$shipmentId'
@@ -903,6 +975,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTrackAssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/gateways/$category': {
+      id: '/_authenticated/admin/gateways/$category'
+      path: '/admin/gateways/$category'
+      fullPath: '/admin/gateways/$category'
+      preLoaderRoute: typeof AuthenticatedAdminGatewaysCategoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/whatsapp/webhook': {
       id: '/api/public/whatsapp/webhook'
       path: '/api/public/whatsapp/webhook'
@@ -938,12 +1017,16 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTeamPricesRoute: typeof AuthenticatedTeamPricesRoute
   AuthenticatedVerifyPhoneRoute: typeof AuthenticatedVerifyPhoneRoute
   AuthenticatedWalletRoute: typeof AuthenticatedWalletRoute
+  AuthenticatedAdminBarcodeRoute: typeof AuthenticatedAdminBarcodeRoute
+  AuthenticatedAdminCompanyRoute: typeof AuthenticatedAdminCompanyRoute
+  AuthenticatedAdminSmtpRoute: typeof AuthenticatedAdminSmtpRoute
   AuthenticatedLabelsShipmentIdRoute: typeof AuthenticatedLabelsShipmentIdRoute
   AuthenticatedPayShipmentIdRoute: typeof AuthenticatedPayShipmentIdRoute
   AuthenticatedUsersAddorderRoute: typeof AuthenticatedUsersAddorderRoute
   AuthenticatedUsersDashboardRoute: typeof AuthenticatedUsersDashboardRoute
   AuthenticatedUsersOrdersRoute: typeof AuthenticatedUsersOrdersRoute
   AuthenticatedUsersReturnsRoute: typeof AuthenticatedUsersReturnsRoute
+  AuthenticatedAdminGatewaysCategoryRoute: typeof AuthenticatedAdminGatewaysCategoryRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -971,12 +1054,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTeamPricesRoute: AuthenticatedTeamPricesRoute,
   AuthenticatedVerifyPhoneRoute: AuthenticatedVerifyPhoneRoute,
   AuthenticatedWalletRoute: AuthenticatedWalletRoute,
+  AuthenticatedAdminBarcodeRoute: AuthenticatedAdminBarcodeRoute,
+  AuthenticatedAdminCompanyRoute: AuthenticatedAdminCompanyRoute,
+  AuthenticatedAdminSmtpRoute: AuthenticatedAdminSmtpRoute,
   AuthenticatedLabelsShipmentIdRoute: AuthenticatedLabelsShipmentIdRoute,
   AuthenticatedPayShipmentIdRoute: AuthenticatedPayShipmentIdRoute,
   AuthenticatedUsersAddorderRoute: AuthenticatedUsersAddorderRoute,
   AuthenticatedUsersDashboardRoute: AuthenticatedUsersDashboardRoute,
   AuthenticatedUsersOrdersRoute: AuthenticatedUsersOrdersRoute,
   AuthenticatedUsersReturnsRoute: AuthenticatedUsersReturnsRoute,
+  AuthenticatedAdminGatewaysCategoryRoute:
+    AuthenticatedAdminGatewaysCategoryRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
