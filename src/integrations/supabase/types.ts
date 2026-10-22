@@ -343,6 +343,45 @@ export type Database = {
         }
         Relationships: []
       }
+      international_quote_requests: {
+        Row: {
+          contents: string
+          created_at: string
+          declared_value: number
+          id: string
+          receiver: Json
+          reference: string
+          sender: Json
+          status: string
+          user_id: string
+          weight_kg: number
+        }
+        Insert: {
+          contents: string
+          created_at?: string
+          declared_value?: number
+          id?: string
+          receiver: Json
+          reference?: string
+          sender: Json
+          status?: string
+          user_id: string
+          weight_kg: number
+        }
+        Update: {
+          contents?: string
+          created_at?: string
+          declared_value?: number
+          id?: string
+          receiver?: Json
+          reference?: string
+          sender?: Json
+          status?: string
+          user_id?: string
+          weight_kg?: number
+        }
+        Relationships: []
+      }
       label_prints: {
         Row: {
           created_at: string
@@ -1057,18 +1096,25 @@ export type Database = {
           pickup_lat: number | null
           pickup_lng: number | null
           pieces_count: number
+          policy_accepted_at: string | null
           price: number
           receiver_address: string
           receiver_city: string
+          receiver_district: string | null
+          receiver_email: string | null
           receiver_name: string
           receiver_phone: string
           receiver_pincode: string
+          receiver_state: string | null
           routing_snapshot: Json
           sender_address: string
           sender_city: string
+          sender_district: string | null
+          sender_email: string | null
           sender_name: string
           sender_phone: string
           sender_pincode: string
+          sender_state: string | null
           service: string
           status: string
           tracking_number: string
@@ -1093,18 +1139,25 @@ export type Database = {
           pickup_lat?: number | null
           pickup_lng?: number | null
           pieces_count?: number
+          policy_accepted_at?: string | null
           price: number
           receiver_address: string
           receiver_city: string
+          receiver_district?: string | null
+          receiver_email?: string | null
           receiver_name: string
           receiver_phone: string
           receiver_pincode: string
+          receiver_state?: string | null
           routing_snapshot?: Json
           sender_address: string
           sender_city: string
+          sender_district?: string | null
+          sender_email?: string | null
           sender_name: string
           sender_phone: string
           sender_pincode: string
+          sender_state?: string | null
           service?: string
           status?: string
           tracking_number: string
@@ -1129,18 +1182,25 @@ export type Database = {
           pickup_lat?: number | null
           pickup_lng?: number | null
           pieces_count?: number
+          policy_accepted_at?: string | null
           price?: number
           receiver_address?: string
           receiver_city?: string
+          receiver_district?: string | null
+          receiver_email?: string | null
           receiver_name?: string
           receiver_phone?: string
           receiver_pincode?: string
+          receiver_state?: string | null
           routing_snapshot?: Json
           sender_address?: string
           sender_city?: string
+          sender_district?: string | null
+          sender_email?: string | null
           sender_name?: string
           sender_phone?: string
           sender_pincode?: string
+          sender_state?: string | null
           service?: string
           status?: string
           tracking_number?: string
