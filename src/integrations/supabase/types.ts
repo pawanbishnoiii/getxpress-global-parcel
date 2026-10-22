@@ -775,6 +775,7 @@ export type Database = {
           city: string | null
           contact_email: string | null
           created_at: string
+          district: string | null
           first_name: string | null
           full_name: string | null
           gender: string | null
@@ -787,6 +788,7 @@ export type Database = {
           phone: string | null
           phone_verified: boolean
           pincode: string | null
+          state: string | null
           updated_at: string
           whatsapp: string | null
         }
@@ -799,6 +801,7 @@ export type Database = {
           city?: string | null
           contact_email?: string | null
           created_at?: string
+          district?: string | null
           first_name?: string | null
           full_name?: string | null
           gender?: string | null
@@ -811,6 +814,7 @@ export type Database = {
           phone?: string | null
           phone_verified?: boolean
           pincode?: string | null
+          state?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
@@ -823,6 +827,7 @@ export type Database = {
           city?: string | null
           contact_email?: string | null
           created_at?: string
+          district?: string | null
           first_name?: string | null
           full_name?: string | null
           gender?: string | null
@@ -835,6 +840,7 @@ export type Database = {
           phone?: string | null
           phone_verified?: boolean
           pincode?: string | null
+          state?: string | null
           updated_at?: string
           whatsapp?: string | null
         }

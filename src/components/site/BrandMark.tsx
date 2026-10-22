@@ -1,20 +1,20 @@
 import { cn } from "@/lib/utils";
-import wordmark from "@/assets/getxpress-wordmark.png.asset.json";
-import wordmarkLight from "@/assets/getxpress-wordmark-light.png";
+import logo from "@/assets/getxpress-logo.png.asset.json";
+import logoLight from "@/assets/getxpress-logo-light.png.asset.json";
 
 /**
- * Primary Get Xpress wordmark (orange X, navy letters).
- * `light` swaps in the white-lettered version for dark backgrounds.
+ * GetXpress wordmark (navy letters, orange X) on a transparent background.
+ * `light` swaps in white letters for dark surfaces so it never blends in.
  */
 export function BrandMark({ className, light = false }: { className?: string; light?: boolean }) {
   return (
-    <span className={cn("inline-flex w-44 items-center", className)}>
+    <span className={cn("inline-flex w-40 items-center", className)}>
       <img
-        src={light ? wordmarkLight : wordmark.url}
-        alt="Get Xpress"
-        width={1920}
-        height={640}
-        className="h-12 w-full object-contain"
+        src={light ? logoLight.url : logo.url}
+        alt="GetXpress"
+        width={1600}
+        height={356}
+        className="h-auto w-full object-contain"
       />
     </span>
   );
