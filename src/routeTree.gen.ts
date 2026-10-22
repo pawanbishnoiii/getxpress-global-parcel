@@ -20,8 +20,10 @@ import { Route as ShipRouteImport } from './routes/ship'
 import { Route as ShippingPolicyRouteImport } from './routes/shipping-policy'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrackRouteImport } from './routes/track'
+import { Route as AuthenticatedAddressCheckRouteImport } from './routes/_authenticated/address-check'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedApplicationsRouteImport } from './routes/_authenticated/applications'
+import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedBagsRouteImport } from './routes/_authenticated/bags'
 import { Route as AuthenticatedCommissionsRouteImport } from './routes/_authenticated/commissions'
 import { Route as AuthenticatedConsoleRouteImport } from './routes/_authenticated/console'
@@ -104,6 +106,12 @@ const TrackRoute = TrackRouteImport.update({
   path: '/track',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAddressCheckRoute =
+  AuthenticatedAddressCheckRouteImport.update({
+    id: '/address-check',
+    path: '/address-check',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -115,6 +123,11 @@ const AuthenticatedApplicationsRoute =
     path: '/applications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBagsRoute = AuthenticatedBagsRouteImport.update({
   id: '/bags',
   path: '/bags',
@@ -273,8 +286,10 @@ export interface FileRoutesByFullPath {
   '/shipping-policy': typeof ShippingPolicyRoute
   '/terms': typeof TermsRoute
   '/track': typeof TrackRoute
+  '/address-check': typeof AuthenticatedAddressCheckRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/applications': typeof AuthenticatedApplicationsRoute
+  '/audit': typeof AuthenticatedAuditRoute
   '/bags': typeof AuthenticatedBagsRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
   '/console': typeof AuthenticatedConsoleRoute
@@ -314,8 +329,10 @@ export interface FileRoutesByTo {
   '/shipping-policy': typeof ShippingPolicyRoute
   '/terms': typeof TermsRoute
   '/track': typeof TrackRoute
+  '/address-check': typeof AuthenticatedAddressCheckRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/applications': typeof AuthenticatedApplicationsRoute
+  '/audit': typeof AuthenticatedAuditRoute
   '/bags': typeof AuthenticatedBagsRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
   '/console': typeof AuthenticatedConsoleRoute
@@ -357,8 +374,10 @@ export interface FileRoutesById {
   '/shipping-policy': typeof ShippingPolicyRoute
   '/terms': typeof TermsRoute
   '/track': typeof TrackRoute
+  '/_authenticated/address-check': typeof AuthenticatedAddressCheckRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/applications': typeof AuthenticatedApplicationsRoute
+  '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/bags': typeof AuthenticatedBagsRoute
   '/_authenticated/commissions': typeof AuthenticatedCommissionsRoute
   '/_authenticated/console': typeof AuthenticatedConsoleRoute
@@ -400,8 +419,10 @@ export interface FileRouteTypes {
     | '/shipping-policy'
     | '/terms'
     | '/track'
+    | '/address-check'
     | '/analytics'
     | '/applications'
+    | '/audit'
     | '/bags'
     | '/commissions'
     | '/console'
@@ -441,8 +462,10 @@ export interface FileRouteTypes {
     | '/shipping-policy'
     | '/terms'
     | '/track'
+    | '/address-check'
     | '/analytics'
     | '/applications'
+    | '/audit'
     | '/bags'
     | '/commissions'
     | '/console'
@@ -483,8 +506,10 @@ export interface FileRouteTypes {
     | '/shipping-policy'
     | '/terms'
     | '/track'
+    | '/_authenticated/address-check'
     | '/_authenticated/analytics'
     | '/_authenticated/applications'
+    | '/_authenticated/audit'
     | '/_authenticated/bags'
     | '/_authenticated/commissions'
     | '/_authenticated/console'
@@ -610,6 +635,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/address-check': {
+      id: '/_authenticated/address-check'
+      path: '/address-check'
+      fullPath: '/address-check'
+      preLoaderRoute: typeof AuthenticatedAddressCheckRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/analytics': {
       id: '/_authenticated/analytics'
       path: '/analytics'
@@ -622,6 +654,13 @@ declare module '@tanstack/react-router' {
       path: '/applications'
       fullPath: '/applications'
       preLoaderRoute: typeof AuthenticatedApplicationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/audit': {
+      id: '/_authenticated/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuthenticatedAuditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/bags': {
@@ -817,8 +856,10 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAddressCheckRoute: typeof AuthenticatedAddressCheckRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedApplicationsRoute: typeof AuthenticatedApplicationsRoute
+  AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBagsRoute: typeof AuthenticatedBagsRoute
   AuthenticatedCommissionsRoute: typeof AuthenticatedCommissionsRoute
   AuthenticatedConsoleRoute: typeof AuthenticatedConsoleRoute
@@ -846,8 +887,10 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAddressCheckRoute: AuthenticatedAddressCheckRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedApplicationsRoute: AuthenticatedApplicationsRoute,
+  AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBagsRoute: AuthenticatedBagsRoute,
   AuthenticatedCommissionsRoute: AuthenticatedCommissionsRoute,
   AuthenticatedConsoleRoute: AuthenticatedConsoleRoute,
