@@ -26,7 +26,11 @@ export async function sendSmtp(to: string, subject: string, body: string, opts: 
   const log = (status: string, error?: string) =>
     supabaseAdmin.from("email_logs").insert({ to_email: to, subject, template_key: opts.templateKey ?? null, status, error: error ?? null });
   const password = (process.env["SMTP_PASSWORD"] ?? "").replace(/\s+/g, "");
-  if (!smtp?.enabled || !smtp.username || !password) {
+  const envUser = process.env["SMTP_USERNAME"];
+  // Until an admin saves the SMTP form, fall back to the server-stored Gmail account.
+  const username = smtp?.username || envUser;
+  const enabled = smtp?.username ? smtp.enabled : !!envUser;
+  if (!smtp || !enabled || !username || !password) {
     await log("skipped", "SMTP not enabled or credentials missing");
     return { sent: false, error: "SMTP is not enabled yet" };
   }
@@ -37,11 +41,11 @@ export async function sendSmtp(to: string, subject: string, body: string, opts: 
       port: smtp.port,
       secure: smtp.secure === "ssl",
       startTls: smtp.secure === "starttls",
-      credentials: { username: smtp.username, password },
+      credentials: { username, password },
       authType: "plain",
     });
     await mailer.send({
-      from: { name: smtp.from_name ?? company, email: smtp.from_email || smtp.username },
+      from: { name: smtp.from_name ?? company, email: smtp.from_email || username },
       to,
       subject,
       text: body,
