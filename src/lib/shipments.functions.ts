@@ -30,6 +30,7 @@ const input = z.object({
   dims: z.object({ l: z.number().min(1).max(300), w: z.number().min(1).max(300), h: z.number().min(1).max(300) }).optional(),
   is_fragile: z.boolean().default(false),
   has_electronics: z.boolean().default(false),
+  photos: z.array(z.string().url().max(500)).max(3).default([]),
 });
 
 async function resolveCoupon(code: string, userId: string, total: number) {
@@ -130,7 +131,7 @@ export const createShipment = createServerFn({ method: "POST" })
       pickup_lat: data.pickup?.lat ?? null, pickup_lng: data.pickup?.lng ?? null, dims: data.dims ?? null,
       sender_state:data.sender.state, receiver_state:data.receiver.state, sender_district:data.sender.district, receiver_district:data.receiver.district, sender_email:data.sender.email||null, receiver_email:data.receiver.email||null, policy_accepted_at:new Date().toISOString(),
       pieces_count: data.pieces.length, is_fragile: data.is_fragile, has_electronics: data.has_electronics, handling_fee: handling,
-      payment_method: data.payment_method,
+      payment_method: data.payment_method, parcel_photos: data.photos,
       payment_status: "pending",
       status: online ? "awaiting_payment" : "booked",
       origin_point_id: originPoint,
@@ -152,6 +153,11 @@ export const createShipment = createServerFn({ method: "POST" })
     if (pErr) throw new Error(pErr.message);
     await sb.from("tracking_events").insert({ shipment_id: row.id, status: row.status, location: data.sender.city, note: online ? "Awaiting online payment" : "Pickup requested" });
     const whatsapp = await notifyBooking({ id: row.id, awb: row.tracking_number, price: payable, sender: data.sender, receiver: data.receiver, fromCity: data.sender.city, toCity: data.receiver.city, pieces: data.pieces.length, userId: context.userId });
+    try {
+      const { sendTemplate } = await import("./email.functions");
+      const link = `${new URL(getRequest().url).origin}/track?awb=${row.tracking_number}`;
+      for (const p of [data.sender, data.receiver]) if (p.email) await sendTemplate("booking_confirmed", p.email, { name: p.name, tracking: row.tracking_number, link });
+    } catch (e) { console.error("booking email failed", e); }
     return { ...row, bill: { ...q, discount: cp?.discount ?? 0, payable, coupon: cp?.coupon.code ?? null }, whatsapp };
   });
 
