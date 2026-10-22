@@ -13,10 +13,10 @@ export type LabelShipment = {
 };
 export type LabelPiece = { piece_code: string; seq_no: number; total: number; weight_kg: number | null };
 
-async function code128(text: string) {
+async function code128(text: string, includetext = true) {
   const bwip = await import("bwip-js/browser");
   const canvas = document.createElement("canvas");
-  bwip.toCanvas(canvas, { bcid: "code128", text, scale: 3, height: 14, includetext: true, textxalign: "center" });
+  bwip.toCanvas(canvas, { bcid: "code128", text, scale: 3, height: 14, includetext, textxalign: "center" });
   return { url: canvas.toDataURL("image/png"), w: canvas.width, h: canvas.height };
 }
 async function qr(text: string) {
@@ -111,22 +111,49 @@ export function downloadBlob(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
-/** A4 sheet of barcode stickers (3×8 per page) for bulk seal / plastic-bag codes. */
-export async function buildCodeSheetPdf(codes: string[], title: string) {
+export type CodeStyle = "barcode" | "number" | "both" | "qr";
+export type CodeSheet = { id: string; label: string; page: [number, number]; cols: number; rows: number };
+export const CODE_SHEETS: CodeSheet[] = [
+  { id: "a4_24", label: "A4 · 24 stickers (3×8)", page: [210, 297], cols: 3, rows: 8 },
+  { id: "a4_40", label: "A4 · 40 small stickers (4×10)", page: [210, 297], cols: 4, rows: 10 },
+  { id: "roll_50x25", label: "Thermal roll 50×25 mm", page: [50, 25], cols: 1, rows: 1 },
+  { id: "roll_75x50", label: "Thermal roll 75×50 mm", page: [75, 50], cols: 1, rows: 1 },
+];
+
+/** Barcode sticker sheets for seal tags, plastic bags or any code. Style picks barcode, plain number, both or QR. */
+export async function buildCodeSheetPdf(codes: string[], title: string, opts: { style?: CodeStyle; sheet?: string } = {}) {
   const { jsPDF } = await import("jspdf");
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
-  const cols = 3, rows = 8, w = 66, h = 34, mx = 6, my = 12;
+  const style = opts.style ?? "both";
+  const S = CODE_SHEETS.find((x) => x.id === opts.sheet) ?? CODE_SHEETS[0]!;
+  const [pw, ph] = S.page;
+  const roll = S.cols * S.rows === 1;
+  const orient = pw > ph ? "landscape" : "portrait";
+  const doc = new jsPDF({ unit: "mm", format: [pw, ph], orientation: orient });
+  const mx = roll ? 1 : 6, my = roll ? 1 : 12;
+  const w = (pw - mx * 2) / S.cols, h = (ph - my - (roll ? 1 : 6)) / S.rows;
+  const per = S.cols * S.rows;
   for (let i = 0; i < codes.length; i++) {
-    const slot = i % (cols * rows);
-    if (i > 0 && slot === 0) doc.addPage();
-    if (slot === 0) { doc.setFontSize(8); doc.text(`${brand.name} · ${title}`, mx, 7); }
-    const x = mx + (slot % cols) * w, y = my + Math.floor(slot / cols) * h;
+    const slot = i % per;
+    if (i > 0 && slot === 0) doc.addPage([pw, ph], orient);
+    if (slot === 0 && !roll) { doc.setFontSize(8); doc.text(`${brand.name} · ${title}`, mx, 7); }
+    const x = mx + (slot % S.cols) * w, y = my + Math.floor(slot / S.cols) * h;
     const code = codes[i]!;
-    const b = await code128(code);
-    doc.setDrawColor(200); doc.rect(x + 1, y + 1, w - 2, h - 2);
-    const bw = w - 10, bh = Math.min(22, (bw * b.h) / b.w);
-    doc.addImage(b.url, "PNG", x + 5, y + 4, bw, bh);
-    doc.setFontSize(7); doc.text(title, x + w / 2, y + h - 3, { align: "center" });
+    if (!roll) { doc.setDrawColor(200); doc.rect(x + 0.5, y + 0.5, w - 1, h - 1); }
+    const pad = 2, small = Math.max(5, Math.min(8, h / 4));
+    if (style === "number") {
+      doc.setFont("courier", "bold"); doc.setFontSize(Math.min(18, w / (code.length * 0.45)));
+      doc.text(code, x + w / 2, y + h / 2 + 1, { align: "center" });
+    } else if (style === "qr") {
+      const s = Math.min(h - small - pad * 2, w - pad * 2);
+      doc.addImage(await qr(code), "PNG", x + (w - s) / 2, y + pad, s, s);
+      doc.setFont("courier", "bold"); doc.setFontSize(small); doc.text(code, x + w / 2, y + h - 1.5, { align: "center" });
+    } else {
+      const b = await code128(code, style === "both");
+      const bw = w - pad * 2, bh = Math.min(h - (style === "both" ? small : 0) - pad * 2, (bw * b.h) / b.w);
+      doc.addImage(b.url, "PNG", x + pad, y + pad, bw, bh);
+    }
+    doc.setFont("helvetica", "normal"); doc.setFontSize(Math.max(4, small - 2));
+    if (style !== "qr") doc.text(title, x + w / 2, y + h - 1.2, { align: "center" });
   }
   return doc.output("blob");
 }
