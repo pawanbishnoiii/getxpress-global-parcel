@@ -35,23 +35,30 @@ export async function sendSmtp(to: string, subject: string, body: string, opts: 
     return { sent: false, error: "SMTP is not enabled yet" };
   }
   try {
-    const { WorkerMailer } = await import("worker-mailer");
-    const mailer = await WorkerMailer.connect({
-      host: smtp.host,
-      port: smtp.port,
-      secure: smtp.secure === "ssl",
-      startTls: smtp.secure === "starttls",
-      credentials: { username, password },
-      authType: "plain",
-    });
-    await mailer.send({
-      from: { name: smtp.from_name ?? company, email: smtp.from_email || username },
-      to,
-      subject,
-      text: body,
-      html: brandedHtml(body, company, app?.logo_url, opts.image),
-    });
-    await mailer.close();
+    const from = { name: smtp.from_name ?? company, email: smtp.from_email || username };
+    const html = brandedHtml(body, company, app?.logo_url, opts.image);
+    let usedWorker = false;
+    try {
+      const { WorkerMailer } = await import("worker-mailer");
+      const mailer = await WorkerMailer.connect({
+        host: smtp.host,
+        port: smtp.port,
+        secure: smtp.secure === "ssl",
+        startTls: smtp.secure === "starttls",
+        credentials: { username, password },
+        authType: "plain",
+      });
+      usedWorker = true;
+      await mailer.send({ from, to, subject, text: body, html });
+      await mailer.close();
+    } catch (e) {
+      // Outside Cloudflare (preview/dev on Node) `cloudflare:sockets` is missing — use nodemailer instead.
+      if (usedWorker || !/cloudflare:sockets/.test(String((e as Error)?.message ?? e))) throw e;
+      const mod = "nodemailer";
+      const nm = (await import(/* @vite-ignore */ mod)) as typeof import("nodemailer");
+      const t = (nm.default ?? nm).createTransport({ host: smtp.host, port: smtp.port, secure: smtp.secure === "ssl", requireTLS: smtp.secure === "starttls", auth: { user: username, pass: password } });
+      await t.sendMail({ from: `"${from.name}" <${from.email}>`, to, subject, text: body, html });
+    }
     await log("sent");
     return { sent: true };
   } catch (e) {
