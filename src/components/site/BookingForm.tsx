@@ -8,13 +8,16 @@ import { Button } from "@/components/ui/button";
 import { PinAutocomplete } from "./PinAutocomplete";
 import { ParcelEditor, NumberField } from "./ParcelEditor";
 import { LocationPicker } from "./LocationPicker";
-import { initialDraft, readDraft, saveDraft, DRAFT_KEY, type BookingDraft } from "@/lib/booking-draft";
+import { composeAddress, initialDraft, readDraft, saveDraft, DRAFT_KEY, type BookingDraft } from "@/lib/booking-draft";
 import { quote, services, serviceAllowed, type ServiceLevel } from "@/lib/pricing";
 import { bookingConfigOptions } from "@/lib/booking-config";
 import { parcelPresetsOptions, handlingFee, DEFAULT_PRESETS } from "@/lib/parcel-presets";
 import { createShipment, previewCoupon } from "@/lib/shipments.functions";
 import { sendPhoneOtp } from "@/lib/otp.functions";
 import { pinInfo } from "@/lib/pin-lookup";
+import { postalLookup } from "@/lib/postal";
+import { INDIAN_STATES } from "@/lib/india-regions";
+import { Globe2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/use-session";
 
@@ -54,8 +57,12 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
   const checkParty = async (p: BookingDraft["sender"], who: string) => {
     if (p.name.trim().length < 2) { toast.error(`${who}: enter full name / पूरा नाम लिखें`); return false; }
     if (!/^[6-9]\d{9}$/.test(p.phone)) { toast.error(`${who}: enter a valid 10-digit mobile / सही मोबाइल नंबर`); return false; }
-    if (p.address.trim().length < 8) { toast.error(`${who}: enter house no, street, area / पूरा पता लिखें`); return false; }
-    if (!/^\d{6}$/.test(p.pincode)) { toast.error(`${who}: enter a 6-digit pincode / 6 अंकों का पिनकोड`); return false; }
+    if (p.house.trim().length < 1) { toast.error(`${who}: enter house / flat number`); return false; }
+    if (p.street.trim().length < 2) { toast.error(`${who}: enter street or colony`); return false; }
+    if (p.city.trim().length < 2) { toast.error(`${who}: enter city / town`); return false; }
+    if (!p.state) { toast.error(`${who}: select state`); return false; }
+    if (!/^\d{6}$/.test(p.pincode)) { toast.error(`${who}: enter a 6-digit PIN code`); return false; }
+    if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { toast.error(`${who}: email looks wrong`); return false; }
     return true;
   };
   const next = async () => {
@@ -84,7 +91,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
     if (otpCode.length !== 6) { toast.error("Enter the 6-digit OTP."); return; }
     setBusy(true);
     try {
-      const result = await create({ data: { service: d.service, sender: d.sender, receiver: d.receiver, pieces: d.pieces.map((x) => ({ weight_kg: x.weight_kg, dims: x.dims, box_preset: x.preset })), contents: d.contents, declared_value: d.declared_value, payment_method: d.payment_method, booking_otp: otpCode, is_fragile: d.is_fragile, has_electronics: d.has_electronics, ...(coupon ? { coupon_code: coupon.code } : {}), ...(d.sender.lat != null && d.sender.lng != null ? { pickup: { lat: d.sender.lat, lng: d.sender.lng } } : {}) } });
+      const result = await create({ data: { service: d.service, sender: { name: d.sender.name, phone: d.sender.phone, pincode: d.sender.pincode, city: d.sender.city, address: composeAddress(d.sender) }, receiver: { name: d.receiver.name, phone: d.receiver.phone, pincode: d.receiver.pincode, city: d.receiver.city, address: composeAddress(d.receiver) }, pieces: d.pieces.map((x) => ({ weight_kg: x.weight_kg, dims: x.dims, box_preset: x.preset })), contents: d.contents, declared_value: d.declared_value, payment_method: d.payment_method, booking_otp: otpCode, is_fragile: d.is_fragile, has_electronics: d.has_electronics, ...(coupon ? { coupon_code: coupon.code } : {}), ...(d.sender.lat != null && d.sender.lng != null ? { pickup: { lat: d.sender.lat, lng: d.sender.lng } } : {}) } });
       setOtp(null); setOtpCode(""); localStorage.removeItem(DRAFT_KEY); sessionStorage.removeItem(DRAFT_KEY); qc.invalidateQueries();
       if (result.status === "awaiting_payment") { navigate({ to: "/pay/$shipmentId", params: { shipmentId: result.id } }); return; }
       setDone(result as Done);
@@ -110,11 +117,11 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
     {!compact && <><div className="mb-6 grid grid-cols-4 gap-2">{titles.map((t, i) => <div key={t} className={`border-t-4 pt-2 text-xs font-bold ${i <= d.step ? "border-primary text-primary" : "text-muted-foreground"}`}>{i + 1}. <span className="hidden sm:inline">{t}</span></div>)}</div><h1 className="text-3xl font-bold">{titles[d.step]}</h1><p className="mb-6 text-sm text-muted-foreground">{titlesHi[d.step]}</p></>}
 
     {(compact || d.step < 2) && <div className={compact ? "grid gap-5 md:grid-cols-2" : ""}>{(compact ? (["sender", "receiver"] as const) : ([d.step === 0 ? "sender" : "receiver"] as const)).map((side) => <div key={side}>
-      <h3 className="mb-3 flex items-center gap-2 font-bold">{side === "sender" ? "From · भेजने वाला" : "To · पाने वाला"}<span className="text-xs font-normal text-muted-foreground">India</span></h3>
+      <h3 className="mb-3 flex items-center gap-2 font-bold">{side === "sender" ? "From · भेजने वाला" : "To · पाने वाला"}<span className="text-xs font-normal text-muted-foreground">India</span>{side === "sender" && !compact && <IntlButton />}</h3>
       {!compact && <PartyFields side={side} party={d[side]} onChange={(p) => update({ [side]: p })} />}
-      <PinAutocomplete label={side === "sender" ? "Pickup pincode / area · पिनकोड या इलाका" : "Delivery pincode / area · पिनकोड या इलाका"} value={d[side].pincode} city={d[side].city}
+      {compact && <PinAutocomplete label={side === "sender" ? "Pickup pincode / area · पिनकोड या इलाका" : "Delivery pincode / area · पिनकोड या इलाका"} value={d[side].pincode} city={d[side].city}
         onChange={(pincode) => { setD((x) => ({ ...x, [side]: { ...x[side], pincode, city: "" } })); if (/^\d{6}$/.test(pincode)) pinInfo(pincode).then((h) => { if (h) setD((x) => x[side].pincode === pincode ? { ...x, [side]: { ...x[side], city: h.city } } : x); }); }}
-        onPick={(p) => setD((x) => ({ ...x, [side]: { ...x[side], pincode: p.pincode, city: p.city, ...(p.lat != null ? { lat: p.lat, lng: p.lng } : {}) } }))} />
+        onPick={(p) => setD((x) => ({ ...x, [side]: { ...x[side], pincode: p.pincode, city: p.city, ...(p.lat != null ? { lat: p.lat, lng: p.lng } : {}) } }))} />}
     </div>)}</div>}
 
     {(compact || d.step === 2) && <div className="mt-6"><ParcelEditor pieces={d.pieces} presets={presets} onChange={(pieces) => update({ pieces })} />
@@ -197,12 +204,42 @@ function BookingDone({ done, draftPieces }: { done: Done; draftPieces: number })
 
 function TextField({ label, hi, value, onChange, inputMode }: { label: string; hi?: string; value: string; onChange: (v: string) => void; inputMode?: "numeric" | "text" }) { return <label className="block"><span className="mb-1 block text-xs font-semibold text-muted-foreground">{label}{hi && <Hi>{hi}</Hi>}</span><input aria-label={label} inputMode={inputMode} value={value} onChange={(e) => onChange(e.target.value)} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus:ring-2 focus:ring-ring" /></label>; }
 
+function IntlButton() {
+  const [open, setOpen] = useState(false), [country, setCountry] = useState("");
+  return <span className="ml-auto inline-flex items-center gap-2 text-xs font-normal">
+    <Button type="button" size="sm" variant={open ? "default" : "outline"} onClick={() => setOpen(!open)}><Globe2 className="h-4 w-4" />International</Button>
+    {open && <span className="flex items-center gap-2"><input aria-label="Destination country" value={country} onChange={(e) => setCountry(e.target.value.slice(0, 60))} placeholder="Destination country" className="h-9 w-40 rounded-md border bg-background px-2" />
+      <Button type="button" size="sm" asChild><a href={`https://wa.me/?text=${encodeURIComponent(`GetXpress international quote request to ${country || "(country)"}`)}`} target="_blank" rel="noreferrer">Get quote</a></Button></span>}
+  </span>;
+}
+
 function PartyFields({ side, party: p, onChange }: { side: "sender" | "receiver"; party: BookingDraft["sender"]; onChange: (p: BookingDraft["sender"]) => void }) {
-  const [map, setMap] = useState(false);
+  const [map, setMap] = useState(false), [pinState, setPinState] = useState<"idle" | "loading" | "ok" | "miss">("idle");
+  const who = side === "sender" ? "Sender" : "Receiver";
+  const setPin = async (raw: string) => {
+    const pincode = raw.replace(/\D/g, "").slice(0, 6); onChange({ ...p, pincode });
+    if (pincode.length !== 6) { setPinState("idle"); return; }
+    setPinState("loading");
+    const [post, master] = await Promise.all([postalLookup(pincode), pinInfo(pincode).catch(() => null)]);
+    if (!post && !master) { setPinState("miss"); return; }
+    setPinState("ok");
+    onChange({ ...p, pincode, district: post?.district ?? p.district, state: post?.state ?? p.state, city: p.city || post?.city || master?.city || "" });
+  };
   return <div className="mb-4 space-y-4">
-    <div className="grid gap-3 sm:grid-cols-2"><TextField label="Full name" hi={side === "sender" ? "भेजने वाले का नाम" : "पाने वाले का नाम"} value={p.name} onChange={(name) => onChange({ ...p, name })} /><TextField label="Mobile number (WhatsApp)" hi="इस नंबर पर ऑर्डर की जानकारी आएगी" inputMode="numeric" value={p.phone} onChange={(phone) => onChange({ ...p, phone: phone.replace(/\D/g, "").slice(0, 10) })} /></div>
-    <TextField label="Full address" hi="मकान नंबर, गली, इलाका, लैंडमार्क" value={p.address} onChange={(address) => onChange({ ...p, address })} />
-    <div><Button type="button" variant="outline" size="sm" onClick={() => setMap(!map)}><MapIcon className="h-4 w-4" />{map ? "Hide map" : "Pick on map · मैप पर चुनें"}</Button>{p.lat != null && !map && <span className="ml-2 text-xs text-primary">Location pinned ✓</span>}</div>
-    {map && <LocationPicker point={p.lat != null && p.lng != null ? { lat: p.lat, lng: p.lng } : null} onResolve={async (h) => { const pin = h.pincode ? await pinInfo(h.pincode) : null; onChange({ ...p, lat: h.lat, lng: h.lng, address: p.address || h.label, ...(h.pincode ? { pincode: h.pincode, city: pin?.city ?? p.city } : {}) }); }} />}
+    <div className="grid gap-3 sm:grid-cols-2"><TextField label={`${who} full name`} value={p.name} onChange={(name) => onChange({ ...p, name })} /><TextField label="Mobile (WhatsApp)" hi="Order updates and tracking link go here" inputMode="numeric" value={p.phone} onChange={(phone) => onChange({ ...p, phone: phone.replace(/\D/g, "").slice(0, 10) })} /></div>
+    <TextField label="Email (optional)" value={p.email} onChange={(email) => onChange({ ...p, email: email.trim().slice(0, 120) })} />
+    <div className="grid gap-3 sm:grid-cols-2">
+      <TextField label="House / flat no." value={p.house} onChange={(house) => onChange({ ...p, house: house.slice(0, 80) })} />
+      <TextField label="Street / colony" value={p.street} onChange={(street) => onChange({ ...p, street: street.slice(0, 120) })} />
+      <TextField label="City / town" value={p.city} onChange={(city) => onChange({ ...p, city: city.slice(0, 80) })} />
+      <TextField label="Nearby landmark" hi="Helps the rider find you" value={p.landmark} onChange={(landmark) => onChange({ ...p, landmark: landmark.slice(0, 80) })} />
+      <div><TextField label="6-digit PIN code" inputMode="numeric" value={p.pincode} onChange={setPin} />
+        <p className="mt-1 text-xs">{pinState === "loading" ? <span className="text-muted-foreground">Looking up PIN…</span> : pinState === "ok" ? <span className="text-primary">District: {p.district || "—"} ✓</span> : pinState === "miss" ? <span className="text-destructive">PIN not found — please check it</span> : null}</p></div>
+      <label className="block"><span className="mb-1 block text-xs font-semibold">State</span>
+        <select aria-label={`${who} state`} value={p.state} onChange={(e) => onChange({ ...p, state: e.target.value })} className="h-11 w-full rounded-md border bg-background px-3"><option value="">Select state</option>{INDIAN_STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
+    </div>
+    {(p.house || p.street) && <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">{composeAddress(p)}</p>}
+    <div><Button type="button" variant="outline" size="sm" onClick={() => setMap(!map)}><MapIcon className="h-4 w-4" />{map ? "Hide map" : "View on map"}</Button>{p.lat != null && !map && <span className="ml-2 text-xs text-primary">Location pinned ✓</span>}</div>
+    {map && <LocationPicker point={p.lat != null && p.lng != null ? { lat: p.lat, lng: p.lng } : null} onResolve={(h) => { onChange({ ...p, lat: h.lat, lng: h.lng }); if (h.pincode && !p.pincode) void setPin(h.pincode); }} />}
   </div>;
 }
