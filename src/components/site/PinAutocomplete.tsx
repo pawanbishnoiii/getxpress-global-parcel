@@ -29,7 +29,7 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
     return () => { clearTimeout(t); seq.current++; };
   }, [text, open]);
 
-  const pick = (h: PinHit) => { setText(h.pincode); onChange(h.pincode); onPick(h); setOpen(false); };
+  const pick = (h: PinHit) => { setText(h.pincode); onPick(h); setOpen(false); };
   const ok = /^\d{6}$/.test(value) && !!city;
 
   return (

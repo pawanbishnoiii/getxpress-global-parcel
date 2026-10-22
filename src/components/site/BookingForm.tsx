@@ -82,6 +82,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
 
   const confirm = async () => {
     if (!q || !config) return;
+    if(!await checkParty(d.sender,"Sender") || !await checkParty(d.receiver,"Receiver")) return;
     const declaration=shippingDeclaration.safeParse(d); if(!declaration.success){toast.error(declaration.error.issues[0]?.message ?? "Accept shipping policies");return;}
     if (!serviceAllowed(d.service, d.sender.city, d.receiver.city, config.rates)) { toast.error("Choose an available delivery service."); return; }
     if (!user) { sessionStorage.setItem("dbx_after_auth", "/users/addorder"); navigate({ to: "/auth", search: { redirect: "/users/addorder" } }); return; }
@@ -229,7 +230,7 @@ function PartyFields({ side, party: p, onChange }: { side: "sender" | "receiver"
     <div className="grid gap-3 sm:grid-cols-2"><TextField label={`${who} full name`} value={p.name} onChange={(name) => onChange({ ...p, name })} /><TextField label={`${who} WhatsApp mobile`} inputMode="numeric" value={p.phone} onChange={(phone) => onChange({ ...p, phone: phone.replace(/\D/g, "").slice(0, 10) })} /></div>
     <TextField label="Email (optional)" value={p.email} onChange={(email) => onChange({ ...p, email: email.trim().slice(0, 120) })} />
     <div className="grid gap-3 sm:grid-cols-2"><RegionFields prefix={who} state={p.state} district={p.district} onChange={(state,district)=>onChange({...p,state,district})}/></div>
-    <PinAutocomplete label={`${who} PIN / city / locality`} value={p.pincode} city={p.city} onChange={setPin} onPick={h=>{onChange({...current.current,pincode:h.pincode,city:h.city,state:h.state||current.current.state,district:h.zone||current.current.district,...(h.lat!=null?{lat:h.lat,lng:h.lng}:{})});void setPin(h.pincode);}}/>
+    <PinAutocomplete label={`${who} PIN / city / locality`} value={p.pincode} city={p.city} onChange={setPin} onPick={async h=>{const post=await postalLookup(h.pincode);setAreas(post?.areas??[]);setPinState(post?"ok":"idle");onChange({...current.current,pincode:h.pincode,city:h.city,state:post?.state||h.state||current.current.state,district:post?.district||h.zone||current.current.district,...(h.lat!=null?{lat:h.lat,lng:h.lng}:{})});}}/>
     <p aria-live="polite" className="text-xs text-muted-foreground">{pinState==="loading"?"Looking up postal areas…":pinState==="miss"?"Postal lookup unavailable. Keep your PIN and enter city, state and district.":pinState==="ok"?`Postal areas: ${areas.slice(0,5).join(', ')}${areas.length>5?'…':''}`:""}</p>
     <div className="grid gap-3 sm:grid-cols-2">
       <TextField label="House / flat no." value={p.house} onChange={(house) => onChange({ ...p, house: house.slice(0, 80) })} />

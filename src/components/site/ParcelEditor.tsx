@@ -11,7 +11,7 @@ import imgFlyer from "@/assets/parcel-flyer.webp";
 import imgCard from "@/assets/parcel-card.webp";
 import imgA4 from "@/assets/parcel-a4.webp";
 import imgPack from "@/assets/parcel-docpack.webp";
-const PRESET_IMG: Record<string, string> = { small: imgSmall, medium: imgMedium, large: imgLarge, extra_large: imgXl, document: imgFlyer, card: imgCard, a4: imgA4, document_pack: imgPack };
+const PRESET_IMG: Record<string, string> = { small: imgSmall, medium: imgMedium, large: imgLarge, extra_large: imgXl, xl: imgXl, document: imgFlyer, card: imgCard, a4: imgA4, document_pack: imgPack };
 export function ParcelEditor({ pieces, onChange, presets=DEFAULT_PRESETS }: { pieces:BookingDraft["pieces"]; presets?: ParcelPreset[]; onChange:(pieces:BookingDraft["pieces"])=>void }) {
   const sizes=presets.filter(p=>p.active&&(p.kind==="documents"||p.kind==="packages")).map(p=>({id:p.id,label:p.label,kind:p.kind,maxKg:p.max_kg,dims:{l:p.l,w:p.w,h:p.h}}));
   const update=(i:number,p:Partial<BookingDraft["pieces"][number]>)=>onChange(pieces.map((x,j)=>j===i?{...x,...p}:x));
