@@ -28,7 +28,9 @@ async function uploadImage(file: File) {
   const path = `${crypto.randomUUID()}-${file.name.replace(/[^\w.]/g, "")}`;
   const r = await supabase.storage.from("brand-assets").upload(path, file, { contentType: file.type });
   if (r.error) throw r.error;
-  return supabase.storage.from("brand-assets").getPublicUrl(path).data.publicUrl;
+  const signed = await supabase.storage.from("brand-assets").createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+  if (signed.error) throw signed.error;
+  return signed.data.signedUrl;
 }
 
 function Company() {

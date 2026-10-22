@@ -50,6 +50,13 @@
       "when": 1792648724854,
       "tag": "0006_parcel_photo_policies_hub_debit",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792648858108,
+      "tag": "0007_brand_assets_policies",
+      "breakpoints": true
     }
   ]
 }

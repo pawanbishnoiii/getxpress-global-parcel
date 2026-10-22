@@ -1,0 +1,2 @@
+CREATE POLICY "admin brand upload" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id='brand-assets' AND public.has_role(auth.uid(),'admin'));
+CREATE POLICY "brand read" ON storage.objects FOR SELECT TO authenticated USING (bucket_id='brand-assets');
