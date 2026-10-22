@@ -94,7 +94,7 @@ export const createShipment = createServerFn({ method: "POST" })
     // Team (state) prices set by the pickup state's managers override the national rate.
       const { data: teamRows } = await sb.from("state_rates").select("*").eq("state", from.state);
     for (const r of teamRows ?? []) rates[r.service as ServiceLevel] = { base: Number(r.base), perKg: Number(r.per_kg), active: r.active };
-    if(!serviceAllowed(data.service,from.city,to.city,rates)) throw new Error("This service is unavailable for the selected cities.");
+    if(!serviceAllowed(data.service,data.sender.city,data.receiver.city,rates)) throw new Error("This service is unavailable for the selected cities.");
     if(data.payment_method==="cash_on_pickup" && settings && !settings.cash_on_pickup) throw new Error("Pay at pickup is currently disabled.");
     const totalKg = data.pieces.reduce((a, p) => a + p.weight_kg, 0);
     const { handlingFee, DEFAULT_PRESETS } = await import("./parcel-presets");
@@ -118,15 +118,17 @@ export const createShipment = createServerFn({ method: "POST" })
     const { data: awb, error: awbErr } = await sb.rpc("next_awb");
     if (awbErr || !awb) throw new Error("Could not allocate AWB.");
     const online = data.payment_method === "online";
+    await verifyBookingOtp();
     const { data: row, error } = await sb.from("shipments").insert({
       tracking_number: awb,
       user_id: context.userId,
       service: data.service,
-      sender_name: data.sender.name, sender_phone: data.sender.phone, sender_address: data.sender.address, sender_pincode: data.sender.pincode, sender_city: from.city,
-      receiver_name: data.receiver.name, receiver_phone: data.receiver.phone, receiver_address: data.receiver.address, receiver_pincode: data.receiver.pincode, receiver_city: to.city,
+      sender_name: data.sender.name, sender_phone: data.sender.phone, sender_address: data.sender.address, sender_pincode: data.sender.pincode, sender_city: data.sender.city,
+      receiver_name: data.receiver.name, receiver_phone: data.receiver.phone, receiver_address: data.receiver.address, receiver_pincode: data.receiver.pincode, receiver_city: data.receiver.city,
       weight_kg: q.weight, contents: data.contents ?? null, declared_value: data.declared_value, price: payable,
       coupon_code: cp?.coupon.code ?? null, discount: cp?.discount ?? 0,
       pickup_lat: data.pickup?.lat ?? null, pickup_lng: data.pickup?.lng ?? null, dims: data.dims ?? null,
+      sender_state:data.sender.state, receiver_state:data.receiver.state, sender_district:data.sender.district, receiver_district:data.receiver.district, sender_email:data.sender.email||null, receiver_email:data.receiver.email||null, policy_accepted_at:new Date().toISOString(),
       pieces_count: data.pieces.length, is_fragile: data.is_fragile, has_electronics: data.has_electronics, handling_fee: handling,
       payment_method: data.payment_method,
       payment_status: "pending",
@@ -149,7 +151,7 @@ export const createShipment = createServerFn({ method: "POST" })
     const { error: pErr } = await sb.from("shipment_pieces").insert(pieceRows);
     if (pErr) throw new Error(pErr.message);
     await sb.from("tracking_events").insert({ shipment_id: row.id, status: row.status, location: data.sender.city, note: online ? "Awaiting online payment" : "Pickup requested" });
-    const whatsapp = await notifyBooking({ id: row.id, awb: row.tracking_number, price: payable, sender: data.sender, receiver: data.receiver, fromCity: from.city, toCity: to.city, pieces: data.pieces.length, userId: context.userId });
+    const whatsapp = await notifyBooking({ id: row.id, awb: row.tracking_number, price: payable, sender: data.sender, receiver: data.receiver, fromCity: data.sender.city, toCity: data.receiver.city, pieces: data.pieces.length, userId: context.userId });
     return { ...row, bill: { ...q, discount: cp?.discount ?? 0, payable, coupon: cp?.coupon.code ?? null }, whatsapp };
   });
 

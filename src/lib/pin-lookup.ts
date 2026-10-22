@@ -23,7 +23,7 @@ export async function lookupPins(raw:string):Promise<PinHit[]> {
     return places.flatMap(p=>p.pincode&&/^\d{6}$/.test(p.pincode)?[{pincode:p.pincode,city:p.city||p.label.split(',')[0]||'',state:p.state||'',source:'map' as const,lat:p.lat,lng:p.lng,label:p.label}]:[]);
   };
   const postal=async():Promise<PinHit[]>=>{if(!/^\d{6}$/.test(q))return [];const p=await postalLookup(q);return p?[{pincode:p.pincode,city:p.city,state:p.state,zone:p.district,source:'master'}]:[];};
-   const local=(await directorySearch(q)).map(r=>({...r,source:'master' as const}));
+   const local=(await directorySearch(q)).map(r=>({...r,zone:r.district,source:'master' as const}));
    if(local.length) return local;
    const [m,b]=await Promise.all([master().catch(()=>[]),maps().catch(()=>[])]);
    const a=m.length?m:await postal();

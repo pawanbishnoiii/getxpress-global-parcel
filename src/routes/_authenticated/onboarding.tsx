@@ -1,3 +1,5 @@
+import { RegionFields } from '@/components/site/RegionFields';
+import { PinAutocomplete } from '@/components/site/PinAutocomplete';
 import { postalLookup } from '@/lib/postal';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -40,7 +42,7 @@ function Onboarding() {
       first_name: p.first_name ?? p.full_name?.split(' ')[0] ?? '', last_name: p.last_name ?? p.full_name?.split(' ').slice(1).join(' ') ?? '',
       age: String(p.age ?? ''), gender: p.gender ?? '',
       contact_email: [p.contact_email, authEmail].find((e) => e && !isSyntheticEmail(e)) ?? '',
-      phone: p.phone?.replace(/^\+91/, '') ?? '', whatsapp: p.whatsapp?.replace(/^\+91/, '') ?? '',
+      phone: p.phone?.replace(/^\+91/, '') ?? '', whatsapp: (p.whatsapp || p.phone)?.replace(/^\+91/, '') ?? '',
       state: p.state ?? '', district: p.district ?? p.city ?? '', city: p.city ?? '', pincode: p.pincode ?? '',
     });
   }, [p, data?.user.email]);
@@ -54,7 +56,7 @@ function Onboarding() {
   const next = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSyntheticEmail(f.contact_email)) { toast.error('Please enter your real email address'); return; }
-    if (!f.state || f.district.trim().length < 2) { toast.error('Enter your pincode, or select state and district'); return; }
+    if (!f.state || f.district.trim().length < 2) { toast.error('Select state and district'); return; }
     if (f.pincode && !/^\d{6}$/.test(f.pincode)) { toast.error('Pincode must be 6 digits'); return; }
     const result = contactSchema.safeParse(f);
     if (!result.success) { toast.error(result.error.issues[0]?.message ?? 'Check your details'); return; }
@@ -65,8 +67,8 @@ function Onboarding() {
       if (r.verified) await done(); else setStep(2);
     } catch (e) { toast.error(friendly(e)); } finally { setBusy(false); }
   };
-  const complete = async () => { if (!f.state || f.district.trim().length < 2) { setStep(1); toast.error('Enter your pincode, or select state and district'); return; } setBusy(true); try { await done(); } catch (e) { toast.error(friendly(e)); } finally { setBusy(false); } };
-  const onPin = async (v: string) => { const pin = v.replace(/\D/g, '').slice(0, 6); setF((x) => ({ ...x, pincode: pin })); if (pin.length !== 6) return; setPinBusy(true); const r = await postalLookup(pin); setPinBusy(false); if (!r) { toast.error('Pincode not found — select state and district manually'); return; } setAreas(r.areas); setF((x) => ({ ...x, state: INDIAN_STATES.find((s) => s.toLowerCase() === r.state.toLowerCase()) ?? r.state, district: r.district, city: r.city })); };
+  const complete = async () => { if (!f.state || f.district.trim().length < 2) { setStep(1); toast.error('Select state and district'); return; } setBusy(true); try { await done(); } catch (e) { toast.error(friendly(e)); } finally { setBusy(false); } };
+  const onPin = async (v: string) => { const pin = v.replace(/\D/g, '').slice(0, 6); setF((x) => ({ ...x, pincode: pin })); if (pin.length !== 6) return; setPinBusy(true); const r = await postalLookup(pin); setPinBusy(false); if (!r) return; setAreas(r.areas); setF((x) => ({ ...x, state: INDIAN_STATES.find((s) => s.toLowerCase() === r.state.toLowerCase()) ?? r.state, district: r.district, city: r.city })); };
   const input = 'mt-1 h-12 w-full min-w-0 rounded-md border bg-card px-3';
   const steps = verified ? ['Personal details'] : ['Personal details', 'Verify phone'];
 
@@ -89,10 +91,9 @@ function Onboarding() {
             ) : (
               <label className='text-sm font-semibold'>Phone number<div className='relative'><span className='absolute left-3 top-5 text-muted-foreground'>+91</span><input inputMode='numeric' maxLength={10} value={f.phone} onChange={(e) => set('phone')(e.target.value.replace(/\D/g, ''))} className={`${input} pl-12`} /></div></label>
             )}
-            <label className='text-sm font-semibold'>WhatsApp number (optional)<div className='relative'><span className='absolute left-3 top-5 text-muted-foreground'>+91</span><input inputMode='numeric' maxLength={10} value={f.whatsapp} onChange={(e) => set('whatsapp')(e.target.value.replace(/\D/g, ''))} className={`${input} pl-12`} /></div></label>
-            <label className='text-sm font-semibold sm:col-span-2'>Pincode (fills state, district & city)<div className='relative'><input inputMode='numeric' maxLength={6} value={f.pincode} onChange={(e) => onPin(e.target.value)} placeholder='e.g. 302001' className={input} />{pinBusy && <Loader2 className='absolute right-3 top-5 h-4 w-4 animate-spin' />}</div></label>
-            <label className='text-sm font-semibold'>State<select required value={f.state} onChange={(e) => set('state')(e.target.value)} className={input}><option value=''>Select state</option>{INDIAN_STATES.map((s) => <option key={s}>{s}</option>)}{f.state && !(INDIAN_STATES as readonly string[]).includes(f.state) && <option>{f.state}</option>}</select></label>
-            <label className='text-sm font-semibold'>District<input required maxLength={80} value={f.district} onChange={(e) => set('district')(e.target.value)} placeholder='e.g. Jaipur' className={input} /></label>
+            <label className='text-sm font-semibold'>WhatsApp number<div className='relative'><span className='absolute left-3 top-5 text-muted-foreground'>+91</span><input inputMode='numeric' maxLength={10} value={f.whatsapp} onChange={(e) => set('whatsapp')(e.target.value.replace(/\D/g, ''))} className={`${input} pl-12`} /></div></label>
+            <RegionFields prefix="Profile" state={f.state} district={f.district} onChange={(state,district)=>setF(x=>({...x,state,district}))}/>
+            <div className="sm:col-span-2"><PinAutocomplete label="Find city / locality or PIN (optional)" value={f.pincode} city={f.city} onChange={onPin} onPick={h=>setF(x=>({...x,pincode:h.pincode,state:h.state||x.state,district:h.zone||x.district,city:h.city}))}/></div>
             <label className='text-sm font-semibold sm:col-span-2'>City / town<input list='ob-areas' maxLength={80} value={f.city} onChange={(e) => set('city')(e.target.value)} placeholder='e.g. Sanganer' className={input} /><datalist id='ob-areas'>{areas.map((a) => <option key={a} value={a} />)}</datalist></label>
             <Button disabled={busy} type='submit' className='mt-2 h-12 sm:col-span-2'>{busy ? <Loader2 className='animate-spin' /> : verified ? <Check /> : <ArrowRight />}{verified ? 'Finish setup' : 'Continue'}</Button>
           </form>
