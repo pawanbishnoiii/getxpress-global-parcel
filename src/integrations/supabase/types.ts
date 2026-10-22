@@ -1584,6 +1584,42 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_withdrawals: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          created_at: string
+          id: string
+          payout_details: string
+          payout_method: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          payout_details: string
+          payout_method: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          payout_details?: string
+          payout_method?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       whatsapp_settings: {
         Row: {
           api_key: string | null
