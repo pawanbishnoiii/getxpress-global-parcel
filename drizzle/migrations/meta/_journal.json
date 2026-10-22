@@ -1,41 +1,5 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1792636824440,
-      "tag": "0000_profile_region_and_audit_triggers",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1792637037501,
-      "tag": "0001_audit_logs_realtime",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1792639749167,
-      "tag": "0002_parcel_presets_handling_visibility",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1792645022039,
-      "tag": "0003_shipping_consent_and_international_quotes",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1792646507633,
-      "tag": "0004_gateway_configs",
-      "breakpoints": true
-    }
-  ]
+  "entries": []
 }
