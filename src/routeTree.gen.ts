@@ -45,9 +45,17 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedTeamPricesRouteImport } from './routes/_authenticated/team-prices'
 import { Route as AuthenticatedVerifyPhoneRouteImport } from './routes/_authenticated/verify-phone'
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 import { Route as AuthenticatedAdminBarcodeRouteImport } from './routes/_authenticated/admin.barcode'
+import { Route as AuthenticatedAdminCommissionsRouteImport } from './routes/_authenticated/admin.commissions'
 import { Route as AuthenticatedAdminCompanyRouteImport } from './routes/_authenticated/admin.company'
+import { Route as AuthenticatedAdminConsoleRouteImport } from './routes/_authenticated/admin.console'
+import { Route as AuthenticatedAdminCouponsRouteImport } from './routes/_authenticated/admin.coupons'
+import { Route as AuthenticatedAdminDiagnosticsRouteImport } from './routes/_authenticated/admin.diagnostics'
+import { Route as AuthenticatedAdminPincodesRouteImport } from './routes/_authenticated/admin.pincodes'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminSmtpRouteImport } from './routes/_authenticated/admin.smtp'
+import { Route as AuthenticatedAdminTeamRouteImport } from './routes/_authenticated/admin.team'
 import { Route as AuthenticatedLabelsShipmentIdRouteImport } from './routes/_authenticated/labels.$shipmentId'
 import { Route as AuthenticatedPayShipmentIdRouteImport } from './routes/_authenticated/pay.$shipmentId'
 import { Route as AuthenticatedUsersAddorderRouteImport } from './routes/_authenticated/users.addorder'
@@ -244,10 +252,21 @@ const AuthenticatedWalletRoute = AuthenticatedWalletRouteImport.update({
   path: '/wallet',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/admin/audit',
+  path: '/admin/audit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminBarcodeRoute =
   AuthenticatedAdminBarcodeRouteImport.update({
     id: '/admin/barcode',
     path: '/admin/barcode',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminCommissionsRoute =
+  AuthenticatedAdminCommissionsRouteImport.update({
+    id: '/admin/commissions',
+    path: '/admin/commissions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminCompanyRoute =
@@ -256,9 +275,44 @@ const AuthenticatedAdminCompanyRoute =
     path: '/admin/company',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminConsoleRoute =
+  AuthenticatedAdminConsoleRouteImport.update({
+    id: '/admin/console',
+    path: '/admin/console',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminCouponsRoute =
+  AuthenticatedAdminCouponsRouteImport.update({
+    id: '/admin/coupons',
+    path: '/admin/coupons',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminDiagnosticsRoute =
+  AuthenticatedAdminDiagnosticsRouteImport.update({
+    id: '/admin/diagnostics',
+    path: '/admin/diagnostics',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminPincodesRoute =
+  AuthenticatedAdminPincodesRouteImport.update({
+    id: '/admin/pincodes',
+    path: '/admin/pincodes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/admin/settings',
+    path: '/admin/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminSmtpRoute = AuthenticatedAdminSmtpRouteImport.update({
   id: '/admin/smtp',
   path: '/admin/smtp',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminTeamRoute = AuthenticatedAdminTeamRouteImport.update({
+  id: '/admin/team',
+  path: '/admin/team',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLabelsShipmentIdRoute =
@@ -356,9 +410,17 @@ export interface FileRoutesByFullPath {
   '/team-prices': typeof AuthenticatedTeamPricesRoute
   '/verify-phone': typeof AuthenticatedVerifyPhoneRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/barcode': typeof AuthenticatedAdminBarcodeRoute
+  '/admin/commissions': typeof AuthenticatedAdminCommissionsRoute
   '/admin/company': typeof AuthenticatedAdminCompanyRoute
+  '/admin/console': typeof AuthenticatedAdminConsoleRoute
+  '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
+  '/admin/diagnostics': typeof AuthenticatedAdminDiagnosticsRoute
+  '/admin/pincodes': typeof AuthenticatedAdminPincodesRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/smtp': typeof AuthenticatedAdminSmtpRoute
+  '/admin/team': typeof AuthenticatedAdminTeamRoute
   '/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
   '/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
   '/users/addorder': typeof AuthenticatedUsersAddorderRoute
@@ -406,9 +468,17 @@ export interface FileRoutesByTo {
   '/team-prices': typeof AuthenticatedTeamPricesRoute
   '/verify-phone': typeof AuthenticatedVerifyPhoneRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/barcode': typeof AuthenticatedAdminBarcodeRoute
+  '/admin/commissions': typeof AuthenticatedAdminCommissionsRoute
   '/admin/company': typeof AuthenticatedAdminCompanyRoute
+  '/admin/console': typeof AuthenticatedAdminConsoleRoute
+  '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
+  '/admin/diagnostics': typeof AuthenticatedAdminDiagnosticsRoute
+  '/admin/pincodes': typeof AuthenticatedAdminPincodesRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/smtp': typeof AuthenticatedAdminSmtpRoute
+  '/admin/team': typeof AuthenticatedAdminTeamRoute
   '/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
   '/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
   '/users/addorder': typeof AuthenticatedUsersAddorderRoute
@@ -458,9 +528,17 @@ export interface FileRoutesById {
   '/_authenticated/team-prices': typeof AuthenticatedTeamPricesRoute
   '/_authenticated/verify-phone': typeof AuthenticatedVerifyPhoneRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/barcode': typeof AuthenticatedAdminBarcodeRoute
+  '/_authenticated/admin/commissions': typeof AuthenticatedAdminCommissionsRoute
   '/_authenticated/admin/company': typeof AuthenticatedAdminCompanyRoute
+  '/_authenticated/admin/console': typeof AuthenticatedAdminConsoleRoute
+  '/_authenticated/admin/coupons': typeof AuthenticatedAdminCouponsRoute
+  '/_authenticated/admin/diagnostics': typeof AuthenticatedAdminDiagnosticsRoute
+  '/_authenticated/admin/pincodes': typeof AuthenticatedAdminPincodesRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/smtp': typeof AuthenticatedAdminSmtpRoute
+  '/_authenticated/admin/team': typeof AuthenticatedAdminTeamRoute
   '/_authenticated/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
   '/_authenticated/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
   '/_authenticated/users/addorder': typeof AuthenticatedUsersAddorderRoute
@@ -510,9 +588,17 @@ export interface FileRouteTypes {
     | '/team-prices'
     | '/verify-phone'
     | '/wallet'
+    | '/admin/audit'
     | '/admin/barcode'
+    | '/admin/commissions'
     | '/admin/company'
+    | '/admin/console'
+    | '/admin/coupons'
+    | '/admin/diagnostics'
+    | '/admin/pincodes'
+    | '/admin/settings'
     | '/admin/smtp'
+    | '/admin/team'
     | '/labels/$shipmentId'
     | '/pay/$shipmentId'
     | '/users/addorder'
@@ -560,9 +646,17 @@ export interface FileRouteTypes {
     | '/team-prices'
     | '/verify-phone'
     | '/wallet'
+    | '/admin/audit'
     | '/admin/barcode'
+    | '/admin/commissions'
     | '/admin/company'
+    | '/admin/console'
+    | '/admin/coupons'
+    | '/admin/diagnostics'
+    | '/admin/pincodes'
+    | '/admin/settings'
     | '/admin/smtp'
+    | '/admin/team'
     | '/labels/$shipmentId'
     | '/pay/$shipmentId'
     | '/users/addorder'
@@ -611,9 +705,17 @@ export interface FileRouteTypes {
     | '/_authenticated/team-prices'
     | '/_authenticated/verify-phone'
     | '/_authenticated/wallet'
+    | '/_authenticated/admin/audit'
     | '/_authenticated/admin/barcode'
+    | '/_authenticated/admin/commissions'
     | '/_authenticated/admin/company'
+    | '/_authenticated/admin/console'
+    | '/_authenticated/admin/coupons'
+    | '/_authenticated/admin/diagnostics'
+    | '/_authenticated/admin/pincodes'
+    | '/_authenticated/admin/settings'
     | '/_authenticated/admin/smtp'
+    | '/_authenticated/admin/team'
     | '/_authenticated/labels/$shipmentId'
     | '/_authenticated/pay/$shipmentId'
     | '/_authenticated/users/addorder'
@@ -898,11 +1000,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWalletRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/admin/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/barcode': {
       id: '/_authenticated/admin/barcode'
       path: '/admin/barcode'
       fullPath: '/admin/barcode'
       preLoaderRoute: typeof AuthenticatedAdminBarcodeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/commissions': {
+      id: '/_authenticated/admin/commissions'
+      path: '/admin/commissions'
+      fullPath: '/admin/commissions'
+      preLoaderRoute: typeof AuthenticatedAdminCommissionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/company': {
@@ -912,11 +1028,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCompanyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/console': {
+      id: '/_authenticated/admin/console'
+      path: '/admin/console'
+      fullPath: '/admin/console'
+      preLoaderRoute: typeof AuthenticatedAdminConsoleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/coupons': {
+      id: '/_authenticated/admin/coupons'
+      path: '/admin/coupons'
+      fullPath: '/admin/coupons'
+      preLoaderRoute: typeof AuthenticatedAdminCouponsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/diagnostics': {
+      id: '/_authenticated/admin/diagnostics'
+      path: '/admin/diagnostics'
+      fullPath: '/admin/diagnostics'
+      preLoaderRoute: typeof AuthenticatedAdminDiagnosticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/pincodes': {
+      id: '/_authenticated/admin/pincodes'
+      path: '/admin/pincodes'
+      fullPath: '/admin/pincodes'
+      preLoaderRoute: typeof AuthenticatedAdminPincodesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/admin/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/smtp': {
       id: '/_authenticated/admin/smtp'
       path: '/admin/smtp'
       fullPath: '/admin/smtp'
       preLoaderRoute: typeof AuthenticatedAdminSmtpRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/team': {
+      id: '/_authenticated/admin/team'
+      path: '/admin/team'
+      fullPath: '/admin/team'
+      preLoaderRoute: typeof AuthenticatedAdminTeamRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/labels/$shipmentId': {
@@ -1017,9 +1175,17 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTeamPricesRoute: typeof AuthenticatedTeamPricesRoute
   AuthenticatedVerifyPhoneRoute: typeof AuthenticatedVerifyPhoneRoute
   AuthenticatedWalletRoute: typeof AuthenticatedWalletRoute
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminBarcodeRoute: typeof AuthenticatedAdminBarcodeRoute
+  AuthenticatedAdminCommissionsRoute: typeof AuthenticatedAdminCommissionsRoute
   AuthenticatedAdminCompanyRoute: typeof AuthenticatedAdminCompanyRoute
+  AuthenticatedAdminConsoleRoute: typeof AuthenticatedAdminConsoleRoute
+  AuthenticatedAdminCouponsRoute: typeof AuthenticatedAdminCouponsRoute
+  AuthenticatedAdminDiagnosticsRoute: typeof AuthenticatedAdminDiagnosticsRoute
+  AuthenticatedAdminPincodesRoute: typeof AuthenticatedAdminPincodesRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminSmtpRoute: typeof AuthenticatedAdminSmtpRoute
+  AuthenticatedAdminTeamRoute: typeof AuthenticatedAdminTeamRoute
   AuthenticatedLabelsShipmentIdRoute: typeof AuthenticatedLabelsShipmentIdRoute
   AuthenticatedPayShipmentIdRoute: typeof AuthenticatedPayShipmentIdRoute
   AuthenticatedUsersAddorderRoute: typeof AuthenticatedUsersAddorderRoute
@@ -1054,9 +1220,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTeamPricesRoute: AuthenticatedTeamPricesRoute,
   AuthenticatedVerifyPhoneRoute: AuthenticatedVerifyPhoneRoute,
   AuthenticatedWalletRoute: AuthenticatedWalletRoute,
+  AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
   AuthenticatedAdminBarcodeRoute: AuthenticatedAdminBarcodeRoute,
+  AuthenticatedAdminCommissionsRoute: AuthenticatedAdminCommissionsRoute,
   AuthenticatedAdminCompanyRoute: AuthenticatedAdminCompanyRoute,
+  AuthenticatedAdminConsoleRoute: AuthenticatedAdminConsoleRoute,
+  AuthenticatedAdminCouponsRoute: AuthenticatedAdminCouponsRoute,
+  AuthenticatedAdminDiagnosticsRoute: AuthenticatedAdminDiagnosticsRoute,
+  AuthenticatedAdminPincodesRoute: AuthenticatedAdminPincodesRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminSmtpRoute: AuthenticatedAdminSmtpRoute,
+  AuthenticatedAdminTeamRoute: AuthenticatedAdminTeamRoute,
   AuthenticatedLabelsShipmentIdRoute: AuthenticatedLabelsShipmentIdRoute,
   AuthenticatedPayShipmentIdRoute: AuthenticatedPayShipmentIdRoute,
   AuthenticatedUsersAddorderRoute: AuthenticatedUsersAddorderRoute,
