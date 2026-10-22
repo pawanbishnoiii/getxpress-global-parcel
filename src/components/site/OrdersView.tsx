@@ -13,6 +13,9 @@ import { switchToCashOnPickup } from "@/lib/shipments.functions";
 
 const TABS = [["all", "All"], ["awaiting_payment", "Unpaid"], ["booked", "Ready to ship"], ["picked_up", "Picked up"], ["in_transit", "In transit"], ["out_for_delivery", "Out for delivery"], ["delivered", "Delivered"], ["cancelled", "Cancelled"]] as const;
 
+type SortKey = { key: string; dir: "asc" | "desc" };
+const BULK = [["picked_up", "Picked up"], ["in_transit", "Dispatched / in transit"], ["out_for_delivery", "Out for delivery"], ["delivered", "Delivered"]] as const;
+
 export function OrdersView() {
   const { isStaff } = useRoles();
   const qc = useQueryClient();
@@ -37,7 +40,30 @@ export function OrdersView() {
     return () => { supabase.removeChannel(ch); };
   }, [qc]);
 
-  const list = useMemo(() => rows.filter((r) => (tab === "all" || r.status === tab) && (!q || [r.tracking_number, r.receiver_name, r.receiver_city, r.receiver_pincode, r.sender_city].join(" ").toLowerCase().includes(q.toLowerCase()))), [rows, tab, q]);
+  const [from, setFrom] = useState(""); const [to, setTo] = useState(""); const [pin, setPin] = useState("");
+  const [sorts, setSorts] = useState<SortKey[]>([{ key: "created_at", dir: "desc" }]);
+  const [sel, setSel] = useState<Set<string>>(new Set()); const [bulk, setBulk] = useState("");
+  const list = useMemo(() => {
+    const f = rows.filter((r) => (tab === "all" || r.status === tab)
+      && (!q || [r.tracking_number, r.receiver_name, r.receiver_city, r.receiver_pincode, r.sender_city].join(" ").toLowerCase().includes(q.toLowerCase()))
+      && (!pin || r.receiver_pincode?.startsWith(pin) || r.sender_pincode?.startsWith(pin))
+      && (!from || r.created_at >= from) && (!to || r.created_at.slice(0, 10) <= to));
+    return [...f].sort((a, b) => { for (const s of sorts) { const av = (a as Record<string, unknown>)[s.key], bv = (b as Record<string, unknown>)[s.key]; const c = typeof av === "number" || s.key === "price" ? Number(av) - Number(bv) : String(av ?? "").localeCompare(String(bv ?? "")); if (c) return s.dir === "asc" ? c : -c; } return 0; });
+  }, [rows, tab, q, pin, from, to, sorts]);
+  const sortBy = (key: string, multi: boolean) => setSorts((cur) => { const ex = cur.find((c) => c.key === key); const nx: SortKey = { key, dir: ex?.dir === "asc" ? "desc" : "asc" }; return multi ? [...cur.filter((c) => c.key !== key), nx] : [nx]; });
+  const arrow = (key: string) => { const i = sorts.findIndex((c) => c.key === key); return i < 0 ? "" : `${sorts[i]!.dir === "asc" ? "↑" : "↓"}${sorts.length > 1 ? i + 1 : ""}`; };
+  const applyBulk = async () => {
+    if (!bulk || !sel.size) return;
+    const { error } = await supabase.from("shipments").update({ status: bulk } as never).in("id", [...sel]);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`${sel.size} orders marked ${bulk.replaceAll("_", " ")}`); setSel(new Set()); setBulk(""); qc.invalidateQueries({ queryKey: ["orders"] });
+  };
+  const exportCsv = () => {
+    const head = ["awb", "status", "from_city", "from_pin", "receiver", "to_city", "to_pin", "parcels", "payment", "price", "booked"];
+    const esc = (v: unknown) => `"${String(v ?? "").replaceAll('"', '""')}"`;
+    const csv = [head.join(","), ...list.map((r) => [r.tracking_number, r.status, r.sender_city, r.sender_pincode, r.receiver_name, r.receiver_city, r.receiver_pincode, r.pieces_count, r.payment_method, r.price, r.created_at].map(esc).join(","))].join("\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "getxpress-orders.csv"; a.click(); URL.revokeObjectURL(a.href);
+  };
 
   const exportXlsx = async () => {
     const XLSX = await import("xlsx");
@@ -50,20 +76,28 @@ export function OrdersView() {
       <PageHeader title="Orders" sub={`${list.length} of ${rows.length} orders`} action={
         <div className="flex gap-2">
           {isStaff && <select value={scope} onChange={(e) => setScope(e.target.value as "mine")} className="h-10 rounded-xl border bg-card px-3 text-sm font-bold"><option value="mine">My orders</option><option value="scope">All in my scope</option></select>}
-          <button onClick={exportXlsx} className="flex h-10 items-center gap-1.5 rounded-xl border bg-card px-3 text-sm font-bold"><Download className="h-4 w-4" /> Export</button>
+          <button onClick={exportXlsx} className="flex h-10 items-center gap-1.5 rounded-xl border bg-card px-3 text-sm font-bold"><Download className="h-4 w-4" /> Excel</button>
+          <button onClick={exportCsv} className="flex h-10 items-center gap-1.5 rounded-xl border bg-card px-3 text-sm font-bold"><Download className="h-4 w-4" /> CSV</button>
           <Link to="/users/addorder" className="flex h-10 items-center rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground">+ Add order</Link>
         </div>} />
       <div className="flex gap-1 overflow-x-auto border-b">
         {TABS.map(([k, l]) => <button key={k} onClick={() => setTab(k)} className={`whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-bold ${tab === k ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{l} <span className="text-xs">({k === "all" ? rows.length : rows.filter((r) => r.status === k).length})</span></button>)}
       </div>
       <label className="mt-4 flex h-11 items-center gap-2 rounded-xl border bg-card px-3"><Search className="h-4 w-4 text-muted-foreground" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search AWB, name, city, pincode" className="flex-1 bg-transparent text-sm font-semibold outline-none" /></label>
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+        <input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="Pincode" className="h-10 w-28 rounded-xl border bg-card px-3 font-semibold" />
+        <label className="flex items-center gap-1 font-semibold text-muted-foreground">From<input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-10 rounded-xl border bg-card px-2 text-foreground" /></label>
+        <label className="flex items-center gap-1 font-semibold text-muted-foreground">To<input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-10 rounded-xl border bg-card px-2 text-foreground" /></label>
+        {isStaff && sel.size > 0 && <div className="ml-auto flex items-center gap-2 rounded-xl bg-ink px-3 py-1.5 text-ink-foreground"><span className="font-bold">{sel.size} selected</span><select value={bulk} onChange={(e) => setBulk(e.target.value)} className="h-8 rounded-lg bg-card px-2 text-foreground"><option value="">Mark as…</option>{BULK.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select><button onClick={applyBulk} disabled={!bulk} className="rounded-lg bg-primary px-3 py-1 font-bold text-primary-foreground disabled:opacity-50">Apply</button></div>}
+      </div>
 
       <div className="mt-4 hidden overflow-hidden rounded-lg border bg-card lg:block">
         <table className="w-full text-sm">
-          <thead className="bg-muted text-left text-xs uppercase tracking-wider text-muted-foreground"><tr><th className="p-3">Order / AWB</th><th>Route</th><th>Parcels</th><th>Payment</th><th>Status</th><th className="text-right">Amount</th><th className="p-3 text-right">Actions</th></tr></thead>
+          <thead className="bg-muted text-left text-xs uppercase tracking-wider text-muted-foreground"><tr>{isStaff && <th className="pl-3"><input type="checkbox" aria-label="Select all" checked={list.length > 0 && sel.size === list.length} onChange={(e) => setSel(e.target.checked ? new Set(list.map((r) => r.id)) : new Set())} /></th>}<th className="cursor-pointer p-3" title="Shift+click to sort by more columns" onClick={(e) => sortBy("created_at", e.shiftKey)}>Order / AWB {arrow("created_at")}</th><th className="cursor-pointer" onClick={(e) => sortBy("receiver_city", e.shiftKey)}>Route {arrow("receiver_city")}</th><th>Parcels</th><th>Payment</th><th className="cursor-pointer" onClick={(e) => sortBy("status", e.shiftKey)}>Status {arrow("status")}</th><th className="cursor-pointer text-right" onClick={(e) => sortBy("price", e.shiftKey)}>Amount {arrow("price")}</th><th className="p-3 text-right">Actions</th></tr></thead>
           <tbody>
             {list.map((s) => (
               <tr key={s.id} className="border-t">
+                {isStaff && <td className="pl-3"><input type="checkbox" aria-label={`Select ${s.tracking_number}`} checked={sel.has(s.id)} onChange={(e) => setSel((cur) => { const n = new Set(cur); if (e.target.checked) n.add(s.id); else n.delete(s.id); return n; })} /></td>}
                 <td className="p-3"><Link to="/users/dashboard" search={{ track: s.tracking_number }} className="font-mono font-bold text-primary">{s.tracking_number}</Link><p className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("en-IN")}</p></td>
                 <td>{s.sender_city} → {s.receiver_city}<p className="text-xs text-muted-foreground">{s.receiver_name} · {s.receiver_pincode}</p></td>
                 <td>{s.pieces_count}</td>
