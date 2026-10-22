@@ -53,7 +53,7 @@ export async function sendSmtp(to: string, subject: string, body: string, opts: 
       await mailer.close();
     } catch (e) {
       // Outside Cloudflare (preview/dev on Node) `cloudflare:sockets` is missing — use nodemailer instead.
-      if (usedWorker || !/cloudflare:sockets/.test(String((e as Error)?.message ?? e))) throw e;
+      if (usedWorker || !/cloudflare:sockets|cloudflare:|Unsupported URL scheme|ERR_UNSUPPORTED_ESM_URL_SCHEME|Cannot find/i.test(String((e as Error)?.message ?? e))) throw e;
       const mod = "nodemailer";
       const nm = (await import(/* @vite-ignore */ mod)) as typeof import("nodemailer");
       const t = (nm.default ?? nm).createTransport({ host: smtp.host, port: smtp.port, secure: smtp.secure === "ssl", requireTLS: smtp.secure === "starttls", auth: { user: username, pass: password } });
