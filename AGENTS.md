@@ -11,3 +11,9 @@
 
 ## Database migration history
 - This remix starts with an empty PostgreSQL migration journal; add future schema changes through the migration tool rather than restoring the source project history, to avoid replaying copied schema changes.
+
+## Shipping architecture
+- Resolve Indian postal suggestions from the lazy-loaded local post-office directory before remote providers, preserving town and district separately; this avoids network-dependent booking validation.
+- International bookings are authenticated persisted quote requests, not confirmed courier dispatches; acceptance and final prices require provider review.
+- Validate prohibited-item declaration in client/server schemas and enforce consent on shipment insertion; automated keywords do not replace operational inspection.
+- District reference names permit manual entry because public datasets can lag administrative changes.
