@@ -1,6 +1,0 @@
--- The content of this migration cannot be applied: its changes were copied from the source project and already exist in this database.
--- DO $$ BEGIN
---   IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND tablename='audit_logs') THEN
---     ALTER PUBLICATION supabase_realtime ADD TABLE public.audit_logs;
---   END IF;
--- END $$;
