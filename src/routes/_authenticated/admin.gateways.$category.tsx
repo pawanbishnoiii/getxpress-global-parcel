@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { sendWhatsappAdmin } from "@/lib/whatsapp.functions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -33,14 +35,17 @@ const P: Prov[] = [
   { id: "shiprocket", name: "Shiprocket", category: "courier", fields: [{ k: "email", label: "API user email" }, { k: "password", label: "API user password", secret: true }, { k: "pickup_location", label: "Pickup location" }] },
   { id: "shadowfax", name: "Shadowfax", category: "courier", fields: [{ k: "api_token", label: "API token", secret: true }, { k: "client_code", label: "Client code" }, { k: "warehouse_id", label: "Warehouse ID" }] },
 ];
-const TABS = [["payment", "Payment"], ["otp", "SMS OTP"], ["whatsapp", "WhatsApp"], ["courier", "Delivery partners"]] as const;
+const TABS = [["payment", "Payment"], ["sms", "SMS OTP"], ["whatsapp", "WhatsApp"], ["deliverypartners", "Delivery partners"]] as const;
+const SLUG: Record<string, Prov["category"]> = { payment: "payment", sms: "otp", whatsapp: "whatsapp", deliverypartners: "courier" };
+const EXCLUSIVE = new Set(["payment", "otp"]);
 const AUTOMATIONS = [["notify_booking", "Booking confirmation"], ["notify_pickup", "Picked up"], ["notify_transit", "In transit / out for delivery"], ["notify_delivered", "Delivered"], ["send_label_image", "Send label image"], ["send_tracking_link", "Send tracking link"]] as const;
 const field = "mt-1 h-11 w-full rounded-md border bg-background px-3 text-sm";
 
 function Gateways() {
   const { isAdmin } = useRoles();
   const qc = useQueryClient();
-  const [tab, setTab] = useState<Prov["category"]>("payment");
+  const { category } = Route.useParams();
+  const tab = SLUG[category] ?? "payment";
   const { data } = useQuery({ queryKey: ["gateways"], enabled: isAdmin, queryFn: async () => { const r = await supabase.from("gateway_configs").select("*"); if (r.error) throw r.error; return r.data; } });
   const { data: channel } = useQuery({ queryKey: ["otp-channel", data], queryFn: async () => (await supabase.rpc("otp_channel")).data as string });
   const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -55,13 +60,20 @@ function Gateways() {
     if (enabled && p.fields.some(x => x.secret && !config[x.k] && x.k !== "webhook_secret")) { toast.error("Add the required keys before turning this on."); return; }
     const { data: u } = await supabase.auth.getUser();
     const r = await supabase.from("gateway_configs").upsert({ provider: p.id, category: p.category, enabled, live_mode: f.get("live_mode") === "on", config: config as never, updated_at: new Date().toISOString(), updated_by: u.user?.id ?? null });
-    if (r.error) toast.error(r.error.message); else { toast.success(`${p.name} saved`); qc.invalidateQueries({ queryKey: ["gateways"] }); }
+    if (!r.error && p.id === "tezsender") {
+      const wa: Record<string, unknown> = { enabled, base_url: String(config["base_url"] ?? ""), instance_id: (config["instance_id"] as string) ?? null, notify_bookings: config["notify_booking"] !== false, updated_at: new Date().toISOString() };
+      if (config["api_key"]) wa["api_key"] = config["api_key"];
+      if (config["webhook_secret"]) wa["webhook_secret"] = config["webhook_secret"];
+      await supabase.from("whatsapp_settings").update(wa as never).eq("id", true);
+    }
+    if (r.error) toast.error(r.error.message); else { toast.success(enabled && EXCLUSIVE.has(p.category) ? `${p.name} is now the only active ${p.category === "otp" ? "SMS" : "payment"} gateway` : `${p.name} saved`); qc.invalidateQueries({ queryKey: ["gateways"] }); }
   };
   return (
     <AppShell wide>
       <PageHeader title="Gateways & integrations" sub={`OTP is currently sent by: ${channel === "whatsapp" ? "WhatsApp (TezSender)" : channel === "sms" ? "SMS" : "on-screen test code"}`} />
       {!isAdmin ? <p>Admin access required.</p> : <>
-        <div className="mb-5 flex flex-wrap gap-1 border-b pb-3">{TABS.map(([k, l]) => <Button key={k} variant={tab === k ? "default" : "ghost"} onClick={() => setTab(k)}>{l}</Button>)}</div>
+        <div className="mb-5 flex flex-wrap gap-1 border-b pb-3">{TABS.map(([k, l]) => <Button key={k} asChild variant={category === k ? "default" : "ghost"}><Link to="/admin/gateways/$category" params={{ category: k }}>{l}</Link></Button>)}</div>
+        {EXCLUSIVE.has(tab) && <p className="mb-4 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">Only one {tab === "otp" ? "SMS" : "payment"} gateway works at a time — turning one on switches the others off automatically.</p>}
         <div className="grid gap-5 lg:grid-cols-2">
           {P.filter(p => p.category === tab).map(p => {
             const row = data?.find(r => r.provider === p.id);
@@ -86,8 +98,54 @@ function Gateways() {
               </form>);
           })}
         </div>
+        {tab === "whatsapp" && <WhatsappTools />}
         <p className="mt-6 text-xs text-muted-foreground">Keys are visible only to admins and never shown again after saving. Live sending for each partner starts once its API is verified with your account.</p>
       </>}
     </AppShell>
+  );
+}
+
+const VARS = { name: "Test customer", tracking: "GX000TEST", status: "in transit", link: "https://getxpress.in/track", otp: "482913", offer: "Flat 20% off this week." } as Record<string, string>;
+const fill = (t: string) => t.replace(/\{\{(\w+)\}\}/g, (_, k: string) => VARS[k] ?? "");
+
+function WhatsappTools() {
+  const qc = useQueryClient();
+  const send = useServerFn(sendWhatsappAdmin);
+  const [to, setTo] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const { data = [] } = useQuery({ queryKey: ["wa-templates"], queryFn: async () => (await supabase.from("whatsapp_templates").select("*").order("key")).data ?? [] });
+  const test = async (message: string, mediaUrl?: string | null, linkUrl?: string | null, id = "plain") => {
+    if (!/^\d{10}$/.test(to.replace(/\D/g, "").slice(-10))) { toast.error("Enter a 10-digit WhatsApp number first"); return; }
+    setBusy(id);
+    try {
+      const r = await send({ data: { numbers: [to], message, ...(mediaUrl ? { mediaUrl } : {}), ...(linkUrl ? { linkUrl } : {}) } });
+      r.sent ? toast.success("Test message sent") : toast.error(`Not sent: ${r.failed[0] ?? "WhatsApp key not saved"}`);
+    } catch (e) { toast.error((e as Error).message); } finally { setBusy(null); }
+  };
+  return (
+    <section className="mt-8 space-y-4">
+      <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-5">
+        <label className="min-w-60 flex-1 text-sm font-semibold">Test WhatsApp number<input value={to} onChange={(e) => setTo(e.target.value)} placeholder="98XXXXXXXX" inputMode="tel" className={field} /></label>
+        <Button disabled={!!busy} onClick={() => test("GetXpress WhatsApp test ✅ Your gateway is connected.")}>Send plain test</Button>
+      </div>
+      <h2 className="text-lg font-bold">Message templates</h2>
+      <p className="text-xs text-muted-foreground">Placeholders: {"{{name}} {{tracking}} {{status}} {{link}} {{otp}} {{offer}}"}</p>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {data.map((t) => (
+          <form key={t.key + t.updated_at} className="space-y-2 rounded-lg border bg-card p-4" onSubmit={async (e) => {
+            e.preventDefault(); const f = new FormData(e.currentTarget);
+            const r = await supabase.from("whatsapp_templates").update({ name: String(f.get("name")), body: String(f.get("body")), media_url: String(f.get("media_url")).trim() || null, link_url: String(f.get("link_url")).trim() || null, enabled: f.get("enabled") === "on", updated_at: new Date().toISOString() }).eq("key", t.key);
+            r.error ? toast.error(r.error.message) : (toast.success("Template saved"), qc.invalidateQueries({ queryKey: ["wa-templates"] }));
+          }}>
+            <div className="flex items-center justify-between"><input name="name" defaultValue={t.name} className="bg-transparent font-bold outline-none" /><span className="rounded bg-secondary px-2 py-0.5 text-xs">{t.event}</span></div>
+            <textarea name="body" defaultValue={t.body} rows={3} className="w-full rounded-md border bg-background p-2 text-sm" />
+            <div className="grid gap-2 sm:grid-cols-2"><input name="media_url" defaultValue={t.media_url ?? ""} placeholder="Image URL (optional)" className={field + " mt-0"} /><input name="link_url" defaultValue={t.link_url ?? ""} placeholder="Button / link URL (optional)" className={field + " mt-0"} /></div>
+            <p className="rounded-md bg-secondary/60 p-2 text-xs">Preview: {fill(t.body)}</p>
+            <div className="flex flex-wrap items-center gap-3"><label className="flex items-center gap-2 text-sm"><input type="checkbox" name="enabled" defaultChecked={t.enabled} />Active</label>
+              <Button type="submit" size="sm">Save</Button>
+              <Button type="button" size="sm" variant="outline" disabled={!!busy} onClick={() => test(fill(t.body), t.media_url, t.link_url, t.key)}>{busy === t.key ? "Sending…" : "Send test"}</Button></div>
+          </form>))}
+      </div>
+    </section>
   );
 }
