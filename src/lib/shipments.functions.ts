@@ -66,12 +66,19 @@ export const createShipment = createServerFn({ method: "POST" })
       await supabaseAdmin.from("phone_otps").update({ consumed_at: new Date().toISOString() }).eq("id", otp.id);
     }
 
-    // Pincodes must exist in the master list (serviceability)
+    // Pincodes: master list first; unknown real pincodes are verified with India Post and auto-added.
     const { data: pins } = await sb.from("pincodes").select("pincode,city,state,zone,active").in("pincode", [data.sender.pincode, data.receiver.pincode]);
-    const from = pins?.find((p) => p.pincode === data.sender.pincode);
-    const to = pins?.find((p) => p.pincode === data.receiver.pincode);
-    if (!from?.active) throw new Error(`Pickup pincode ${data.sender.pincode} is not serviceable yet.`);
-    if (!to?.active) throw new Error(`Delivery pincode ${data.receiver.pincode} is not serviceable yet.`);
+    const resolvePin = async (pin: string) => {
+      const row = pins?.find((p) => p.pincode === pin); if (row) return row;
+      const { postalLookup } = await import("./postal"); const p = await postalLookup(pin); if (!p) return null;
+      const fresh = { pincode: pin, city: p.city, state: p.state, zone: p.district, active: true };
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin.from("pincodes").upsert(fresh, { onConflict: "pincode", ignoreDuplicates: true });
+      return fresh;
+    };
+    const [from, to] = await Promise.all([resolvePin(data.sender.pincode), resolvePin(data.receiver.pincode)]);
+    if (!from?.active) throw new Error(`Pickup pincode ${data.sender.pincode} could not be found. Please check it.`);
+    if (!to?.active) throw new Error(`Delivery pincode ${data.receiver.pincode} could not be found. Please check it.`);
 
     // Missing rate/setting rows fall back to the defaults in pricing.ts and pay-at-pickup enabled.
     const [{data:rateRows,error:rateError},{data:settings,error:settingsError}] = await Promise.all([sb.from("service_rates").select("*"),sb.from("app_settings").select("cash_on_pickup").eq("id",true).maybeSingle()]);
