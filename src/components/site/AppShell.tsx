@@ -43,6 +43,7 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     { to: "/pincodes", label: "Pincode master", icon: MapPin, admin: true },
     { to: "/settings", label: "Prices & integrations", icon: Settings, admin: true },
     { to: "/gateways", label: "Gateways", icon: Settings, admin: true },
+    { to: "/company", label: "Company & email", icon: Settings, admin: true },
     { to: "/audit", label: "Audit log", icon: History, admin: true },
     { to: "/diagnostics", label: "Diagnostics", icon: Settings, admin: true },
   ] },

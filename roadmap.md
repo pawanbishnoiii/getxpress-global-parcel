@@ -26,3 +26,6 @@
 - Branded email notifications — needs an email domain set up
 - Real support WhatsApp number (currently placeholder)
 - Final legal policy approval, exact refund fees/timing and liability terms — business owner confirmation needed
+- [ ] Real payment/SMS/courier API calls + partner webhooks (blocked: partner API keys/docs)
+- [ ] Per-role test accounts check (blocked: needs isolated test environment)
+- [ ] New landing photography + advanced GSAP motion pass

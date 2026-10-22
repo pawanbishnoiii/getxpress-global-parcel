@@ -17,3 +17,5 @@
 - International bookings are authenticated persisted quote requests, not confirmed courier dispatches; acceptance and final prices require provider review.
 - Validate prohibited-item declaration in client/server schemas and enforce consent on shipment insertion; automated keywords do not replace operational inspection.
 - District reference names permit manual entry because public datasets can lag administrative changes.
+- Outgoing email uses admin-managed SMTP (smtp_settings + SMTP_PASSWORD/SMTP_USERNAME secrets) via worker-mailer in src/lib/email.functions.ts; worker-mailer uses Cloudflare sockets, so sends only work on the deployed worker.
+- Hub (point role) non-cash bookings debit the hub wallet via a database trigger, so the ledger cannot be skipped by client code.

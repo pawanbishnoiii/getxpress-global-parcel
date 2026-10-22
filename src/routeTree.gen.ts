@@ -27,6 +27,7 @@ import { Route as AuthenticatedApplicationsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedBagsRouteImport } from './routes/_authenticated/bags'
 import { Route as AuthenticatedCommissionsRouteImport } from './routes/_authenticated/commissions'
+import { Route as AuthenticatedCompanyRouteImport } from './routes/_authenticated/company'
 import { Route as AuthenticatedConsoleRouteImport } from './routes/_authenticated/console'
 import { Route as AuthenticatedCouponsRouteImport } from './routes/_authenticated/coupons'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -146,6 +147,11 @@ const AuthenticatedCommissionsRoute =
     path: '/commissions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCompanyRoute = AuthenticatedCompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedConsoleRoute = AuthenticatedConsoleRouteImport.update({
   id: '/console',
   path: '/console',
@@ -305,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuthenticatedAuditRoute
   '/bags': typeof AuthenticatedBagsRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
+  '/company': typeof AuthenticatedCompanyRoute
   '/console': typeof AuthenticatedConsoleRoute
   '/coupons': typeof AuthenticatedCouponsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -350,6 +357,7 @@ export interface FileRoutesByTo {
   '/audit': typeof AuthenticatedAuditRoute
   '/bags': typeof AuthenticatedBagsRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
+  '/company': typeof AuthenticatedCompanyRoute
   '/console': typeof AuthenticatedConsoleRoute
   '/coupons': typeof AuthenticatedCouponsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -397,6 +405,7 @@ export interface FileRoutesById {
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/bags': typeof AuthenticatedBagsRoute
   '/_authenticated/commissions': typeof AuthenticatedCommissionsRoute
+  '/_authenticated/company': typeof AuthenticatedCompanyRoute
   '/_authenticated/console': typeof AuthenticatedConsoleRoute
   '/_authenticated/coupons': typeof AuthenticatedCouponsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -444,6 +453,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/bags'
     | '/commissions'
+    | '/company'
     | '/console'
     | '/coupons'
     | '/dashboard'
@@ -489,6 +499,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/bags'
     | '/commissions'
+    | '/company'
     | '/console'
     | '/coupons'
     | '/dashboard'
@@ -535,6 +546,7 @@ export interface FileRouteTypes {
     | '/_authenticated/audit'
     | '/_authenticated/bags'
     | '/_authenticated/commissions'
+    | '/_authenticated/company'
     | '/_authenticated/console'
     | '/_authenticated/coupons'
     | '/_authenticated/dashboard'
@@ -707,6 +719,13 @@ declare module '@tanstack/react-router' {
       path: '/commissions'
       fullPath: '/commissions'
       preLoaderRoute: typeof AuthenticatedCommissionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/company': {
+      id: '/_authenticated/company'
+      path: '/company'
+      fullPath: '/company'
+      preLoaderRoute: typeof AuthenticatedCompanyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/console': {
@@ -901,6 +920,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBagsRoute: typeof AuthenticatedBagsRoute
   AuthenticatedCommissionsRoute: typeof AuthenticatedCommissionsRoute
+  AuthenticatedCompanyRoute: typeof AuthenticatedCompanyRoute
   AuthenticatedConsoleRoute: typeof AuthenticatedConsoleRoute
   AuthenticatedCouponsRoute: typeof AuthenticatedCouponsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -933,6 +953,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBagsRoute: AuthenticatedBagsRoute,
   AuthenticatedCommissionsRoute: AuthenticatedCommissionsRoute,
+  AuthenticatedCompanyRoute: AuthenticatedCompanyRoute,
   AuthenticatedConsoleRoute: AuthenticatedConsoleRoute,
   AuthenticatedCouponsRoute: AuthenticatedCouponsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,

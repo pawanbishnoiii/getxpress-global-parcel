@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { PinAutocomplete } from "./PinAutocomplete";
 import { ParcelEditor, NumberField } from "./ParcelEditor";
 import { LocationPicker } from "./LocationPicker";
+import { ParcelPhotos } from "./ParcelPhotos";
 import { composeAddress, initialDraft, readDraft, saveDraft, DRAFT_KEY, type BookingDraft } from "@/lib/booking-draft";
 import { quote, services, serviceAllowed, type ServiceLevel } from "@/lib/pricing";
 import { bookingConfigOptions } from "@/lib/booking-config";
@@ -40,6 +41,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
   const [ready, setReady] = useState(false), [busy, setBusy] = useState(false);
   const [coupon, setCoupon] = useState<{ code: string; discount: number; description?: string | null } | null>(null);
   const [done, setDone] = useState<Done | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
   const { user } = useSession(); const navigate = useNavigate(), qc = useQueryClient();
   const { data: config, error: configError } = useQuery(bookingConfigOptions);
   const { data: presets = DEFAULT_PRESETS } = useQuery(parcelPresetsOptions);
@@ -96,7 +98,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
     if (otpCode.length !== 6) { toast.error("Enter the 6-digit OTP."); return; }
     setBusy(true);
     try {
-      const result = await create({ data: { service: d.service, sender: { name: d.sender.name, phone: d.sender.phone, pincode: d.sender.pincode, city: d.sender.city, address: composeAddress(d.sender),state:d.sender.state,district:d.sender.district,email:d.sender.email }, receiver: { name: d.receiver.name, phone: d.receiver.phone, pincode: d.receiver.pincode, city: d.receiver.city, address: composeAddress(d.receiver),state:d.receiver.state,district:d.receiver.district,email:d.receiver.email }, pieces: d.pieces.map((x) => ({ weight_kg: x.weight_kg, dims: x.dims, box_preset: x.preset })), contents: d.contents, declared_value: d.declared_value, payment_method: d.payment_method, booking_otp: otpCode, policy_accepted:true, is_fragile: d.is_fragile, has_electronics: d.has_electronics, ...(coupon ? { coupon_code: coupon.code } : {}), ...(d.sender.lat != null && d.sender.lng != null ? { pickup: { lat: d.sender.lat, lng: d.sender.lng } } : {}) } });
+      const result = await create({ data: { service: d.service, sender: { name: d.sender.name, phone: d.sender.phone, pincode: d.sender.pincode, city: d.sender.city, address: composeAddress(d.sender),state:d.sender.state,district:d.sender.district,email:d.sender.email }, receiver: { name: d.receiver.name, phone: d.receiver.phone, pincode: d.receiver.pincode, city: d.receiver.city, address: composeAddress(d.receiver),state:d.receiver.state,district:d.receiver.district,email:d.receiver.email }, pieces: d.pieces.map((x) => ({ weight_kg: x.weight_kg, dims: x.dims, box_preset: x.preset })), contents: d.contents, declared_value: d.declared_value, payment_method: d.payment_method, booking_otp: otpCode, policy_accepted:true, is_fragile: d.is_fragile, has_electronics: d.has_electronics, photos, ...(coupon ? { coupon_code: coupon.code } : {}), ...(d.sender.lat != null && d.sender.lng != null ? { pickup: { lat: d.sender.lat, lng: d.sender.lng } } : {}) } });
       setOtp(null); setOtpCode(""); localStorage.removeItem(DRAFT_KEY); sessionStorage.removeItem(DRAFT_KEY); qc.invalidateQueries();
       if (result.status === "awaiting_payment") { navigate({ to: "/pay/$shipmentId", params: { shipmentId: result.id } }); return; }
       setDone(result as Done);
@@ -143,6 +145,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
         <div className="mt-2 grid gap-3 sm:grid-cols-2">
           <FlagCard on={d.is_fragile} onToggle={() => update({ is_fragile: !d.is_fragile })} icon={<GlassWater />} title="Glass or breakable item" hi="कांच या टूटने वाला सामान है" fee={presets.find((p) => p.id === "fragile")?.fee ?? 0} note="Extra bubble-wrap and 'FRAGILE' marking" />
           <FlagCard on={d.has_electronics} onToggle={() => update({ has_electronics: !d.has_electronics })} icon={<BatteryCharging />} title="Electronics or battery" hi="इलेक्ट्रॉनिक सामान या बैटरी है" fee={presets.find((p) => p.id === "electronics")?.fee ?? 0} note="Phones, chargers, power banks, gadgets" />
+          <div className="sm:col-span-2"><ParcelPhotos value={photos} onChange={setPhotos} /></div>
         </div>
       </>}
     </div>}
