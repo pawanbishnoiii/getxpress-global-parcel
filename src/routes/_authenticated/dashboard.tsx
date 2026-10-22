@@ -59,7 +59,7 @@ function Dashboard() {
         <Link to="/tally" className="rounded-lg bg-lime p-5 text-ink"><PackageSearch className="h-7 w-7" /><p className="mt-6 font-display text-xl font-extrabold">Delivery tally</p></Link>
         {isStaff ? <>
           <Link to="/scan" className="rounded-lg bg-ink p-5 text-ink-foreground"><ScanLine className="h-7 w-7" /><p className="mt-6 font-display text-xl font-extrabold">Scan parcel</p></Link>
-          {isAdmin ? <Link to="/console" className="rounded-lg border bg-card p-5"><ShieldCheck className="h-7 w-7" /><p className="mt-6 font-display text-xl font-extrabold">Pincodes & staff</p></Link> : <Link to="/wallet" className="rounded-lg border bg-card p-5"><ShieldCheck className="h-7 w-7" /><p className="mt-6 font-display text-xl font-extrabold">Wallet</p></Link>}
+          {isAdmin ? <Link to="/admin/console" className="rounded-lg border bg-card p-5"><ShieldCheck className="h-7 w-7" /><p className="mt-6 font-display text-xl font-extrabold">Pincodes & staff</p></Link> : <Link to="/wallet" className="rounded-lg border bg-card p-5"><ShieldCheck className="h-7 w-7" /><p className="mt-6 font-display text-xl font-extrabold">Wallet</p></Link>}
         </> : <Link to="/point-partner" className="col-span-2 rounded-lg border bg-card p-5 md:col-span-2"><Store className="h-7 w-7" /><p className="mt-6 font-display text-xl font-extrabold">Become a Get Xpress Hub</p></Link>}
       </div>
 
@@ -98,7 +98,7 @@ function Dashboard() {
               </div>
               <div className="mt-4 flex gap-2">
                 <Link to="/analytics" className="rounded-xl border px-3 py-2 text-xs font-bold">Full analytics</Link>
-                {isAdmin && <><Link to="/console" className="flex items-center gap-1 rounded-xl border px-3 py-2 text-xs font-bold"><MapPin className="h-3 w-3" /> Allocations</Link><Link to="/team" className="flex items-center gap-1 rounded-xl border px-3 py-2 text-xs font-bold"><Users className="h-3 w-3" /> Users</Link></>}
+                {isAdmin && <><Link to="/admin/console" className="flex items-center gap-1 rounded-xl border px-3 py-2 text-xs font-bold"><MapPin className="h-3 w-3" /> Allocations</Link><Link to="/admin/team" className="flex items-center gap-1 rounded-xl border px-3 py-2 text-xs font-bold"><Users className="h-3 w-3" /> Users</Link></>}
               </div>
             </div>
           </div>

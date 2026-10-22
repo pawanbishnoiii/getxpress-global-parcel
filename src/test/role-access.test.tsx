@@ -7,7 +7,7 @@ import { navVisible } from "@/lib/access";
 
 const items = NAV.flatMap((g) => g.items);
 const pages = (roles: string[]) => items.filter((i) => navVisible(i, roles)).map((i) => i.to);
-const ADMIN_ONLY = ["/team", "/console", "/commissions", "/coupons", "/pincodes", "/settings", "/diagnostics"];
+const ADMIN_ONLY = ["/admin/team", "/admin/console", "/admin/commissions", "/admin/coupons", "/admin/pincodes", "/admin/settings", "/admin/diagnostics"];
 
 describe("role dashboards and page access", () => {
   it("every menu page exists as a real route", () => {
