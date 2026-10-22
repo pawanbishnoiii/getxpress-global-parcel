@@ -24,6 +24,7 @@ export function LocationPicker({ point, onResolve, initialOpen=false }: { initia
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<GeoHit[]>([]);
   const [busy, setBusy] = useState(false);
+  const [mapError, setMapError] = useState(false);
   const [open, setOpen] = useState(initialOpen);
   const t = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -65,10 +66,10 @@ export function LocationPicker({ point, onResolve, initialOpen=false }: { initia
         <div className="mt-3">
           <ClientOnly fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
             <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
-              {fallback ? <LeafletMap lat={point?.lat ?? 26.9124} lng={point?.lng ?? 75.7873} onPick={pick} /> : <GoogleMap lat={point?.lat ?? 26.9124} lng={point?.lng ?? 75.7873} onPick={pick} onError={() => setFallback(true)} />}
+              {fallback ? <LeafletMap lat={point?.lat ?? 26.9124} lng={point?.lng ?? 75.7873} onPick={pick} /> : <GoogleMap lat={point?.lat ?? 26.9124} lng={point?.lng ?? 75.7873} onPick={pick} onError={() => { setMapError(true); setFallback(true); }} />}
             </Suspense>
           </ClientOnly>
-          <div className="mt-1 flex items-center justify-between"><span className="text-[11px] text-muted-foreground">{fallback ? "© OpenStreetMap contributors" : "Google Maps"}</span><Button size="sm" variant="ghost" onClick={() => setFallback(!fallback)}>{fallback ? "Google Maps" : "OpenStreetMap"}</Button></div>
+          {mapError && <p role="alert" className="mt-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs">Google Maps could not load here, so OpenStreetMap is shown instead. You can still drop the pin or type the address.</p>}<div className="mt-1 flex items-center justify-between"><span className="text-[11px] text-muted-foreground">{fallback ? "© OpenStreetMap contributors" : "Google Maps"}</span><Button size="sm" variant="ghost" onClick={() => setFallback(!fallback)}>{fallback ? "Google Maps" : "OpenStreetMap"}</Button></div>
         </div>
       )}
     </div>
