@@ -43,6 +43,13 @@
       "when": 1792648620577,
       "tag": "0005_company_smtp_area_photos_wallet",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792648724854,
+      "tag": "0006_parcel_photo_policies_hub_debit",
+      "breakpoints": true
     }
   ]
 }
