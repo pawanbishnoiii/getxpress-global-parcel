@@ -9,6 +9,11 @@
 - Fullscreen button, dashboard quick actions, database migrations started
 
 ## Open
+- Repair PIN/address suggestions and state/district selectors; test domestic booking
+- International quote request with both parties and durable storage
+- Tracking refresh/error states, public imagery/footer and restrained animation
+- Review pricing/database and require prohibited-goods policy consent
+- Verify available role dashboards; do not create production staff credentials without safe provisioning
 - WhatsApp OTP + "WhatsApp off" banner + admin settings — waiting on TezSender API example
 - Load India pincodes (needs admin import)
 - Branded email notifications — needs an email domain set up
