@@ -5,6 +5,7 @@ import parcel from "@/assets/parcel-lottie.json";
 export function ParcelLottie({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let anim: { destroy: () => void } | undefined;
     let cancelled = false;
     import("lottie-web").then(({ default: lottie }) => {

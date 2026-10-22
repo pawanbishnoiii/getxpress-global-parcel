@@ -1,3 +1,4 @@
+import { ParcelLottie } from "./ParcelLottie";
 import envelope from "@/assets/parcel-flyer.webp";
 import docPack from "@/assets/parcel-small.webp";
 import pkg from "@/assets/parcel-large.webp";
@@ -13,9 +14,9 @@ const SIZES = [
   { img: pkg, name: "Large box", dims: "50 × 40 × 30 cm", kg: "up to 15 kg" },
 ];
 const STEPS = [
-  { img: rider, title: "We pick it up", copy: "A rider collects from your door at the time you choose." },
+  { img: rider, title: "We pick it up", copy: "Pickup is arranged after your booking is accepted." },
   { img: hub, title: "Sorted & scanned", copy: "Every parcel is barcoded, bagged and sealed at the hub." },
-  { img: doorstep, title: "Delivered", copy: "Live updates at every scan until it reaches their door." },
+  { img: doorstep, title: "Delivered", copy: "Follow recorded handovers until it reaches their door." },
 ];
 
 /** Parcel size guide and journey section with scroll-triggered GSAP reveals. */
@@ -36,7 +37,7 @@ export function LandingExtras() {
       </section>
       <section className="bg-ink px-5 py-16 text-ink-foreground">
         <div className="mx-auto max-w-6xl">
-          <p className="text-xs font-bold uppercase text-primary">From door to door</p>
+          <div className="flex items-center justify-between"><p className="text-xs font-bold uppercase text-primary">From door to door</p><ParcelLottie className="h-16 w-16"/></div>
           <h2 className="reveal mt-3 text-3xl font-extrabold md:text-4xl">How your parcel travels</h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((s, i) => (
