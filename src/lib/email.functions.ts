@@ -104,3 +104,47 @@ export const sendOfferEmail = createServerFn({ method: "POST" })
     await assertAdmin(context);
     return sendTemplate("new_offer", data.to, { name: data.name, offer: data.offer });
   });
+
+/** Admin: effective SMTP settings (fills in the server-stored account when the form was never saved). */
+export const getSmtpStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: s } = await supabaseAdmin.from("smtp_settings").select("*").eq("id", true).single();
+    const envUser = process.env["SMTP_USERNAME"] ?? "";
+    return {
+      provider: s?.provider ?? "gmail", host: s?.host ?? "smtp.gmail.com", port: s?.port ?? 465, secure: s?.secure ?? "ssl",
+      username: s?.username || envUser, from_name: s?.from_name || "GetXpress", from_email: s?.from_email || s?.username || envUser,
+      enabled: s?.username ? !!s.enabled : !!envUser, passwordSet: !!process.env["SMTP_PASSWORD"],
+    };
+  });
+
+export const saveSmtpSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    provider: z.enum(["gmail", "hostinger", "custom"]), host: z.string().min(3).max(120), port: z.number().int().min(1).max(65535),
+    secure: z.enum(["ssl", "starttls", "none"]), username: z.string().min(3).max(160), from_name: z.string().max(80),
+    from_email: z.string().email().or(z.literal("")), enabled: z.boolean(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const r = await supabaseAdmin.from("smtp_settings").upsert({ id: true, ...data, from_email: data.from_email || null, updated_at: new Date().toISOString() });
+    if (r.error) throw new Error(r.error.message);
+    return { ok: true };
+  });
+
+/** Signed-in user: send the welcome email once (skips synthetic phone-login addresses). */
+export const sendWelcomeEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const email = (context.claims as { email?: string }).email;
+    if (!email || email.endsWith("@phone.getxpress.in")) return { sent: false };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { count } = await supabaseAdmin.from("email_logs").select("id", { count: "exact", head: true }).eq("to_email", email).eq("template_key", "welcome");
+    if (count) return { sent: false };
+    const { data: p } = await supabaseAdmin.from("profiles").select("full_name").eq("id", context.userId).maybeSingle();
+    const origin = new URL(process.env["PUBLIC_BASE_URL"] ?? "https://getxpress.in").origin;
+    return sendTemplate("welcome", email, { name: (p as { full_name?: string } | null)?.full_name || email.split("@")[0]!, link: `${origin}/ship` });
+  });
