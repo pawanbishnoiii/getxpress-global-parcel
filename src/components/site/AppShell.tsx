@@ -77,7 +77,7 @@ export function AppShell({ children, requirePhone = true, wide = false, skipOnbo
   return (
     <div className="min-h-screen bg-background">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-ink text-ink-foreground lg:flex">
-        <Link to="/" className="mx-4 my-4 rounded-xl bg-card px-3 py-2"><BrandMark /></Link>
+        <Link to="/" className="mx-5 mb-2 mt-6 block"><BrandMark light className="w-44" /></Link>
         <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-6">
           {NAV.map((g) => {
             const items = g.items.filter(visible);
@@ -106,7 +106,7 @@ export function AppShell({ children, requirePhone = true, wide = false, skipOnbo
       <div className="lg:pl-64">
         <header className="sticky top-0 z-30 border-b bg-background/85 px-4 py-3 backdrop-blur-xl lg:px-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 lg:hidden"><button onClick={() => setMenuOpen(true)} aria-label="Open menu" className="grid h-10 w-10 place-items-center rounded-xl border bg-card"><Menu className="h-4 w-4" /></button><Link to="/"><BrandMark /></Link></div>
+            <div className="flex items-center gap-2 lg:hidden"><button onClick={() => setMenuOpen(true)} aria-label="Open menu" className="grid h-10 w-10 place-items-center rounded-xl border bg-card"><Menu className="h-4 w-4" /></button><Link to="/"><BrandMark className="w-32" /></Link></div>
             <div className="hidden text-sm lg:block"><p className="font-bold">{name} <span className="font-mono font-semibold text-muted-foreground">· {phone}</span></p><p className="text-xs text-muted-foreground">{city} · <Clock /></p></div>
             <div className="flex items-center gap-2">
               <Link to={isStaff ? "/scan" : "/users/dashboard"} className="hidden items-center gap-1.5 rounded-xl border bg-card px-4 py-2 text-sm font-bold sm:flex"><ScanLine className="h-4 w-4" /> Scan</Link>
@@ -123,7 +123,7 @@ export function AppShell({ children, requirePhone = true, wide = false, skipOnbo
         <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true">
           <button aria-label="Close menu" className="absolute inset-0 bg-ink/50 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
           <aside className="absolute inset-y-0 left-0 flex w-[82%] max-w-xs flex-col bg-ink text-ink-foreground animate-in slide-in-from-left duration-200">
-            <div className="m-4 rounded-xl bg-card px-3 py-2"><BrandMark /></div>
+            <div className="mx-5 mb-3 mt-6"><BrandMark light className="w-40" /></div>
             <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-6">
               {NAV.map((g) => {
                 const items = g.items.filter(visible);
