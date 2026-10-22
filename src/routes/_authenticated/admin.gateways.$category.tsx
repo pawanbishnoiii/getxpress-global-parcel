@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoles } from "@/hooks/use-roles";
 
-export const Route = createFileRoute("/_authenticated/gateways")({
+export const Route = createFileRoute("/_authenticated/admin/gateways/$category")({
   head: () => ({ meta: [
     { title: "Gateways & integrations — Get Xpress Admin" },
     { name: "description", content: "Manage payment, OTP, WhatsApp and courier partner APIs and webhooks." },
