@@ -13,5 +13,5 @@ export function publicBaseUrl() {
   const env = import.meta.env["VITE_PUBLIC_BASE_URL"] as string | undefined;
   if (env) return env.replace(/\/$/, "");
   if (typeof window !== "undefined") return window.location.origin;
-  return "https://getxpress.in";
+  return "https://pinpoint-parcel-pilot.lovable.app";
 }
