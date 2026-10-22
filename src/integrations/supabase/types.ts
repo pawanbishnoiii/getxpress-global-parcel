@@ -16,18 +16,60 @@ export type Database = {
     Tables: {
       app_settings: {
         Row: {
+          address: string | null
           cash_on_pickup: boolean
+          company_name: string
+          company_type: string | null
+          description: string | null
+          gstin: string | null
+          icon_url: string | null
           id: boolean
+          logo_url: string | null
+          meta_description: string | null
+          meta_keywords: string | null
+          meta_title: string | null
+          site_live: boolean
+          support_email: string | null
+          support_whatsapp: string | null
+          tagline: string | null
           updated_at: string
         }
         Insert: {
+          address?: string | null
           cash_on_pickup?: boolean
+          company_name?: string
+          company_type?: string | null
+          description?: string | null
+          gstin?: string | null
+          icon_url?: string | null
           id?: boolean
+          logo_url?: string | null
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
+          site_live?: boolean
+          support_email?: string | null
+          support_whatsapp?: string | null
+          tagline?: string | null
           updated_at?: string
         }
         Update: {
+          address?: string | null
           cash_on_pickup?: boolean
+          company_name?: string
+          company_type?: string | null
+          description?: string | null
+          gstin?: string | null
+          icon_url?: string | null
           id?: boolean
+          logo_url?: string | null
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
+          site_live?: boolean
+          support_email?: string | null
+          support_whatsapp?: string | null
+          tagline?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -249,6 +291,69 @@ export type Database = {
           enabled?: boolean
           environment?: string
           provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_logs: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          status: string
+          subject: string | null
+          template_key: string | null
+          to_email: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          status: string
+          subject?: string | null
+          template_key?: string | null
+          to_email: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          status?: string
+          subject?: string | null
+          template_key?: string | null
+          to_email?: string
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          body: string
+          enabled: boolean
+          image_url: string | null
+          key: string
+          kind: string
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          enabled?: boolean
+          image_url?: string | null
+          key: string
+          kind?: string
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          enabled?: boolean
+          image_url?: string | null
+          key?: string
+          kind?: string
+          name?: string
+          subject?: string
           updated_at?: string
         }
         Relationships: []
@@ -733,6 +838,7 @@ export type Database = {
       pincodes: {
         Row: {
           active: boolean
+          area: string | null
           city: string
           hub_name: string | null
           pincode: string
@@ -742,6 +848,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          area?: string | null
           city: string
           hub_name?: string | null
           pincode: string
@@ -751,6 +858,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          area?: string | null
           city?: string
           hub_name?: string | null
           pincode?: string
@@ -1121,6 +1229,7 @@ export type Database = {
           id: string
           is_fragile: boolean
           origin_point_id: string | null
+          parcel_photos: string[]
           payment_method: string
           payment_status: string
           pickup_lat: number | null
@@ -1164,6 +1273,7 @@ export type Database = {
           id?: string
           is_fragile?: boolean
           origin_point_id?: string | null
+          parcel_photos?: string[]
           payment_method?: string
           payment_status?: string
           pickup_lat?: number | null
@@ -1207,6 +1317,7 @@ export type Database = {
           id?: string
           is_fragile?: boolean
           origin_point_id?: string | null
+          parcel_photos?: string[]
           payment_method?: string
           payment_status?: string
           pickup_lat?: number | null
@@ -1237,6 +1348,45 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weight_kg?: number
+        }
+        Relationships: []
+      }
+      smtp_settings: {
+        Row: {
+          enabled: boolean
+          from_email: string | null
+          from_name: string | null
+          host: string
+          id: boolean
+          port: number
+          provider: string
+          secure: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          from_email?: string | null
+          from_name?: string | null
+          host?: string
+          id?: boolean
+          port?: number
+          provider?: string
+          secure?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          from_email?: string | null
+          from_name?: string | null
+          host?: string
+          id?: boolean
+          port?: number
+          provider?: string
+          secure?: string
+          updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -1518,6 +1668,7 @@ export type Database = {
       next_awb: { Args: never; Returns: string }
       next_piece_code: { Args: never; Returns: string }
       otp_channel: { Args: never; Returns: string }
+      public_company: { Args: never; Returns: Json }
       receive_manifest: { Args: { _manifest_id: string }; Returns: undefined }
       release_pincode: { Args: { _allocation_id: string }; Returns: undefined }
       scan_bag_code: { Args: { _code: string }; Returns: Json }
