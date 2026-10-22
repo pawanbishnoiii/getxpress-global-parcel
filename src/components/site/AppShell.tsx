@@ -45,7 +45,7 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     { to: "/admin/gateways/payment", label: "Gateways", icon: Settings, admin: true },
     { to: "/admin/barcode", label: "Barcodes", icon: Settings, admin: true },
     { to: "/admin/company", label: "Company profile", icon: Settings, admin: true },
-    { to: "/admin/smtp", label: "SMTP { to: "/company", label: "Company & email", icon: Settings, admin: true }, email", icon: Settings, admin: true },
+    { to: "/admin/smtp", label: "SMTP & email", icon: Settings, admin: true },
     { to: "/audit", label: "Audit log", icon: History, admin: true },
     { to: "/diagnostics", label: "Diagnostics", icon: Settings, admin: true },
   ] },
