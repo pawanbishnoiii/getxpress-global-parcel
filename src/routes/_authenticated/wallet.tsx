@@ -44,8 +44,10 @@ function WalletPage() {
         <label className="flex-1"><span className="text-xs font-bold text-muted-foreground">Add money (₹)</span><input aria-label="Top-up amount" type="number" min={100} value={amt} onChange={(e) => setAmt(Number(e.target.value))} className="mt-1 h-12 w-full rounded-xl border bg-background px-4 font-bold" /></label>
         {[500, 1000, 5000].map((v) => <Button key={v} variant="outline" className="h-12" onClick={() => setAmt(v)}>₹{v}</Button>)}
         <Button className="h-12" onClick={topup}><Plus /> Add money</Button>
-        <p className="w-full text-xs text-muted-foreground">Demo payment — real payment gateway connects from admin settings.</p>
+        <p className="w-full text-xs text-muted-foreground">Online deposit through Razorpay switches on once the admin adds Razorpay keys in Gateways. Until then this records a test top-up.</p>
       </div>
+      <Withdraw balance={balance} />
+      
       {error && <p className="mt-4 text-destructive">Wallet could not load.</p>}
       <div className="mt-5 overflow-x-auto rounded-2xl border bg-card">
         <table className="enterprise-table"><thead><tr><th>Date</th><th>Type</th><th>Reference</th><th>Note</th><th className="text-right">Amount</th></tr></thead>

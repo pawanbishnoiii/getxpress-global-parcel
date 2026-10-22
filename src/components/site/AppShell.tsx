@@ -35,6 +35,8 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     { to: "/onboarding", label: "My profile", icon: UserRound },
   ] },
   { group: "Admin", items: [
+    { to: "/admin/customers", label: "Customer records", icon: Users, admin: true },
+    { to: "/admin/payouts", label: "Hub payouts", icon: Wallet, admin: true },
     { to: "/admin/team", label: "Users & last seen", icon: Users, admin: true },
     { to: "/admin/console", label: "Pincodes & staff", icon: MapPin, admin: true },
     { to: "/admin/commissions", label: "Commissions", icon: Coins, admin: true },
