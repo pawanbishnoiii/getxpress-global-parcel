@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as InternationalRouteImport } from './routes/international'
 import { Route as PointPartnerRouteImport } from './routes/point-partner'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RefundsRouteImport } from './routes/refunds'
@@ -69,6 +70,11 @@ const AuthRoute = AuthRouteImport.update({
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InternationalRoute = InternationalRouteImport.update({
+  id: '/international',
+  path: '/international',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PointPartnerRoute = PointPartnerRouteImport.update({
@@ -279,6 +285,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/international': typeof InternationalRoute
   '/point-partner': typeof PointPartnerRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
@@ -322,6 +329,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/international': typeof InternationalRoute
   '/point-partner': typeof PointPartnerRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
@@ -367,6 +375,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/international': typeof InternationalRoute
   '/point-partner': typeof PointPartnerRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
@@ -412,6 +421,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/demo'
+    | '/international'
     | '/point-partner'
     | '/privacy'
     | '/refunds'
@@ -455,6 +465,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/demo'
+    | '/international'
     | '/point-partner'
     | '/privacy'
     | '/refunds'
@@ -499,6 +510,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/demo'
+    | '/international'
     | '/point-partner'
     | '/privacy'
     | '/refunds'
@@ -544,6 +556,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   DemoRoute: typeof DemoRoute
+  InternationalRoute: typeof InternationalRoute
   PointPartnerRoute: typeof PointPartnerRoute
   PrivacyRoute: typeof PrivacyRoute
   RefundsRoute: typeof RefundsRoute
@@ -584,6 +597,13 @@ declare module '@tanstack/react-router' {
       path: '/demo'
       fullPath: '/demo'
       preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/international': {
+      id: '/international'
+      path: '/international'
+      fullPath: '/international'
+      preLoaderRoute: typeof InternationalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/point-partner': {
@@ -925,6 +945,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   DemoRoute: DemoRoute,
+  InternationalRoute: InternationalRoute,
   PointPartnerRoute: PointPartnerRoute,
   PrivacyRoute: PrivacyRoute,
   RefundsRoute: RefundsRoute,
