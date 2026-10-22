@@ -115,6 +115,10 @@ function RootComponent() {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      if (event === "SIGNED_IN" && !sessionStorage.getItem("gx-welcome")) {
+        sessionStorage.setItem("gx-welcome", "1");
+        void import("@/lib/email.functions").then((m) => m.sendWelcomeEmail()).catch(() => {});
+      }
     });
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
