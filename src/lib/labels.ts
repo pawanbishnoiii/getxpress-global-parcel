@@ -73,22 +73,32 @@ async function drawLabel(doc: Doc, s: LabelShipment, p: LabelPiece, x: number, y
   doc.text(`Booked ${new Date(s.created_at).toLocaleDateString("en-IN")} · Scan QR or visit ${publicBaseUrl().replace(/^https?:\/\//, "")}/track`, X(50), Y(141), { align: "center" });
 }
 
-export async function buildLabelsPdf(s: LabelShipment, pieces: LabelPiece[], layout: "thermal" | "a4") {
+export type LabelLayout = { id: string; label: string; hint: string; page: [number, number]; cols: number; rows: number; recommended?: boolean };
+/** Print formats. All sizes in mm; each label is scaled to fit its cell. */
+export const LABEL_LAYOUTS: LabelLayout[] = [
+  { id: "thermal", label: "4×6 in thermal", hint: "100×150 mm · courier standard", page: [101.6, 152.4], cols: 1, rows: 1, recommended: true },
+  { id: "thermal4x4", label: "4×4 in thermal", hint: "100×100 mm · small parcels", page: [101.6, 101.6], cols: 1, rows: 1 },
+  { id: "a4", label: "A4 · 4 per page", hint: "Normal office printer", page: [210, 297], cols: 2, rows: 2 },
+  { id: "a4x2", label: "A4 · 2 per page", hint: "Bigger, easy to read", page: [210, 297], cols: 1, rows: 2 },
+  { id: "a4x1", label: "A4 · 1 per page", hint: "Large boxes", page: [210, 297], cols: 1, rows: 1 },
+];
+
+export async function buildLabelsPdf(s: LabelShipment, pieces: LabelPiece[], layout: string | LabelLayout) {
   const { jsPDF } = await import("jspdf");
-  if (layout === "thermal") {
-    const doc = new jsPDF({ unit: "mm", format: [101.6, 152.4] });
-    for (const [i, p] of pieces.entries()) {
-      if (i) doc.addPage([101.6, 152.4]);
-      await drawLabel(doc, s, p, 0.8, 1.2, 100, 150);
-    }
-    return doc.output("blob");
-  }
-  // A4: 4 labels per sheet (2×2, 100×140 each)
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const L = typeof layout === "string" ? (LABEL_LAYOUTS.find((x) => x.id === layout) ?? LABEL_LAYOUTS[0]!) : layout;
+  const [pw, ph] = L.page;
+  const doc = new jsPDF({ unit: "mm", format: [pw, ph], orientation: pw > ph ? "landscape" : "portrait" });
+  const margin = L.cols * L.rows > 1 || pw > 120 ? 5 : 0.8;
+  const cw = (pw - margin * 2) / L.cols, ch = (ph - margin * 2) / L.rows;
+  const per = L.cols * L.rows;
   for (const [i, p] of pieces.entries()) {
-    if (i && i % 4 === 0) doc.addPage();
-    const slot = i % 4;
-    await drawLabel(doc, s, p, 5 + (slot % 2) * 100, 5 + Math.floor(slot / 2) * 144, 100, 142);
+    if (i && i % per === 0) doc.addPage([pw, ph], pw > ph ? "landscape" : "portrait");
+    const slot = i % per;
+    const k = Math.min(cw / 100, ch / 150);
+    const lw = 100 * k, lh = 150 * k;
+    const x = margin + (slot % L.cols) * cw + (cw - lw) / 2;
+    const y = margin + Math.floor(slot / L.cols) * ch + (ch - lh) / 2;
+    await drawLabel(doc, s, p, x, y, lw, lh);
   }
   return doc.output("blob");
 }
