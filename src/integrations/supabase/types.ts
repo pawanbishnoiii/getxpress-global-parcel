@@ -17,60 +17,105 @@ export type Database = {
       app_settings: {
         Row: {
           address: string | null
+          business_hours: string | null
           cash_on_pickup: boolean
+          cin: string | null
+          city: string | null
           company_name: string
           company_type: string | null
           description: string | null
+          facebook_url: string | null
+          footer_text: string | null
           gstin: string | null
           icon_url: string | null
           id: boolean
+          instagram_url: string | null
+          linkedin_url: string | null
           logo_url: string | null
+          maintenance_message: string | null
           meta_description: string | null
           meta_keywords: string | null
           meta_title: string | null
+          og_image_url: string | null
+          pan: string | null
+          pincode: string | null
           site_live: boolean
+          state: string | null
           support_email: string | null
+          support_phone: string | null
           support_whatsapp: string | null
           tagline: string | null
           updated_at: string
+          x_url: string | null
+          youtube_url: string | null
         }
         Insert: {
           address?: string | null
+          business_hours?: string | null
           cash_on_pickup?: boolean
+          cin?: string | null
+          city?: string | null
           company_name?: string
           company_type?: string | null
           description?: string | null
+          facebook_url?: string | null
+          footer_text?: string | null
           gstin?: string | null
           icon_url?: string | null
           id?: boolean
+          instagram_url?: string | null
+          linkedin_url?: string | null
           logo_url?: string | null
+          maintenance_message?: string | null
           meta_description?: string | null
           meta_keywords?: string | null
           meta_title?: string | null
+          og_image_url?: string | null
+          pan?: string | null
+          pincode?: string | null
           site_live?: boolean
+          state?: string | null
           support_email?: string | null
+          support_phone?: string | null
           support_whatsapp?: string | null
           tagline?: string | null
           updated_at?: string
+          x_url?: string | null
+          youtube_url?: string | null
         }
         Update: {
           address?: string | null
+          business_hours?: string | null
           cash_on_pickup?: boolean
+          cin?: string | null
+          city?: string | null
           company_name?: string
           company_type?: string | null
           description?: string | null
+          facebook_url?: string | null
+          footer_text?: string | null
           gstin?: string | null
           icon_url?: string | null
           id?: boolean
+          instagram_url?: string | null
+          linkedin_url?: string | null
           logo_url?: string | null
+          maintenance_message?: string | null
           meta_description?: string | null
           meta_keywords?: string | null
           meta_title?: string | null
+          og_image_url?: string | null
+          pan?: string | null
+          pincode?: string | null
           site_live?: boolean
+          state?: string | null
           support_email?: string | null
+          support_phone?: string | null
           support_whatsapp?: string | null
           tagline?: string | null
           updated_at?: string
+          x_url?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }
@@ -1572,6 +1617,39 @@ export type Database = {
           otp_template?: string
           updated_at?: string
           webhook_secret?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_templates: {
+        Row: {
+          body: string
+          enabled: boolean
+          event: string
+          key: string
+          link_url: string | null
+          media_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          enabled?: boolean
+          event?: string
+          key: string
+          link_url?: string | null
+          media_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          enabled?: boolean
+          event?: string
+          key?: string
+          link_url?: string | null
+          media_url?: string | null
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }

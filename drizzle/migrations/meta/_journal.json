@@ -57,6 +57,13 @@
       "when": 1792648858108,
       "tag": "0007_brand_assets_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792650405608,
+      "tag": "0008_company_sections_gateway_exclusive_wa_templates",
+      "breakpoints": true
     }
   ]
 }
