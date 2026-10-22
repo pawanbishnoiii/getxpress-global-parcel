@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, MapPin, CheckCircle2 } from "lucide-react";
 import { lookupPins, type PinHit } from "@/lib/pin-lookup";
+import { Button } from '@/components/ui/button';
 
 /** Pincode / city / locality box with instant suggestions from the pincode master and OpenStreetMap. */
 export function PinAutocomplete({ label, value, city, onChange, onPick, compact = false }: {
@@ -13,7 +14,7 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
   const [busy, setBusy] = useState(false);
   const [active, setActive] = useState(0);
   const seq = useRef(0);
-  useEffect(() => { setText(value); }, [value]);
+  useEffect(() => { if(value || !open) setText(value); }, [value]);
 
   useEffect(() => {
     const my = ++seq.current;
@@ -28,14 +29,14 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
     return () => { clearTimeout(t); seq.current++; };
   }, [text, open]);
 
-  const pick = (h: PinHit) => { setText(h.pincode); onChange(h.pincode); onPick(h); setOpen(false); };
+  const pick = (h: PinHit) => { setText(h.pincode); onPick(h); setOpen(false); };
   const ok = /^\d{6}$/.test(value) && !!city;
 
   return (
     <div className="relative">
       <label className={`block rounded-2xl border bg-card px-3 focus-within:ring-2 focus-within:ring-ring ${compact ? "py-2" : "py-2.5"}`}>
         <span className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}{busy ? <Loader2 className="h-3 w-3 animate-spin" /> : ok ? <CheckCircle2 className="h-3.5 w-3.5 text-success" /> : null}</span>
-        <input value={text} placeholder="Pincode or city" autoComplete="off"
+        <input aria-label={label} value={text} placeholder="PIN, city or town" autoComplete="off"
           onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)}
           onKeyDown={(e) => {
             if (!hits.length) return;
@@ -50,14 +51,14 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
       {open && hits.length > 0 && (
         <div className="absolute z-50 mt-1 max-h-72 w-full overflow-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-soft">
           {hits.map((h, i) => (
-            <button key={`${h.source}-${h.pincode}-${i}`} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => pick(h)}
-              className={`flex w-full items-start gap-2 rounded-xl px-3 py-2 text-left text-sm ${i === active ? "bg-muted" : ""}`}>
+            <Button variant="ghost" key={`${h.source}-${h.pincode}-${i}`} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => pick(h)}
+              className={`h-auto w-full justify-start items-start gap-2 whitespace-normal rounded-md px-3 py-2 text-left text-sm ${i === active ? "bg-muted" : ""}`}>
               <MapPin className={`mt-0.5 h-4 w-4 shrink-0 ${h.source === "map" ? "text-accent-foreground" : "text-primary"}`} />
               <span className="min-w-0">
                 <span className="font-mono font-bold">{h.pincode}</span> <span className="font-semibold">{h.city}</span>
                 <span className="block truncate text-xs text-muted-foreground">{h.source === "map" ? h.label : `${h.state}${h.zone ? ` · ${h.zone}` : ""}`}</span>
               </span>
-            </button>
+            </Button>
           ))}
         </div>
       )}

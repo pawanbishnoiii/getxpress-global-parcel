@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { searchLocations } from './location-search';
 import { createSearchCache } from './search-cache';
 import { postalLookup } from './postal';
+import { directorySearch } from './india-directory';
 export type PinHit = { pincode:string; city:string; state:string; zone?:string|null; source:'master'|'map'; lat?:number; lng?:number; label?:string };
 const cache=createSearchCache<PinHit[]>(120_000);
 export async function lookupPins(raw:string):Promise<PinHit[]> {
@@ -19,12 +20,13 @@ export async function lookupPins(raw:string):Promise<PinHit[]> {
    const places=await searchLocations(q);
    const codes=[...new Set(places.map(p=>p.pincode).filter((p):p is string=>Boolean(p&&/^\d{6}$/.test(p))))];
    if(!codes.length) return [];
-   const {data}=await supabase.from('pincodes').select('pincode,city,state').eq('active',true).in('pincode',codes);
-   return places.flatMap(p=>{const found=data?.find(s=>s.pincode===p.pincode);return found?[{...found,source:'map' as const,lat:p.lat,lng:p.lng,label:p.label}]:[]});
+    return places.flatMap(p=>p.pincode&&/^\d{6}$/.test(p.pincode)?[{pincode:p.pincode,city:p.city||p.label.split(',')[0]||'',state:p.state||'',source:'map' as const,lat:p.lat,lng:p.lng,label:p.label}]:[]);
   };
   const postal=async():Promise<PinHit[]>=>{if(!/^\d{6}$/.test(q))return [];const p=await postalLookup(q);return p?[{pincode:p.pincode,city:p.city,state:p.state,zone:p.district,source:'master'}]:[];};
-  const [m,b]=await Promise.all([master().catch(()=>[]),maps().catch(()=>[])]);
-  const a=m.length?m:await postal();
+   const local=(await directorySearch(q)).map(r=>({...r,zone:r.district,source:'master' as const}));
+   if(local.length) return local;
+   const [m,b]=await Promise.all([master().catch(()=>[]),maps().catch(()=>[])]);
+   const a=m.length?m:await postal();
   return [...a,...b.filter(p=>!a.some(s=>s.pincode===p.pincode))].slice(0,12);
  });
 }

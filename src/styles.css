@@ -147,10 +147,10 @@
 @keyframes dash { to { stroke-dashoffset: 0; } }
 
 @layer base { * { letter-spacing: 0; } }
-.hero-photo { min-height: 410px; }
+.hero-photo { min-height: 470px; }
 .hero-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, var(--card) 0%, color-mix(in oklab,var(--card) 94%,transparent) 20%,transparent 65%); }
 .enterprise-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
 .enterprise-table th { text-align: left; padding: 14px 12px; background: var(--muted); color: var(--muted-foreground); font-weight: 700; white-space: nowrap; }
 .enterprise-table td { padding: 14px 12px; border-bottom: 1px solid var(--border); }
-@media(max-width:640px) { .hero-photo { min-height: 350px; } .hero-photo::after { background: linear-gradient(90deg,var(--card),color-mix(in oklab,var(--card) 80%,transparent) 40%,transparent); } }
+@media(max-width:640px) { .hero-photo { min-height: 350px; } .hero-photo::after { background: linear-gradient(90deg,var(--card),color-mix(in oklab,var(--card) 90%,transparent) 45%,color-mix(in oklab,var(--card) 50%,transparent)); } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation: none !important; transition: none !important; } }

@@ -2,8 +2,9 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { brand } from "@/lib/brand";
-import { FileDown, MessageCircle, Printer, Search, ClipboardList, MapPin, PackagePlus, Phone, RotateCcw, Truck, UserRound } from "lucide-react";
+import { FileDown, Globe2, MessageCircle, Printer, Search, ClipboardList, MapPin, PackagePlus, Phone, RotateCcw, Truck, UserRound } from "lucide-react";
 import { AppShell, PageHeader, Stat } from "@/components/site/AppShell";
+import { QuoteRequests } from "@/components/site/QuoteRequests";
 import { TrackPanel } from "@/components/site/TrackPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -35,8 +36,9 @@ function UserDashboard() {
         <span className="flex items-center gap-1.5 font-mono"><Phone className="h-4 w-4 text-primary" />{me?.profile?.phone ?? "—"}</span>
         <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-primary" />{(me?.profile as { city?: string | null } | null | undefined)?.city || rows[0]?.sender_city || "India"}</span>
       </div>
-      <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-5 print:hidden">
+      <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6 print:hidden">
         <Link to="/users/addorder" className="flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground"><PackagePlus className="h-4 w-4" />Create order</Link>
+        <Link to="/international" className="flex items-center gap-2 rounded-lg border bg-card px-4 py-3 text-sm font-bold"><Globe2 className="h-4 w-4 text-primary"/>International quote</Link>
         <Link to="/track" className="flex items-center gap-2 rounded-xl border bg-card px-4 py-3 text-sm font-bold"><Search className="h-4 w-4 text-primary" />Track bulk</Link>
         <Link to="/users/orders" className="flex items-center gap-2 rounded-xl border bg-card px-4 py-3 text-sm font-bold"><FileDown className="h-4 w-4 text-primary" />Invoices & labels</Link>
         <button onClick={() => window.print()} className="flex items-center gap-2 rounded-xl border bg-card px-4 py-3 text-sm font-bold"><Printer className="h-4 w-4 text-primary" />Daily summary</button>
@@ -56,6 +58,7 @@ function UserDashboard() {
         <Stat label="Delivered" value={count(["delivered"])} tone="lime" />
         <Stat label="Spent (₹)" value={spent.toLocaleString("en-IN")} />
       </div>
+      <QuoteRequests/>
       <h2 className="mt-8 font-display text-2xl font-extrabold">Recent orders</h2>
       <div className="mt-3 space-y-2">
         {rows.length === 0 && <p className="rounded-2xl border border-dashed p-8 text-center text-muted-foreground">No orders yet — add your first order.</p>}

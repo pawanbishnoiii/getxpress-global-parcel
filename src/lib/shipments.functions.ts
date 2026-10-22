@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireUser as requireSupabaseAuth } from "@/lib/auth-guard";
 import { couponDiscount, quote, serviceAllowed, type ServiceLevel, type ServiceRates } from "./pricing";
+import { shippingDeclaration } from './shipping-safety';
 
 const party = {
   name: z.string().trim().min(2).max(100),
@@ -9,6 +10,9 @@ const party = {
   address: z.string().trim().min(8).max(400),
   pincode: z.string().regex(/^\d{6}$/),
   city: z.string().trim().min(2).max(80),
+  state: z.string().trim().min(2).max(80),
+  district: z.string().trim().min(2).max(80),
+  email: z.string().max(255).refine(v=>!v||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)),
 };
 
 const input = z.object({
@@ -16,7 +20,8 @@ const input = z.object({
   sender: z.object(party),
   receiver: z.object(party),
   pieces: z.array(z.object({ weight_kg: z.number().min(0.05).max(100), dims: z.object({l:z.number().min(1).max(300),w:z.number().min(1).max(300),h:z.number().min(1).max(300)}).optional(), box_preset:z.string().max(40).optional() })).min(1).max(50),
-  contents: z.string().trim().max(200).optional(),
+  contents: shippingDeclaration.shape.contents,
+  policy_accepted: shippingDeclaration.shape.policy_accepted,
   declared_value: z.number().min(0).max(1_000_000).default(0),
   payment_method: z.enum(["cash_on_pickup", "online"]).default("cash_on_pickup"),
   booking_otp: z.string().regex(/^\d{6}$/, "Enter the 6-digit confirmation code"),
@@ -56,7 +61,7 @@ export const createShipment = createServerFn({ method: "POST" })
     const sb = context.supabase;
     const { data: profile } = await sb.from("profiles").select("phone_verified").eq("id", context.userId).maybeSingle();
     if (!profile?.phone_verified) throw new Error("Verify your mobile number before booking.");
-    {
+    const verifyBookingOtp = async () => {
       // Every booking is confirmed with a one-time code sent to the account's mobile.
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: otp } = await supabaseAdmin.from("phone_otps").select("*").eq("user_id", context.userId).is("consumed_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
@@ -66,7 +71,7 @@ export const createShipment = createServerFn({ method: "POST" })
       const hash = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
       if (hash !== otp.code_hash) { await supabaseAdmin.from("phone_otps").update({ attempts: otp.attempts + 1 }).eq("id", otp.id); throw new Error("Incorrect confirmation code."); }
       await supabaseAdmin.from("phone_otps").update({ consumed_at: new Date().toISOString() }).eq("id", otp.id);
-    }
+    };
 
     // Pincodes: master list first; unknown real pincodes are verified with India Post and auto-added.
     const { data: pins } = await sb.from("pincodes").select("pincode,city,state,zone,active").in("pincode", [data.sender.pincode, data.receiver.pincode]);
@@ -87,9 +92,9 @@ export const createShipment = createServerFn({ method: "POST" })
     if(rateError || settingsError) throw new Error("Delivery settings could not be loaded.");
     const rates:ServiceRates={}; for(const r of rateRows??[]) rates[r.service as ServiceLevel]={base:Number(r.base),perKg:Number(r.per_kg),active:r.active};
     // Team (state) prices set by the pickup state's managers override the national rate.
-    const { data: teamRows } = await sb.from("state_rates").select("*").eq("state", from.state);
+      const { data: teamRows } = await sb.from("state_rates").select("*").eq("state", from.state);
     for (const r of teamRows ?? []) rates[r.service as ServiceLevel] = { base: Number(r.base), perKg: Number(r.per_kg), active: r.active };
-    if(!serviceAllowed(data.service,from.city,to.city,rates)) throw new Error("This service is unavailable for the selected cities.");
+    if(!serviceAllowed(data.service,data.sender.city,data.receiver.city,rates)) throw new Error("This service is unavailable for the selected cities.");
     if(data.payment_method==="cash_on_pickup" && settings && !settings.cash_on_pickup) throw new Error("Pay at pickup is currently disabled.");
     const totalKg = data.pieces.reduce((a, p) => a + p.weight_kg, 0);
     const { handlingFee, DEFAULT_PRESETS } = await import("./parcel-presets");
@@ -113,15 +118,17 @@ export const createShipment = createServerFn({ method: "POST" })
     const { data: awb, error: awbErr } = await sb.rpc("next_awb");
     if (awbErr || !awb) throw new Error("Could not allocate AWB.");
     const online = data.payment_method === "online";
+    await verifyBookingOtp();
     const { data: row, error } = await sb.from("shipments").insert({
       tracking_number: awb,
       user_id: context.userId,
       service: data.service,
-      sender_name: data.sender.name, sender_phone: data.sender.phone, sender_address: data.sender.address, sender_pincode: data.sender.pincode, sender_city: from.city,
-      receiver_name: data.receiver.name, receiver_phone: data.receiver.phone, receiver_address: data.receiver.address, receiver_pincode: data.receiver.pincode, receiver_city: to.city,
+      sender_name: data.sender.name, sender_phone: data.sender.phone, sender_address: data.sender.address, sender_pincode: data.sender.pincode, sender_city: data.sender.city,
+      receiver_name: data.receiver.name, receiver_phone: data.receiver.phone, receiver_address: data.receiver.address, receiver_pincode: data.receiver.pincode, receiver_city: data.receiver.city,
       weight_kg: q.weight, contents: data.contents ?? null, declared_value: data.declared_value, price: payable,
       coupon_code: cp?.coupon.code ?? null, discount: cp?.discount ?? 0,
       pickup_lat: data.pickup?.lat ?? null, pickup_lng: data.pickup?.lng ?? null, dims: data.dims ?? null,
+      sender_state:data.sender.state, receiver_state:data.receiver.state, sender_district:data.sender.district, receiver_district:data.receiver.district, sender_email:data.sender.email||null, receiver_email:data.receiver.email||null, policy_accepted_at:new Date().toISOString(),
       pieces_count: data.pieces.length, is_fragile: data.is_fragile, has_electronics: data.has_electronics, handling_fee: handling,
       payment_method: data.payment_method,
       payment_status: "pending",
@@ -144,7 +151,7 @@ export const createShipment = createServerFn({ method: "POST" })
     const { error: pErr } = await sb.from("shipment_pieces").insert(pieceRows);
     if (pErr) throw new Error(pErr.message);
     await sb.from("tracking_events").insert({ shipment_id: row.id, status: row.status, location: data.sender.city, note: online ? "Awaiting online payment" : "Pickup requested" });
-    const whatsapp = await notifyBooking({ id: row.id, awb: row.tracking_number, price: payable, sender: data.sender, receiver: data.receiver, fromCity: from.city, toCity: to.city, pieces: data.pieces.length, userId: context.userId });
+    const whatsapp = await notifyBooking({ id: row.id, awb: row.tracking_number, price: payable, sender: data.sender, receiver: data.receiver, fromCity: data.sender.city, toCity: data.receiver.city, pieces: data.pieces.length, userId: context.userId });
     return { ...row, bill: { ...q, discount: cp?.discount ?? 0, payable, coupon: cp?.coupon.code ?? null }, whatsapp };
   });
 

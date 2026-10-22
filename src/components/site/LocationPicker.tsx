@@ -15,7 +15,7 @@ const GoogleMap = lazy(() => import("./GoogleMap"));
  * Address search with OpenStreetMap suggestions, a draggable map pin and "use my location".
  * Calls onResolve with real coordinates + postcode/city from OSM; the caller validates the pincode against our master list.
  */
-export function LocationPicker({ point, onResolve }: { point: { lat: number; lng: number } | null; onResolve: (hit: GeoHit) => void }) {
+export function LocationPicker({ point, onResolve, initialOpen=false }: { initialOpen?:boolean; point: { lat: number; lng: number } | null; onResolve: (hit: GeoHit) => void }) {
   const { user } = useSession();
   const googleSearch = useServerFn(googlePlaceSearch);
   const googlePick = useServerFn(googleReverse);
@@ -24,7 +24,7 @@ export function LocationPicker({ point, onResolve }: { point: { lat: number; lng
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<GeoHit[]>([]);
   const [busy, setBusy] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
   const t = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const search = (v: string) => {

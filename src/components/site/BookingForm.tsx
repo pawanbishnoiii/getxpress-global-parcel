@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, ArrowRight, BatteryCharging, CheckCircle2, GlassWater, Loader2, Map as MapIcon, MessageCircle, Printer, ShieldCheck, Sparkles, Ticket, X } from "lucide-react";
@@ -17,6 +17,8 @@ import { sendPhoneOtp } from "@/lib/otp.functions";
 import { pinInfo } from "@/lib/pin-lookup";
 import { postalLookup } from "@/lib/postal";
 import { INDIAN_STATES } from "@/lib/india-regions";
+import { RegionFields } from "./RegionFields";
+import { shippingDeclaration } from "@/lib/shipping-safety";
 import { Globe2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/use-session";
@@ -60,6 +62,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
     if (p.house.trim().length < 1) { toast.error(`${who}: enter house / flat number`); return false; }
     if (p.street.trim().length < 2) { toast.error(`${who}: enter street or colony`); return false; }
     if (p.city.trim().length < 2) { toast.error(`${who}: enter city / town`); return false; }
+    if (!p.district) { toast.error(`${who}: select district`); return false; }
     if (!p.state) { toast.error(`${who}: select state`); return false; }
     if (!/^\d{6}$/.test(p.pincode)) { toast.error(`${who}: enter a 6-digit PIN code`); return false; }
     if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { toast.error(`${who}: email looks wrong`); return false; }
@@ -79,6 +82,8 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
 
   const confirm = async () => {
     if (!q || !config) return;
+    if(!await checkParty(d.sender,"Sender") || !await checkParty(d.receiver,"Receiver")) return;
+    const declaration=shippingDeclaration.safeParse(d); if(!declaration.success){toast.error(declaration.error.issues[0]?.message ?? "Accept shipping policies");return;}
     if (!serviceAllowed(d.service, d.sender.city, d.receiver.city, config.rates)) { toast.error("Choose an available delivery service."); return; }
     if (!user) { sessionStorage.setItem("dbx_after_auth", "/users/addorder"); navigate({ to: "/auth", search: { redirect: "/users/addorder" } }); return; }
     const { data: p } = await supabase.from("profiles").select("phone_verified,phone").eq("id", user.id).maybeSingle();
@@ -91,7 +96,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
     if (otpCode.length !== 6) { toast.error("Enter the 6-digit OTP."); return; }
     setBusy(true);
     try {
-      const result = await create({ data: { service: d.service, sender: { name: d.sender.name, phone: d.sender.phone, pincode: d.sender.pincode, city: d.sender.city, address: composeAddress(d.sender) }, receiver: { name: d.receiver.name, phone: d.receiver.phone, pincode: d.receiver.pincode, city: d.receiver.city, address: composeAddress(d.receiver) }, pieces: d.pieces.map((x) => ({ weight_kg: x.weight_kg, dims: x.dims, box_preset: x.preset })), contents: d.contents, declared_value: d.declared_value, payment_method: d.payment_method, booking_otp: otpCode, is_fragile: d.is_fragile, has_electronics: d.has_electronics, ...(coupon ? { coupon_code: coupon.code } : {}), ...(d.sender.lat != null && d.sender.lng != null ? { pickup: { lat: d.sender.lat, lng: d.sender.lng } } : {}) } });
+      const result = await create({ data: { service: d.service, sender: { name: d.sender.name, phone: d.sender.phone, pincode: d.sender.pincode, city: d.sender.city, address: composeAddress(d.sender),state:d.sender.state,district:d.sender.district,email:d.sender.email }, receiver: { name: d.receiver.name, phone: d.receiver.phone, pincode: d.receiver.pincode, city: d.receiver.city, address: composeAddress(d.receiver),state:d.receiver.state,district:d.receiver.district,email:d.receiver.email }, pieces: d.pieces.map((x) => ({ weight_kg: x.weight_kg, dims: x.dims, box_preset: x.preset })), contents: d.contents, declared_value: d.declared_value, payment_method: d.payment_method, booking_otp: otpCode, policy_accepted:true, is_fragile: d.is_fragile, has_electronics: d.has_electronics, ...(coupon ? { coupon_code: coupon.code } : {}), ...(d.sender.lat != null && d.sender.lng != null ? { pickup: { lat: d.sender.lat, lng: d.sender.lng } } : {}) } });
       setOtp(null); setOtpCode(""); localStorage.removeItem(DRAFT_KEY); sessionStorage.removeItem(DRAFT_KEY); qc.invalidateQueries();
       if (result.status === "awaiting_payment") { navigate({ to: "/pay/$shipmentId", params: { shipmentId: result.id } }); return; }
       setDone(result as Done);
@@ -145,7 +150,8 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
     {(compact || d.step >= 2) && <div className="mt-6 grid gap-3 md:grid-cols-3">{(Object.keys(services) as ServiceLevel[]).map((service) => { const allowed = config && validPins && serviceAllowed(service, d.sender.city, d.receiver.city, config.rates); const rate = allowed ? quoteFor(service) : null; return <Button key={service} variant="outline" disabled={!allowed} onClick={() => update({ service })} className={`h-auto min-h-28 flex-col items-start whitespace-normal p-4 text-left ${d.service === service ? "border-primary bg-primary/5 ring-1 ring-primary" : ""}`}><span className="font-bold">{services[service].label}</span><span className="text-xs text-muted-foreground">{services[service].eta}{service === "same_day" && !allowed ? " · Same city only" : ""}</span><span className="text-xl font-bold">{rate ? `₹${rate.total}` : "—"}</span></Button>; })}</div>}
 
     {(compact || d.step === 3) && <div className="mt-5 border-t pt-5">
-      {!compact && <div className="mb-4 grid gap-2 rounded-2xl border bg-card p-4 text-sm"><p><b>From:</b> {d.sender.name} (+91 {d.sender.phone}), {d.sender.address}, {d.sender.city} {d.sender.pincode}</p><p><b>To:</b> {d.receiver.name} (+91 {d.receiver.phone}), {d.receiver.address}, {d.receiver.city} {d.receiver.pincode}</p><p>{d.pieces.length} parcel(s) · {q?.weight} kg billable · {services[d.service].label} · {d.contents || "—"}{d.is_fragile ? " · Fragile" : ""}{d.has_electronics ? " · Electronics" : ""}</p></div>}
+      {!compact && <div className="mb-4 grid gap-2 rounded-2xl border bg-card p-4 text-sm"><p><b>From:</b> {d.sender.name} (+91 {d.sender.phone}), {composeAddress(d.sender)}</p><p><b>To:</b> {d.receiver.name} (+91 {d.receiver.phone}), {composeAddress(d.receiver)}</p><p>{d.pieces.length} parcel(s) · {q?.weight} kg billable · {services[d.service].label} · {d.contents || "—"}{d.is_fragile ? " · Fragile" : ""}{d.has_electronics ? " · Electronics" : ""}</p></div>}
+      {!compact && <label className="mb-5 flex items-start gap-3 text-sm"><input aria-label="Accept shipping policies" type="checkbox" checked={d.policy_accepted} onChange={e=>update({policy_accepted:e.target.checked})} className="mt-1"/><span>I have read the <Link to="/shipping-policy" className="text-primary underline">shipping policy</Link>, <Link to="/terms" className="text-primary underline">terms</Link> and <Link to="/refunds" className="text-primary underline">refund policy</Link>. No weapons, explosives, illegal drugs or dangerous goods are inside. Batteries require partner approval.</span></label>}
       <PromoCard code={d.coupon} applied={coupon} disabled={!q} onCode={(c) => update({ coupon: c })} onApply={applyCoupon} onRemove={removeCoupon} />
       {q && !compact && <BillLines rows={[["Delivery charge", q.freight - q.handling], ["Size & special handling", q.handling], ["GST 18%", q.gst], ...(discount ? [[`Promo ${coupon?.code}`, -discount] as [string, number]] : [])]} />}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><div><span className="text-xs text-muted-foreground">Total to pay · कुल रकम (GST सहित)</span><p className="text-3xl font-bold">{q ? `₹${Math.max(0, q.total - discount).toFixed(2)}` : "—"}</p></div>{compact && <Button disabled={!q} className="h-12 px-6" onClick={() => { update({ step: 0 }); navigate({ to: "/ship" }); }}>Book now <ArrowRight /></Button>}</div>
@@ -204,42 +210,36 @@ function BookingDone({ done, draftPieces }: { done: Done; draftPieces: number })
 
 function TextField({ label, hi, value, onChange, inputMode }: { label: string; hi?: string; value: string; onChange: (v: string) => void; inputMode?: "numeric" | "text" }) { return <label className="block"><span className="mb-1 block text-xs font-semibold text-muted-foreground">{label}{hi && <Hi>{hi}</Hi>}</span><input aria-label={label} inputMode={inputMode} value={value} onChange={(e) => onChange(e.target.value)} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus:ring-2 focus:ring-ring" /></label>; }
 
-function IntlButton() {
-  const [open, setOpen] = useState(false), [country, setCountry] = useState("");
-  return <span className="ml-auto inline-flex items-center gap-2 text-xs font-normal">
-    <Button type="button" size="sm" variant={open ? "default" : "outline"} onClick={() => setOpen(!open)}><Globe2 className="h-4 w-4" />International</Button>
-    {open && <span className="flex items-center gap-2"><input aria-label="Destination country" value={country} onChange={(e) => setCountry(e.target.value.slice(0, 60))} placeholder="Destination country" className="h-9 w-40 rounded-md border bg-background px-2" />
-      <Button type="button" size="sm" asChild><a href={`https://wa.me/?text=${encodeURIComponent(`GetXpress international quote request to ${country || "(country)"}`)}`} target="_blank" rel="noreferrer">Get quote</a></Button></span>}
-  </span>;
-}
+function IntlButton() { return <Button asChild type="button" size="sm" variant="outline" className="ml-auto"><Link to="/international"><Globe2 className="h-4 w-4"/>International</Link></Button>; }
 
 function PartyFields({ side, party: p, onChange }: { side: "sender" | "receiver"; party: BookingDraft["sender"]; onChange: (p: BookingDraft["sender"]) => void }) {
-  const [map, setMap] = useState(false), [pinState, setPinState] = useState<"idle" | "loading" | "ok" | "miss">("idle");
+  const [map, setMap] = useState(false), [pinState, setPinState] = useState<"idle" | "loading" | "ok" | "miss">("idle"), [areas,setAreas]=useState<string[]>([]);
+  const current=useRef(p); current.current=p; const sequence=useRef(0);
   const who = side === "sender" ? "Sender" : "Receiver";
   const setPin = async (raw: string) => {
-    const pincode = raw.replace(/\D/g, "").slice(0, 6); onChange({ ...p, pincode });
-    if (pincode.length !== 6) { setPinState("idle"); return; }
+    const pincode = raw.replace(/\D/g, "").slice(0, 6), id=++sequence.current; onChange({ ...current.current, pincode });
+    if (pincode.length !== 6) { setPinState("idle"); setAreas([]); return; }
     setPinState("loading");
-    const [post, master] = await Promise.all([postalLookup(pincode), pinInfo(pincode).catch(() => null)]);
-    if (!post && !master) { setPinState("miss"); return; }
-    setPinState("ok");
-    onChange({ ...p, pincode, district: post?.district ?? p.district, state: post?.state ?? p.state, city: p.city || post?.city || master?.city || "" });
+    const post=await postalLookup(pincode);
+    if(id!==sequence.current) return;
+    if(!post){setPinState("miss");return;}
+    setPinState("ok");setAreas(post.areas);
+    onChange({ ...current.current, pincode, district:post.district || current.current.district,state:post.state,city:current.current.city || post.city });
   };
   return <div className="mb-4 space-y-4">
-    <div className="grid gap-3 sm:grid-cols-2"><TextField label={`${who} full name`} value={p.name} onChange={(name) => onChange({ ...p, name })} /><TextField label="Mobile (WhatsApp)" hi="Order updates and tracking link go here" inputMode="numeric" value={p.phone} onChange={(phone) => onChange({ ...p, phone: phone.replace(/\D/g, "").slice(0, 10) })} /></div>
+    <div className="grid gap-3 sm:grid-cols-2"><TextField label={`${who} full name`} value={p.name} onChange={(name) => onChange({ ...p, name })} /><TextField label={`${who} WhatsApp mobile`} inputMode="numeric" value={p.phone} onChange={(phone) => onChange({ ...p, phone: phone.replace(/\D/g, "").slice(0, 10) })} /></div>
     <TextField label="Email (optional)" value={p.email} onChange={(email) => onChange({ ...p, email: email.trim().slice(0, 120) })} />
+    <div className="grid gap-3 sm:grid-cols-2"><RegionFields prefix={who} state={p.state} district={p.district} onChange={(state,district)=>onChange({...p,state,district})}/></div>
+    <PinAutocomplete label={`${who} PIN / city / locality`} value={p.pincode} city={p.city} onChange={setPin} onPick={async h=>{const post=await postalLookup(h.pincode);setAreas(post?.areas??[]);setPinState(post?"ok":"idle");onChange({...current.current,pincode:h.pincode,city:h.city,state:post?.state||h.state||current.current.state,district:post?.district||h.zone||current.current.district,...(h.lat!=null?{lat:h.lat,lng:h.lng}:{})});}}/>
+    <p aria-live="polite" className="text-xs text-muted-foreground">{pinState==="loading"?"Looking up postal areas…":pinState==="miss"?"Postal lookup unavailable. Keep your PIN and enter city, state and district.":pinState==="ok"?`Postal areas: ${areas.slice(0,5).join(', ')}${areas.length>5?'…':''}`:""}</p>
     <div className="grid gap-3 sm:grid-cols-2">
       <TextField label="House / flat no." value={p.house} onChange={(house) => onChange({ ...p, house: house.slice(0, 80) })} />
       <TextField label="Street / colony" value={p.street} onChange={(street) => onChange({ ...p, street: street.slice(0, 120) })} />
-      <TextField label="City / town" value={p.city} onChange={(city) => onChange({ ...p, city: city.slice(0, 80) })} />
-      <TextField label="Nearby landmark" hi="Helps the rider find you" value={p.landmark} onChange={(landmark) => onChange({ ...p, landmark: landmark.slice(0, 80) })} />
-      <div><TextField label="6-digit PIN code" inputMode="numeric" value={p.pincode} onChange={setPin} />
-        <p className="mt-1 text-xs">{pinState === "loading" ? <span className="text-muted-foreground">Looking up PIN…</span> : pinState === "ok" ? <span className="text-primary">District: {p.district || "—"} ✓</span> : pinState === "miss" ? <span className="text-destructive">PIN not found — please check it</span> : null}</p></div>
-      <label className="block"><span className="mb-1 block text-xs font-semibold">State</span>
-        <select aria-label={`${who} state`} value={p.state} onChange={(e) => onChange({ ...p, state: e.target.value })} className="h-11 w-full rounded-md border bg-background px-3"><option value="">Select state</option>{INDIAN_STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
+      <label className="block text-xs font-semibold">City / town<input aria-label="City / town" list={`${who}-areas`} value={p.city} onChange={e=>onChange({...p,city:e.target.value.slice(0,80)})} className="mt-1 h-11 w-full rounded-md border bg-background px-3"/><datalist id={`${who}-areas`}>{areas.map(a=><option key={a} value={a}/>)}</datalist></label>
+      <TextField label="Nearby landmark" value={p.landmark} onChange={(landmark) => onChange({ ...p, landmark: landmark.slice(0, 80) })} />
     </div>
     {(p.house || p.street) && <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">{composeAddress(p)}</p>}
     <div><Button type="button" variant="outline" size="sm" onClick={() => setMap(!map)}><MapIcon className="h-4 w-4" />{map ? "Hide map" : "View on map"}</Button>{p.lat != null && !map && <span className="ml-2 text-xs text-primary">Location pinned ✓</span>}</div>
-    {map && <LocationPicker point={p.lat != null && p.lng != null ? { lat: p.lat, lng: p.lng } : null} onResolve={(h) => { onChange({ ...p, lat: h.lat, lng: h.lng }); if (h.pincode && !p.pincode) void setPin(h.pincode); }} />}
+    {map && <LocationPicker initialOpen point={p.lat != null && p.lng != null ? { lat: p.lat, lng: p.lng } : null} onResolve={h=>{onChange({...current.current,lat:h.lat,lng:h.lng,city:h.city||current.current.city,state:h.state||current.current.state});if(h.pincode)void setPin(h.pincode);}} />}
   </div>;
 }
