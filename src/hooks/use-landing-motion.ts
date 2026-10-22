@@ -23,6 +23,13 @@ export function useLandingMotion(root: RefObject<HTMLElement | null>) {
       lenis.on("scroll", ScrollTrigger.update);
       const ctx = gsap.context(() => {
         gsap.from(".hero-rise", { y: 44, opacity: 0, duration: 1, stagger: 0.09, ease: "power4.out" });
+        gsap.fromTo(".hero-photo-img", { scale: 1.08, opacity: 0.6 }, { scale: 1, opacity: 1, duration: 2.2, ease: "power2.out" });
+        gsap.to(".hero-photo-img", { yPercent: 6, ease: "none", scrollTrigger: { trigger: ".hero-shell", start: "top top", end: "bottom top", scrub: 1 } });
+        gsap.utils.toArray<HTMLElement>(".magnetic").forEach((el) => {
+          const move = (e: PointerEvent) => { const r = el.getBoundingClientRect(); gsap.to(el, { x: (e.clientX - r.left - r.width / 2) * 0.15, y: (e.clientY - r.top - r.height / 2) * 0.2, duration: 0.4 }); };
+          const leave = () => gsap.to(el, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1,0.4)" });
+          el.addEventListener("pointermove", move); el.addEventListener("pointerleave", leave);
+        });
         gsap.from(".hero-art", { scale: 0.9, rotate: 3, opacity: 0, duration: 1.3, delay: 0.15, ease: "power4.out" });
         gsap.to(".hero-art", { yPercent: 8, ease: "none", scrollTrigger: { trigger: ".hero-shell", start: "top top", end: "bottom top", scrub: 1 } });
         gsap.utils.toArray<HTMLElement>(".reveal").forEach((el) =>

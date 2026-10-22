@@ -13,7 +13,7 @@ export function BrandMark({ className, light = false }: { className?: string; li
         src={light ? logoLight.url : logo.url}
         alt="GetXpress"
         width={1600}
-        height={356}
+        height={436}
         className="h-auto w-full object-contain"
       />
     </span>
