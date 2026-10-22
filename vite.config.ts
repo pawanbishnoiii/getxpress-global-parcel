@@ -12,4 +12,9 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    // worker-mailer imports the Cloudflare runtime module; it exists only on the deployed worker.
+    build: { rollupOptions: { external: [/^cloudflare:/] } },
+    ssr: { external: ["cloudflare:sockets"] },
+  },
 });
