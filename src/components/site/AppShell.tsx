@@ -2,7 +2,7 @@ import { Link, Navigate, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  BarChart3, Bell, ClipboardList, Home, Loader2, LogOut, MapPin, PackagePlus, ScanLine, ShieldCheck, Store, Ticket, UserRound, RotateCcw, Boxes, Coins, Settings, Wallet, Users, ClipboardCheck, Menu,
+  BarChart3, Bell, ClipboardList, Home, Loader2, LogOut, MapPin, PackagePlus, ScanLine, ShieldCheck, Store, Ticket, UserRound, RotateCcw, Boxes, Coins, Settings, Wallet, Users, ClipboardCheck, Menu, Maximize2, Minimize2, History, Wand2,
 } from "lucide-react";
 import { BrandMark } from "./BrandMark";
 import { useProfile } from "@/hooks/use-profile";
@@ -26,6 +26,7 @@ export const NAV: { group: string; items: NavItem[] }[] = [
   ] },
   { group: "Operations", items: [
     { to: "/scan", label: "Scan parcels", icon: ScanLine, staff: true },
+    { to: "/address-check", label: "Address check (AI)", icon: Wand2, staff: true },
     { to: "/tally", label: "Delivery tally", icon: ClipboardCheck, staff: true },
     { to: "/bags", label: "Dispatch center", icon: Boxes, staff: true },
     { to: "/wallet", label: "Wallet", icon: Wallet, wallet: true },
@@ -41,9 +42,17 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     { to: "/coupons", label: "Offers & coupons", icon: Ticket, admin: true },
     { to: "/pincodes", label: "Pincode master", icon: MapPin, admin: true },
     { to: "/settings", label: "Settings & integrations", icon: Settings, admin: true },
+    { to: "/audit", label: "Audit log", icon: History, admin: true },
     { to: "/diagnostics", label: "Diagnostics", icon: Settings, admin: true },
   ] },
 ];
+
+function FullscreenToggle() {
+  const [on, setOn] = useState(false);
+  useEffect(() => { const h = () => setOn(!!document.fullscreenElement); document.addEventListener("fullscreenchange", h); return () => document.removeEventListener("fullscreenchange", h); }, []);
+  const toggle = () => { if (document.fullscreenElement) void document.exitFullscreen(); else void document.documentElement.requestFullscreen?.(); };
+  return <button onClick={toggle} aria-label={on ? "Exit fullscreen" : "Fullscreen"} className="hidden h-10 w-10 place-items-center rounded-xl border bg-card lg:grid">{on ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}</button>;
+}
 
 function Clock() {
   const [t, setT] = useState<Date | null>(null);
@@ -72,7 +81,8 @@ export function AppShell({ children, requirePhone = true, wide = false, skipOnbo
   const phone = data?.profile?.phone || "Phone not verified";
   const city = (data?.profile as { city?: string | null } | null | undefined)?.city || "India";
   const home = isStaff ? "/dashboard" : "/users/dashboard";
-  const name = data?.profile?.full_name || data?.user.email || "";
+  const authEmail = data?.user.email && !/@phone\.getxpress\.in$/i.test(data.user.email) ? data.user.email : "";
+  const name = data?.profile?.full_name || authEmail || "";
 
   return (
     <div className="min-h-screen bg-background">
@@ -111,6 +121,7 @@ export function AppShell({ children, requirePhone = true, wide = false, skipOnbo
             <div className="flex items-center gap-2">
               <Link to={isStaff ? "/scan" : "/users/dashboard"} className="hidden items-center gap-1.5 rounded-xl border bg-card px-4 py-2 text-sm font-bold sm:flex"><ScanLine className="h-4 w-4" /> Scan</Link>
               <Link to="/users/addorder" className="hidden items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground sm:flex"><PackagePlus className="h-4 w-4" /> Add order</Link>
+              <FullscreenToggle />
               <Link to="/notifications" aria-label="Notifications" className="grid h-10 w-10 place-items-center rounded-xl border bg-card"><Bell className="h-4 w-4" /></Link>
               
             </div>
