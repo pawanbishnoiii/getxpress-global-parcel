@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "8d3f5c13-4a12-4e32-a4d1-ef7407525d42",
-  "project_id": "42f0c20b-6b68-4b5c-8038-10ff3278f760",
-  "url": "/__l5e/assets-v1/8d3f5c13-4a12-4e32-a4d1-ef7407525d42/getxpress-logo-light.png",
-  "r2_key": "a/v1/42f0c20b-6b68-4b5c-8038-10ff3278f760/8d3f5c13-4a12-4e32-a4d1-ef7407525d42/getxpress-logo-light.png",
-  "original_filename": "getxpress-logo-light.png",
-  "size": 88377,
   "content_type": "image/png",
-  "created_at": "2026-10-22T06:30:56Z"
+  "created_at": "2026-10-22T06:30:56Z",
+  "original_filename": "getxpress-logo-light.png",
+  "project_id": "cf18ee35-15fb-4585-a3c6-cd64175ae6c5",
+  "r2_key": "a/v1/cf18ee35-15fb-4585-a3c6-cd64175ae6c5/8d3f5c13-4a12-4e32-a4d1-ef7407525d42/getxpress-logo-light.png",
+  "size": 88377,
+  "url": "/__l5e/assets-v1/8d3f5c13-4a12-4e32-a4d1-ef7407525d42/getxpress-logo-light.png",
+  "version": 1
 }
