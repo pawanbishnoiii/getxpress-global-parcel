@@ -60,6 +60,8 @@ function SmtpForm() {
   const { data: s } = useQuery({ queryKey: ["smtp"], queryFn: () => status() });
   const [provider, setProvider] = useState<keyof typeof PRESETS | null>(null);
   const [to, setTo] = useState("");
+  const [testing, setTesting] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; msg: string; at: string; ms: number } | null>(null);
   if (!s) return null;
   const p = provider ?? (s.provider as keyof typeof PRESETS);
   const preset = provider ? PRESETS[provider] : s;
@@ -83,8 +85,24 @@ function SmtpForm() {
       </form>
       <div className="h-fit rounded-xl border bg-card p-5">
         <h3 className="font-bold">Send a test email</h3>
-        <input value={to} onChange={(e) => setTo(e.target.value)} placeholder="you@example.com" className={field} />
-        <Button className="mt-3 w-full" onClick={async () => { const r = await test({ data: { to } }).catch((e) => ({ sent: false, error: (e as Error).message })); r.sent ? toast.success("Test email sent") : toast.error(`Not sent: ${r.error}`); }}>Send test</Button>
+        <p className="mt-1 text-xs text-muted-foreground">Uses the saved SMTP account. {s.enabled ? "Sending is on." : "Sending is off — turn it on and save first."}</p>
+        <input type="email" value={to} onChange={(e) => setTo(e.target.value)} placeholder="you@example.com" className={field} />
+        <Button className="mt-3 w-full" disabled={testing || !/^\S+@\S+\.\S+$/.test(to)} onClick={async () => {
+          setTesting(true); setResult(null);
+          const started = Date.now();
+          const r = await test({ data: { to } }).catch((e) => ({ sent: false, error: (e as Error).message }));
+          setTesting(false);
+          setResult({ ok: !!r.sent, msg: r.sent ? `Delivered to the mail server for ${to}` : String((r as { error?: string }).error ?? "Unknown error"), at: new Date().toLocaleTimeString("en-IN"), ms: Date.now() - started });
+        }}>{testing ? "Sending…" : "Send test"}</Button>
+        {result && (
+          <div role="status" className={`mt-4 rounded-lg border p-3 text-sm ${result.ok ? "border-primary/40 bg-primary/10" : "border-destructive/40 bg-destructive/10"}`}>
+            <p className="font-bold">{result.ok ? "✓ Sent successfully" : "✕ Not sent"}</p>
+            <p className="mt-1 break-words text-xs">{result.msg}</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">{result.at} · {result.ms} ms</p>
+            {!result.ok && /cloudflare:sockets|sockets/i.test(result.msg) && <p className="mt-2 text-[11px]">Email sending works on the published site; publish and test again there.</p>}
+            {!result.ok && /auth|535|credentials|password/i.test(result.msg) && <p className="mt-2 text-[11px]">The username or app password was rejected. For Gmail, create a new App Password.</p>}
+          </div>
+        )}
       </div>
     </div>
   );
