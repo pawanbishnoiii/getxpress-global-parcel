@@ -489,6 +489,51 @@ export type Database = {
         }
         Relationships: []
       }
+      parcel_presets: {
+        Row: {
+          active: boolean
+          fee: number
+          h: number
+          id: string
+          kind: string
+          l: number
+          label: string
+          label_hi: string | null
+          max_kg: number
+          sort: number
+          updated_at: string
+          w: number
+        }
+        Insert: {
+          active?: boolean
+          fee?: number
+          h?: number
+          id: string
+          kind?: string
+          l?: number
+          label: string
+          label_hi?: string | null
+          max_kg?: number
+          sort?: number
+          updated_at?: string
+          w?: number
+        }
+        Update: {
+          active?: boolean
+          fee?: number
+          h?: number
+          id?: string
+          kind?: string
+          l?: number
+          label?: string
+          label_hi?: string | null
+          max_kg?: number
+          sort?: number
+          updated_at?: string
+          w?: number
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -1002,7 +1047,10 @@ export type Database = {
           declared_value: number | null
           dims: Json | null
           discount: number
+          handling_fee: number
+          has_electronics: boolean
           id: string
+          is_fragile: boolean
           origin_point_id: string | null
           payment_method: string
           payment_status: string
@@ -1035,7 +1083,10 @@ export type Database = {
           declared_value?: number | null
           dims?: Json | null
           discount?: number
+          handling_fee?: number
+          has_electronics?: boolean
           id?: string
+          is_fragile?: boolean
           origin_point_id?: string | null
           payment_method?: string
           payment_status?: string
@@ -1068,7 +1119,10 @@ export type Database = {
           declared_value?: number | null
           dims?: Json | null
           discount?: number
+          handling_fee?: number
+          has_electronics?: boolean
           id?: string
+          is_fragile?: boolean
           origin_point_id?: string | null
           payment_method?: string
           payment_status?: string

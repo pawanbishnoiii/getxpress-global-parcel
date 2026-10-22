@@ -23,6 +23,8 @@ const input = z.object({
   coupon_code: z.string().trim().toUpperCase().max(30).optional(),
   pickup: z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }).optional(),
   dims: z.object({ l: z.number().min(1).max(300), w: z.number().min(1).max(300), h: z.number().min(1).max(300) }).optional(),
+  is_fragile: z.boolean().default(false),
+  has_electronics: z.boolean().default(false),
 });
 
 async function resolveCoupon(code: string, userId: string, total: number) {
@@ -90,7 +92,12 @@ export const createShipment = createServerFn({ method: "POST" })
     if(!serviceAllowed(data.service,from.city,to.city,rates)) throw new Error("This service is unavailable for the selected cities.");
     if(data.payment_method==="cash_on_pickup" && settings && !settings.cash_on_pickup) throw new Error("Pay at pickup is currently disabled.");
     const totalKg = data.pieces.reduce((a, p) => a + p.weight_kg, 0);
-    const q = quote({ fromPin: data.sender.pincode, toPin: data.receiver.pincode, weightKg: totalKg, service: data.service, pieces:data.pieces.map(p=>({...p,dims:p.dims??data.dims})), rates });
+    const { handlingFee, DEFAULT_PRESETS } = await import("./parcel-presets");
+    const { data: presetRows } = await sb.from("parcel_presets").select("*");
+    const presets = presetRows?.length ? presetRows.map((r) => ({ ...r, max_kg: Number(r.max_kg), l: Number(r.l), w: Number(r.w), h: Number(r.h), fee: Number(r.fee) })) : DEFAULT_PRESETS;
+    for (const p of data.pieces) { const pr = presets.find((x) => x.id === p.box_preset && x.active); if (pr && pr.max_kg > 0 && p.weight_kg > pr.max_kg) throw new Error(`${pr.label} allows up to ${pr.max_kg} kg. Choose a bigger size.`); }
+    const handling = handlingFee(data.pieces.map((p) => ({ preset: p.box_preset ?? "" })), presets, { fragile: data.is_fragile, electronics: data.has_electronics });
+    const q = quote({ extras: handling, fromPin: data.sender.pincode, toPin: data.receiver.pincode, weightKg: totalKg, service: data.service, pieces:data.pieces.map(p=>({...p,dims:p.dims??data.dims})), rates });
     const cp = data.coupon_code ? await resolveCoupon(data.coupon_code, context.userId, q.total) : null;
     const payable = Math.round((q.total - (cp?.discount ?? 0)) * 100) / 100;
 
@@ -115,7 +122,7 @@ export const createShipment = createServerFn({ method: "POST" })
       weight_kg: q.weight, contents: data.contents ?? null, declared_value: data.declared_value, price: payable,
       coupon_code: cp?.coupon.code ?? null, discount: cp?.discount ?? 0,
       pickup_lat: data.pickup?.lat ?? null, pickup_lng: data.pickup?.lng ?? null, dims: data.dims ?? null,
-      pieces_count: data.pieces.length,
+      pieces_count: data.pieces.length, is_fragile: data.is_fragile, has_electronics: data.has_electronics, handling_fee: handling,
       payment_method: data.payment_method,
       payment_status: "pending",
       status: online ? "awaiting_payment" : "booked",
@@ -137,7 +144,8 @@ export const createShipment = createServerFn({ method: "POST" })
     const { error: pErr } = await sb.from("shipment_pieces").insert(pieceRows);
     if (pErr) throw new Error(pErr.message);
     await sb.from("tracking_events").insert({ shipment_id: row.id, status: row.status, location: data.sender.city, note: online ? "Awaiting online payment" : "Pickup requested" });
-    return row;
+    const whatsapp = await notifyBooking({ id: row.id, awb: row.tracking_number, price: payable, sender: data.sender, receiver: data.receiver, fromCity: from.city, toCity: to.city, pieces: data.pieces.length, userId: context.userId });
+    return { ...row, bill: { ...q, discount: cp?.discount ?? 0, payable, coupon: cp?.coupon.code ?? null }, whatsapp };
   });
 
 /** Online payment gateway is not configured yet; customers can switch to pay-at-pickup. */
@@ -198,3 +206,23 @@ export const demoPay = createServerFn({ method: "POST" })
     await supabaseAdmin.from("tracking_events").insert({ shipment_id: s.id, status: "booked", note: `Demo payment ${ref} captured` });
     return { ok: true, ref };
   });
+
+/** Booking alerts on WhatsApp to sender and receiver, with tracking code and link. Logged in notifications either way. */
+async function notifyBooking(b: { id: string; awb: string; price: number; sender: { name: string; phone: string }; receiver: { name: string; phone: string }; fromCity: string; toCity: string; pieces: number; userId: string }) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { sendWhatsapp } = await import("./whatsapp.server");
+  const { publicBaseUrl, brand } = await import("./brand");
+  const link = `${publicBaseUrl()}/track?id=${encodeURIComponent(b.awb)}`;
+  const msgs = [
+    { to: b.sender.phone, role: "sender", text: `${brand.name}: Hi ${b.sender.name}, your order is booked.\nTracking: ${b.awb}\n${b.fromCity} → ${b.toCity} · ${b.pieces} parcel(s) · ₹${b.price}\nReceiver: ${b.receiver.name} (+91 ${b.receiver.phone})` },
+    { to: b.receiver.phone, role: "receiver", text: `${brand.name}: Hi ${b.receiver.name}, ${b.sender.name} (+91 ${b.sender.phone}) is sending you a parcel from ${b.fromCity}.\nTracking: ${b.awb}` },
+  ];
+  const out: Record<string, "sent" | "off" | "failed"> = {};
+  for (const m of msgs) {
+    let status: "sent" | "off" | "failed" = "off"; let err: string | null = null;
+    try { status = (await sendWhatsapp({ to: m.to, message: m.text, linkUrl: link })) ? "sent" : "off"; } catch (e) { status = "failed"; err = (e as Error).message.slice(0, 300); }
+    out[m.role] = status;
+    await supabaseAdmin.from("notifications").insert({ user_id: m.role === "sender" ? b.userId : null, channel: "whatsapp", kind: "booking", recipient: m.to, subject: `Booking ${b.awb}`, body: `${m.text}\n${link}`, status: status === "sent" ? "sent" : status === "off" ? "skipped" : "failed", error: err, sent_at: status === "sent" ? new Date().toISOString() : null, meta: { shipment_id: b.id, role: m.role } });
+  }
+  return out;
+}

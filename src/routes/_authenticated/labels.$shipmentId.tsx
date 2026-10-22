@@ -5,17 +5,18 @@ import { toast } from "sonner";
 import { ArrowLeft, Download, Loader2, Printer } from "lucide-react";
 import { AppShell } from "@/components/site/AppShell";
 import { supabase } from "@/integrations/supabase/client";
-import { buildLabelsPdf, downloadBlob, type LabelPiece, type LabelShipment } from "@/lib/labels";
+import { buildLabelsPdf, downloadBlob, LABEL_LAYOUTS, type LabelPiece, type LabelShipment } from "@/lib/labels";
 
 export const Route = createFileRoute("/_authenticated/labels/$shipmentId")({
-  head: () => ({ meta: [{ title: "Shipping labels — Get Xpress" }, { name: "description", content: "Print or download Get Xpress shipping labels." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  head: () => ({ meta: [{ title: "Shipping labels — GetXpress" }, { name: "description", content: "Print or download GetXpress shipping labels." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: Labels,
 });
 
 function Labels() {
   const { shipmentId } = Route.useParams();
   const navigate = useNavigate();
-  const [layout, setLayout] = useState<"thermal" | "a4">("thermal");
+  const [layout, setLayout] = useState<string>("thermal");
+  const [custom, setCustom] = useState({ w: 100, h: 150 });
   const [selected, setSelected] = useState<Set<string> | null>(null); // null = all
   const [busy, setBusy] = useState(false);
 
@@ -54,7 +55,7 @@ function Labels() {
     if (!(await logPrints(pieces, reprint))) return;
     setBusy(true);
     try {
-      const blob = await buildLabelsPdf(data.s, pieces, layout);
+      const blob = await buildLabelsPdf(data.s, pieces, layout === "custom" ? { id: "custom", label: "Custom", hint: "", page: [Math.max(50, custom.w), Math.max(50, custom.h)], cols: 1, rows: 1 } : layout);
       if (mode === "download") downloadBlob(blob, `labels-${data.s.tracking_number}.pdf`);
       else {
         const url = URL.createObjectURL(blob);
@@ -100,13 +101,27 @@ function Labels() {
         ))}
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-2">
-        {(["thermal", "a4"] as const).map((l) => (
-          <button key={l} onClick={() => setLayout(l)} className={`rounded-2xl border p-3 text-sm font-bold ${layout === l ? "border-primary bg-primary/5 ring-2 ring-primary" : "bg-card"}`}>
-            {l === "thermal" ? "4×6 in thermal (100×150 mm)" : "A4 sheet (4 per page)"}
+      <h2 className="mt-6 font-bold">Label format <span className="text-sm font-normal text-muted-foreground">· लेबल का साइज़ चुनें</span></h2>
+      <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-3">
+        {LABEL_LAYOUTS.map((l) => (
+          <button key={l.id} onClick={() => setLayout(l.id)} className={`relative rounded-2xl border p-3 text-left text-sm ${layout === l.id ? "border-primary bg-primary/5 ring-2 ring-primary" : "bg-card"}`}>
+            {l.recommended && <span className="absolute right-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">Best</span>}
+            <span className="block font-bold">{l.label}</span><span className="text-xs text-muted-foreground">{l.hint}</span>
           </button>
         ))}
+        <button onClick={() => setLayout("custom")} className={`rounded-2xl border p-3 text-left text-sm ${layout === "custom" ? "border-primary bg-primary/5 ring-2 ring-primary" : "bg-card"}`}>
+          <span className="block font-bold">Custom size</span><span className="text-xs text-muted-foreground">अपना साइज़ (mm)</span>
+        </button>
       </div>
+      {layout === "custom" && (
+        <div className="mt-3 flex gap-3">
+          {(["w", "h"] as const).map((k) => (
+            <label key={k} className="text-xs font-semibold text-muted-foreground">{k === "w" ? "Width mm" : "Height mm"}
+              <input type="number" min={50} max={300} value={custom[k]} onChange={(e) => setCustom({ ...custom, [k]: Number(e.target.value) })} className="mt-1 block h-10 w-28 rounded-md border bg-background px-2 text-foreground" />
+            </label>
+          ))}
+        </div>
+      )}
 
       <div className="mt-4 flex gap-2">
         <button onClick={() => generate("print")} disabled={busy || blocked} className="flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary font-bold text-primary-foreground disabled:opacity-40">

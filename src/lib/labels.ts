@@ -13,10 +13,10 @@ export type LabelShipment = {
 };
 export type LabelPiece = { piece_code: string; seq_no: number; total: number; weight_kg: number | null };
 
-async function code128(text: string) {
+async function code128(text: string, includetext = true) {
   const bwip = await import("bwip-js/browser");
   const canvas = document.createElement("canvas");
-  bwip.toCanvas(canvas, { bcid: "code128", text, scale: 3, height: 14, includetext: true, textxalign: "center" });
+  bwip.toCanvas(canvas, { bcid: "code128", text, scale: 3, height: 14, includetext, textxalign: "center" });
   return { url: canvas.toDataURL("image/png"), w: canvas.width, h: canvas.height };
 }
 async function qr(text: string) {
@@ -73,22 +73,32 @@ async function drawLabel(doc: Doc, s: LabelShipment, p: LabelPiece, x: number, y
   doc.text(`Booked ${new Date(s.created_at).toLocaleDateString("en-IN")} · Scan QR or visit ${publicBaseUrl().replace(/^https?:\/\//, "")}/track`, X(50), Y(141), { align: "center" });
 }
 
-export async function buildLabelsPdf(s: LabelShipment, pieces: LabelPiece[], layout: "thermal" | "a4") {
+export type LabelLayout = { id: string; label: string; hint: string; page: [number, number]; cols: number; rows: number; recommended?: boolean };
+/** Print formats. All sizes in mm; each label is scaled to fit its cell. */
+export const LABEL_LAYOUTS: LabelLayout[] = [
+  { id: "thermal", label: "4×6 in thermal", hint: "100×150 mm · courier standard", page: [101.6, 152.4], cols: 1, rows: 1, recommended: true },
+  { id: "thermal4x4", label: "4×4 in thermal", hint: "100×100 mm · small parcels", page: [101.6, 101.6], cols: 1, rows: 1 },
+  { id: "a4", label: "A4 · 4 per page", hint: "Normal office printer", page: [210, 297], cols: 2, rows: 2 },
+  { id: "a4x2", label: "A4 · 2 per page", hint: "Bigger, easy to read", page: [210, 297], cols: 1, rows: 2 },
+  { id: "a4x1", label: "A4 · 1 per page", hint: "Large boxes", page: [210, 297], cols: 1, rows: 1 },
+];
+
+export async function buildLabelsPdf(s: LabelShipment, pieces: LabelPiece[], layout: string | LabelLayout) {
   const { jsPDF } = await import("jspdf");
-  if (layout === "thermal") {
-    const doc = new jsPDF({ unit: "mm", format: [101.6, 152.4] });
-    for (const [i, p] of pieces.entries()) {
-      if (i) doc.addPage([101.6, 152.4]);
-      await drawLabel(doc, s, p, 0.8, 1.2, 100, 150);
-    }
-    return doc.output("blob");
-  }
-  // A4: 4 labels per sheet (2×2, 100×140 each)
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const L = typeof layout === "string" ? (LABEL_LAYOUTS.find((x) => x.id === layout) ?? LABEL_LAYOUTS[0]!) : layout;
+  const [pw, ph] = L.page;
+  const doc = new jsPDF({ unit: "mm", format: [pw, ph], orientation: pw > ph ? "landscape" : "portrait" });
+  const margin = L.cols * L.rows > 1 || pw > 120 ? 5 : 0.8;
+  const cw = (pw - margin * 2) / L.cols, ch = (ph - margin * 2) / L.rows;
+  const per = L.cols * L.rows;
   for (const [i, p] of pieces.entries()) {
-    if (i && i % 4 === 0) doc.addPage();
-    const slot = i % 4;
-    await drawLabel(doc, s, p, 5 + (slot % 2) * 100, 5 + Math.floor(slot / 2) * 144, 100, 142);
+    if (i && i % per === 0) doc.addPage([pw, ph], pw > ph ? "landscape" : "portrait");
+    const slot = i % per;
+    const k = Math.min(cw / 100, ch / 150);
+    const lw = 100 * k, lh = 150 * k;
+    const x = margin + (slot % L.cols) * cw + (cw - lw) / 2;
+    const y = margin + Math.floor(slot / L.cols) * ch + (ch - lh) / 2;
+    await drawLabel(doc, s, p, x, y, lw, lh);
   }
   return doc.output("blob");
 }
@@ -101,22 +111,49 @@ export function downloadBlob(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
-/** A4 sheet of barcode stickers (3×8 per page) for bulk seal / plastic-bag codes. */
-export async function buildCodeSheetPdf(codes: string[], title: string) {
+export type CodeStyle = "barcode" | "number" | "both" | "qr";
+export type CodeSheet = { id: string; label: string; page: [number, number]; cols: number; rows: number };
+export const CODE_SHEETS: CodeSheet[] = [
+  { id: "a4_24", label: "A4 · 24 stickers (3×8)", page: [210, 297], cols: 3, rows: 8 },
+  { id: "a4_40", label: "A4 · 40 small stickers (4×10)", page: [210, 297], cols: 4, rows: 10 },
+  { id: "roll_50x25", label: "Thermal roll 50×25 mm", page: [50, 25], cols: 1, rows: 1 },
+  { id: "roll_75x50", label: "Thermal roll 75×50 mm", page: [75, 50], cols: 1, rows: 1 },
+];
+
+/** Barcode sticker sheets for seal tags, plastic bags or any code. Style picks barcode, plain number, both or QR. */
+export async function buildCodeSheetPdf(codes: string[], title: string, opts: { style?: CodeStyle; sheet?: string } = {}) {
   const { jsPDF } = await import("jspdf");
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
-  const cols = 3, rows = 8, w = 66, h = 34, mx = 6, my = 12;
+  const style = opts.style ?? "both";
+  const S = CODE_SHEETS.find((x) => x.id === opts.sheet) ?? CODE_SHEETS[0]!;
+  const [pw, ph] = S.page;
+  const roll = S.cols * S.rows === 1;
+  const orient = pw > ph ? "landscape" : "portrait";
+  const doc = new jsPDF({ unit: "mm", format: [pw, ph], orientation: orient });
+  const mx = roll ? 1 : 6, my = roll ? 1 : 12;
+  const w = (pw - mx * 2) / S.cols, h = (ph - my - (roll ? 1 : 6)) / S.rows;
+  const per = S.cols * S.rows;
   for (let i = 0; i < codes.length; i++) {
-    const slot = i % (cols * rows);
-    if (i > 0 && slot === 0) doc.addPage();
-    if (slot === 0) { doc.setFontSize(8); doc.text(`${brand.name} · ${title}`, mx, 7); }
-    const x = mx + (slot % cols) * w, y = my + Math.floor(slot / cols) * h;
+    const slot = i % per;
+    if (i > 0 && slot === 0) doc.addPage([pw, ph], orient);
+    if (slot === 0 && !roll) { doc.setFontSize(8); doc.text(`${brand.name} · ${title}`, mx, 7); }
+    const x = mx + (slot % S.cols) * w, y = my + Math.floor(slot / S.cols) * h;
     const code = codes[i]!;
-    const b = await code128(code);
-    doc.setDrawColor(200); doc.rect(x + 1, y + 1, w - 2, h - 2);
-    const bw = w - 10, bh = Math.min(22, (bw * b.h) / b.w);
-    doc.addImage(b.url, "PNG", x + 5, y + 4, bw, bh);
-    doc.setFontSize(7); doc.text(title, x + w / 2, y + h - 3, { align: "center" });
+    if (!roll) { doc.setDrawColor(200); doc.rect(x + 0.5, y + 0.5, w - 1, h - 1); }
+    const pad = 2, small = Math.max(5, Math.min(8, h / 4));
+    if (style === "number") {
+      doc.setFont("courier", "bold"); doc.setFontSize(Math.min(18, w / (code.length * 0.45)));
+      doc.text(code, x + w / 2, y + h / 2 + 1, { align: "center" });
+    } else if (style === "qr") {
+      const s = Math.min(h - small - pad * 2, w - pad * 2);
+      doc.addImage(await qr(code), "PNG", x + (w - s) / 2, y + pad, s, s);
+      doc.setFont("courier", "bold"); doc.setFontSize(small); doc.text(code, x + w / 2, y + h - 1.5, { align: "center" });
+    } else {
+      const b = await code128(code, style === "both");
+      const bw = w - pad * 2, bh = Math.min(h - (style === "both" ? small : 0) - pad * 2, (bw * b.h) / b.w);
+      doc.addImage(b.url, "PNG", x + pad, y + pad, bw, bh);
+    }
+    doc.setFont("helvetica", "normal"); doc.setFontSize(Math.max(4, small - 2));
+    if (style !== "qr") doc.text(title, x + w / 2, y + h - 1.2, { align: "center" });
   }
   return doc.output("blob");
 }

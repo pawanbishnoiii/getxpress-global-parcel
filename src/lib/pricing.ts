@@ -45,13 +45,14 @@ export function zoneOf(fromPin: string, toPin: string): "local" | "regional" | "
 
 const zoneMultiplier = { local: 1, regional: 1.25, national: 1.6 } as const;
 
-export function quote(params: { fromPin: string; toPin: string; weightKg: number; service: ServiceLevel; dims?: Dims | undefined; pieces?: PieceInput[] | undefined; rates?: ServiceRates }) {
+export function quote(params: { fromPin: string; toPin: string; weightKg: number; service: ServiceLevel; dims?: Dims | undefined; pieces?: PieceInput[] | undefined; rates?: ServiceRates; extras?: number }) {
   const s = { ...services[params.service], ...params.rates?.[params.service] };
   const weight = params.pieces?.length ? piecesBillable(params.pieces) : billableWeight(params.weightKg, params.dims);
   const zone = zoneOf(params.fromPin, params.toPin);
-  const freight = (s.base + s.perKg * Math.max(0, weight - 0.5)) * zoneMultiplier[zone];
+  const handling = Math.max(0, params.extras ?? 0);
+  const freight = (s.base + s.perKg * Math.max(0, weight - 0.5)) * zoneMultiplier[zone] + handling;
   const gst = freight * 0.18;
-  return { weight, zone, freight: round(freight), gst: round(gst), total: round(freight + gst), eta: s.eta };
+  return { weight, zone, handling: round(handling), freight: round(freight), gst: round(gst), total: round(freight + gst), eta: s.eta };
 }
 
 const round = (n: number) => Math.round(n * 100) / 100;
