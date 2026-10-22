@@ -16,6 +16,7 @@
 - Admin parcel/service/handling prices and policy consent; prohibited-item screening
 - Reviewed migration conflict, applied additive shipping fields and quote request storage
 - Available admin dashboard/pages visited; role navigation tests passed
+- International quote read back on admin dashboard; onboarding Raisinghnagar search verified
 - Public sitemap and unique page metadata checked; all 57 tests passed
 
 ## Open
