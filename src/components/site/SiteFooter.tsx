@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import solidLogo from "@/assets/getxpress-speed-secondary.png.asset.json";
+import { BrandMark } from "./BrandMark";
 import { brand } from "@/lib/brand";
 
 export function SiteFooter() {
@@ -7,7 +7,7 @@ export function SiteFooter() {
     <footer className="bg-ink px-4 pb-32 pt-16 text-ink-foreground md:px-8 md:pb-12">
       <div className="mx-auto grid max-w-[1240px] gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
         <div>
-          <img src={solidLogo.url} alt="Get Xpress" loading="lazy" decoding="async" width={208} height={56} className="h-14 w-52 object-contain" />
+          <BrandMark light className="w-56" />
           <h2 className="mt-6 text-2xl font-extrabold">Every parcel.<br/>Moving forward.</h2>
           <p className="mt-4 max-w-sm text-sm leading-6 opacity-70">Courier and shipping across India, with Get Xpress hubs and delivery partners.</p>
           <p className="mt-4 text-xs opacity-50">{brand.domain} · {brand.supportEmail}</p>
