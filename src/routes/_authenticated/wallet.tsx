@@ -73,6 +73,7 @@ function Withdraw({ balance }: { balance: number }) {
     if (details.trim().length < 5) return toast.error(method === "upi" ? "Enter your UPI ID" : "Enter account number and IFSC");
     const r = await supabase.from("wallet_withdrawals").insert({ amount, payout_method: method, payout_details: details.trim() });
     if (r.error) toast.error(r.error.message); else { toast.success("Withdrawal requested"); setDetails(""); qc.invalidateQueries({ queryKey: ["my-withdrawals"] }); }
+    return undefined;
   };
   return (
     <div className="mt-5 rounded-2xl border bg-card p-5">
