@@ -59,3 +59,32 @@ function WalletPage() {
     </AppShell>
   );
 }
+
+function Withdraw({ balance }: { balance: number }) {
+  const qc = useQueryClient();
+  const [amount, setAmount] = useState(500);
+  const [method, setMethod] = useState<"upi" | "bank">("upi");
+  const [details, setDetails] = useState("");
+  const { data: reqs = [] } = useQuery({ queryKey: ["my-withdrawals"], queryFn: async () => (await supabase.from("wallet_withdrawals").select("*").order("created_at", { ascending: false }).limit(20)).data ?? [] });
+  const pending = reqs.filter((r) => r.status === "pending" || r.status === "approved").reduce((a, r) => a + Number(r.amount), 0);
+  const submit = async () => {
+    if (amount < 100) return toast.error("Minimum withdrawal is ₹100");
+    if (amount > balance - pending) return toast.error("Amount is more than your available balance");
+    if (details.trim().length < 5) return toast.error(method === "upi" ? "Enter your UPI ID" : "Enter account number and IFSC");
+    const r = await supabase.from("wallet_withdrawals").insert({ amount, payout_method: method, payout_details: details.trim() });
+    if (r.error) toast.error(r.error.message); else { toast.success("Withdrawal requested"); setDetails(""); qc.invalidateQueries({ queryKey: ["my-withdrawals"] }); }
+  };
+  return (
+    <div className="mt-5 rounded-2xl border bg-card p-5">
+      <h3 className="flex items-center gap-2 font-bold"><ArrowUpRight className="h-5 w-5 text-primary" />Withdraw money</h3>
+      <p className="text-xs text-muted-foreground">Available ₹{Math.max(0, balance - pending).toLocaleString("en-IN")} · admin reviews and pays out, then your wallet is debited.</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-[140px_120px_1fr_auto]">
+        <input aria-label="Withdraw amount" type="number" min={100} value={amount} onChange={(e) => setAmount(Number(e.target.value))} className="h-11 rounded-xl border bg-background px-3 font-bold" />
+        <select aria-label="Payout method" value={method} onChange={(e) => setMethod(e.target.value as "upi")} className="h-11 rounded-xl border bg-background px-3"><option value="upi">UPI</option><option value="bank">Bank</option></select>
+        <input aria-label="Payout details" maxLength={200} value={details} onChange={(e) => setDetails(e.target.value)} placeholder={method === "upi" ? "name@upi" : "Account no. · IFSC · name"} className="h-11 rounded-xl border bg-background px-3" />
+        <Button className="h-11" onClick={submit}>Request payout</Button>
+      </div>
+      {reqs.length > 0 && <ul className="mt-4 divide-y text-sm">{reqs.map((r) => <li key={r.id} className="flex justify-between py-2"><span>{new Date(r.created_at).toLocaleDateString("en-IN")} · {r.payout_method.toUpperCase()}</span><span className="font-semibold">₹{Number(r.amount).toLocaleString("en-IN")} · <span className="capitalize">{r.status}</span></span></li>)}</ul>}
+    </div>
+  );
+}
