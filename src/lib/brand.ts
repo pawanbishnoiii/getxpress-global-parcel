@@ -1,7 +1,7 @@
 // Central brand config — change name, domain, contacts and public URL here.
 // Domain is the intended brand address; QR URLs use the active app origin until configured.
 export const brand = {
-  name: "Get Xpress",
+  name: "GetXpress",
   domain: "getxpress.in",
   tagline: "Every parcel. Moving forward.",
   supportPhone: "+91 00000 00000",
