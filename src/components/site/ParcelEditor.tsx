@@ -11,7 +11,7 @@ import imgCard from "@/assets/parcel-card.webp";
 import imgA4 from "@/assets/parcel-a4.webp";
 import imgPack from "@/assets/parcel-docpack.webp";
 const PRESET_IMG: Record<string, string> = { small: imgSmall, medium: imgMedium, large: imgLarge, extra_large: imgXl, document: imgFlyer, card: imgCard, a4: imgA4, document_pack: imgPack };
-export function ParcelEditor({ pieces, onChange }: { pieces:BookingDraft["pieces"]; onChange:(pieces:BookingDraft["pieces"])=>void }) {
+export function ParcelEditor({ pieces, onChange }: { pieces:BookingDraft["pieces"]; presets?: unknown; onChange:(pieces:BookingDraft["pieces"])=>void }) {
   const update=(i:number,p:Partial<BookingDraft["pieces"][number]>)=>onChange(pieces.map((x,j)=>j===i?{...x,...p}:x));
   return <div className="space-y-5">{pieces.map((p,i)=><div key={p.id} className="rounded-lg border bg-card p-4 md:p-5">
     <div className="mb-4 flex items-center justify-between"><h3 className="font-bold">Parcel #{i+1}</h3>{pieces.length>1&&<Button variant="ghost" size="icon" aria-label={`Remove parcel ${i+1}`} onClick={()=>onChange(pieces.filter((_,j)=>j!==i))}><Trash2 /></Button>}</div>
