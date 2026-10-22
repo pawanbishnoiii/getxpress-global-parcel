@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { ImportIndiaPins } from "@/components/site/ImportIndiaPins";
 import { useRoles } from "@/hooks/use-roles";
+import { displayZone, tierFor } from "@/lib/pin-zones";
 export const Route=createFileRoute("/_authenticated/pincodes")({head:()=>({meta:[{title:"Pincode master — Get Xpress Admin"},{name:"description",content:"Manage all Get Xpress pincodes, locations and serviceability."},{property:"og:title",content:"Get Xpress pincode master"},{property:"og:description",content:"City, hub and serviceability management."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:Pincodes});
 const empty={pincode:"",city:"",state:"",zone:"",tier:"",hub_name:"",active:true};
 function Pincodes(){const {isAdmin}=useRoles(),qc=useQueryClient();const [search,setSearch]=useState(""),[q,setQ]=useState(""),[page,setPage]=useState(0),[form,setForm]=useState<typeof empty|null>(null),[existing,setExisting]=useState(false);useEffect(()=>{const t=setTimeout(()=>{setQ(search);setPage(0);},200);return()=>clearTimeout(t);},[search]);const {data,error}=useQuery({queryKey:["pincode-master",q,page],enabled:isAdmin,queryFn:async()=>{let request=supabase.from("pincodes").select("*",{count:"exact"}).order("pincode").range(page*30,page*30+29);if(q)request=/^\d+$/.test(q)?request.like("pincode",`${q}%`):request.ilike("city",`${q.replace(/[%_]/g,"")}%`);const r=await request;if(r.error)throw r.error;return r;}});
