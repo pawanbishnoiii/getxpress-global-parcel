@@ -1,0 +1,10 @@
+CREATE OR REPLACE FUNCTION public.admin_users()
+ RETURNS TABLE(user_id uuid, full_name text, phone text, city text, roles text[], created_at timestamp with time zone, last_seen_at timestamp with time zone)
+ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO 'public'
+AS $function$
+BEGIN
+  IF NOT public.has_role(auth.uid(),'admin') THEN RAISE EXCEPTION 'Admin only'; END IF;
+  RETURN QUERY SELECT u.id, COALESCE(p.full_name, u.raw_user_meta_data->>'full_name', u.email::text), COALESCE(p.phone, u.phone::text), p.city,
+    (SELECT COALESCE(array_agg(r.role::text), '{}') FROM public.user_roles r WHERE r.user_id = u.id), u.created_at, COALESCE(p.last_seen_at, u.last_sign_in_at)
+  FROM auth.users u LEFT JOIN public.profiles p ON p.id = u.id ORDER BY u.created_at DESC LIMIT 5000;
+END $function$;

@@ -35,3 +35,15 @@
 - [x] Link managed Google Maps to this remix
 - [x] Remove copied migrations and snapshots; initialize empty PostgreSQL journal without changing stored data
 - [x] Repair malformed SMTP page header blocking preview
+
+## Oct 23 batch
+- [x] Warehouse hero photo with branding + female ops lead
+- [x] GXQ international references trackable on /track
+- [x] Removed /address-check; dashboard greeting removed
+- [x] Users list includes every account
+- [ ] Isolated test setup + per-role accounts (needs a separate test backend)
+- [ ] International: auto dial code per country, 8–12 city suggestions
+- [ ] Staff console rework (country → number → user → area/hub PIN; 28 states; UT list; area names)
+- [ ] Manual UPI/bank deposit & withdraw with UTR + photo, admin approval; Razorpay option
+- [ ] Area manager map of assigned PINs; network/state manager/hub dashboards & CRM
+- [ ] Admin on/off for roles and services; email logo + automation upgrade; GSAP scroll effect

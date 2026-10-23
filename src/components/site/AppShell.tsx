@@ -26,7 +26,6 @@ export const NAV: { group: string; items: NavItem[] }[] = [
   ] },
   { group: "Operations", items: [
     { to: "/scan", label: "Scan parcels", icon: ScanLine, staff: true },
-    { to: "/address-check", label: "Address check (AI)", icon: Wand2, staff: true },
     { to: "/tally", label: "Delivery tally", icon: ClipboardCheck, staff: true },
     { to: "/bags", label: "Dispatch center", icon: Boxes, staff: true },
     { to: "/wallet", label: "Wallet", icon: Wallet, wallet: true },
