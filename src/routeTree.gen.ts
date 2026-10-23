@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CalculatorRouteImport } from './routes/calculator'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as InternationalRouteImport } from './routes/international'
 import { Route as PointPartnerRouteImport } from './routes/point-partner'
@@ -82,6 +83,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalculatorRoute = CalculatorRouteImport.update({
+  id: '/calculator',
+  path: '/calculator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRoute = DemoRouteImport.update({
@@ -397,6 +403,7 @@ const ApiPublicWhatsappWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/calculator': typeof CalculatorRoute
   '/demo': typeof DemoRoute
   '/international': typeof InternationalRoute
   '/point-partner': typeof PointPartnerRoute
@@ -458,6 +465,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/calculator': typeof CalculatorRoute
   '/demo': typeof DemoRoute
   '/international': typeof InternationalRoute
   '/point-partner': typeof PointPartnerRoute
@@ -521,6 +529,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/calculator': typeof CalculatorRoute
   '/demo': typeof DemoRoute
   '/international': typeof InternationalRoute
   '/point-partner': typeof PointPartnerRoute
@@ -584,6 +593,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/calculator'
     | '/demo'
     | '/international'
     | '/point-partner'
@@ -645,6 +655,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/calculator'
     | '/demo'
     | '/international'
     | '/point-partner'
@@ -707,6 +718,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/calculator'
     | '/demo'
     | '/international'
     | '/point-partner'
@@ -770,6 +782,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CalculatorRoute: typeof CalculatorRoute
   DemoRoute: typeof DemoRoute
   InternationalRoute: typeof InternationalRoute
   PointPartnerRoute: typeof PointPartnerRoute
@@ -805,6 +818,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calculator': {
+      id: '/calculator'
+      path: '/calculator'
+      fullPath: '/calculator'
+      preLoaderRoute: typeof CalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo': {
@@ -1313,6 +1333,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CalculatorRoute: CalculatorRoute,
   DemoRoute: DemoRoute,
   InternationalRoute: InternationalRoute,
   PointPartnerRoute: PointPartnerRoute,
