@@ -13,7 +13,9 @@ export const manageStaff = createServerFn({method:'POST'}).middleware([requireUs
   .handler(async({data,context})=>{
     const r=await context.supabase.rpc('manage_staff_assignment',{
       _user:data.user,_role:data.role,_enabled:data.enabled,
-      _state:data.state,_area:data.area,_pin:data.pin,
+      ...(data.state?{_state:data.state}:{}),
+      ...(data.area?{_area:data.area}:{}),
+      ...(data.pin?{_pin:data.pin}:{}),
     });
     if(r.error) throw new Error(r.error.message);
     return {ok:true};
