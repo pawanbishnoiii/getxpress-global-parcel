@@ -81,10 +81,10 @@ function Dashboard() {
               <div className="mt-4 h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={sum.last7.map((x) => ({ day: new Date(x.d).toLocaleDateString("en-IN", { weekday: "short" }), n: x.n }))}>
-                    <defs><linearGradient id="gx" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.5} /><stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} /></linearGradient></defs>
+                    <defs><linearGradient id="gx" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--primary)" stopOpacity={0.5} /><stop offset="100%" stopColor="var(--primary)" stopOpacity={0} /></linearGradient></defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="day" fontSize={11} /><YAxis allowDecimals={false} fontSize={11} width={28} /><Tooltip />
-                    <Area type="monotone" dataKey="n" name="Bookings" stroke="hsl(var(--primary))" fill="url(#gx)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="n" name="Bookings" stroke="var(--primary)" fill="url(#gx)" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
