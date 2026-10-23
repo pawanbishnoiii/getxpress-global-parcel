@@ -67,11 +67,7 @@ export const intlQuote = createServerFn({ method: "POST" })
     const zone = zoneFor(c, data.postal);
     if (!zone || !c.rates[zone]) return { ok: false as const, error: "We couldn't match this destination pincode/postal code. Please check it." };
     const kg = chargeableKg(Math.max(actual, volumetric), c.rates[zone]!);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: s } = await supabaseAdmin.from("app_settings").select("intl_markup_percent,intl_markup_flat").eq("id", true).maybeSingle();
-    const pct = Number(s?.intl_markup_percent ?? 0), flat = Number(s?.intl_markup_flat ?? 0);
     const express = withMarkup(basePrice(c.rates[zone]!, kg), pct, flat);
-    const declared = data.items.reduce((s, i) => s + i.qty * i.value, 0);
     return {
       ok: true as const, zone: zone === "_" ? null : zone, actualKg: +actual.toFixed(2), volumetricKg: +volumetric.toFixed(2), chargeableKg: kg, declared,
       options: [
