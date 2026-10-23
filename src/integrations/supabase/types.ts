@@ -835,6 +835,7 @@ export type Database = {
       }
       pincode_allocations: {
         Row: {
+          area: string | null
           assigned_by: string
           created_at: string
           effective_from: string
@@ -847,6 +848,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          area?: string | null
           assigned_by: string
           created_at?: string
           effective_from?: string
@@ -859,6 +861,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          area?: string | null
           assigned_by?: string
           created_at?: string
           effective_from?: string
@@ -1551,6 +1554,48 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_deposits: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          created_at: string
+          id: string
+          method: string
+          proof_path: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+          utr: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          method?: string
+          proof_path?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+          utr: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string
+          proof_path?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+          utr?: string
         }
         Relationships: []
       }

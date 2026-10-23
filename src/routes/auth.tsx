@@ -117,7 +117,6 @@ function AuthPage() {
       <div className="flex items-center justify-center bg-hero px-5 py-10">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm">
           <Link to="/" className="lg:hidden"><BrandMark /></Link>
-          <img src={hero} alt="" className="mt-6 h-40 w-full rounded-3xl object-cover lg:hidden" />
           <h1 className="mt-8 font-display text-4xl font-extrabold tracking-tight">Welcome to Get Xpress</h1>
           <p className="mt-2 text-muted-foreground">Sign in with your mobile number to book and track parcels.</p>
 

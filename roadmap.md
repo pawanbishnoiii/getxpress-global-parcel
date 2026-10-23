@@ -44,6 +44,8 @@
 - [ ] Isolated test setup + per-role accounts (needs a separate test backend)
 - [ ] International: auto dial code per country, 8–12 city suggestions
 - [ ] Staff console rework (country → number → user → area/hub PIN; 28 states; UT list; area names)
-- [ ] Manual UPI/bank deposit & withdraw with UTR + photo, admin approval; Razorpay option
-- [ ] Area manager map of assigned PINs; network/state manager/hub dashboards & CRM
+- [x] Manual UPI/bank deposit with UTR + photo, admin approval credits wallet
+- [x] Staff assignment (user → role → state → area → hub PIN) + territory map
+- [ ] network/state manager/hub dashboards & CRM
 - [ ] Admin on/off for roles and services; email logo + automation upgrade; GSAP scroll effect
+- [x] Tracking question box with code entry on /track; international air-weight + customs checklist; hero regenerated; phone sign-in without photo
