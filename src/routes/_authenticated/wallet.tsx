@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -24,14 +24,15 @@ function WalletPage() {
     return () => { supabase.removeChannel(ch); };
   }, [qc]);
   const sum = (k: string) => tx.filter((t) => t.kind === k).reduce((a, t) => a + Number(t.amount), 0);
-  const balance = tx.reduce((a, t) => a + Number(t.amount), 0);
+  const {data:walletBalance}=useQuery({queryKey:["wallet-balance",me,tx.length],enabled:!!me,queryFn:async()=>Number((await supabase.rpc("wallet_balance",{_user:me??""})).data??0)});
+  const balance = walletBalance??0;
   return (
     <AppShell wide>
-      <PageHeader title="Wallet" sub="Bookings are paid from this wallet; commissions are credited here." />
+      <PageHeader title="Wallet" sub="Bookings, deposits and payouts" action={<Button asChild variant="outline"><Link to="/wallet-transactions">Transactions</Link></Button>} />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Balance (₹)" value={balance.toLocaleString("en-IN")} tone="ink" />
         <Stat label="Added (₹)" value={sum("topup").toLocaleString("en-IN")} />
-        <Stat label="Bookings (₹)" value={Math.abs(sum("booking")).toLocaleString("en-IN")} tone="primary" />
+        <Stat label="Bookings (₹)" value={Math.abs(sum("order_debit")).toLocaleString("en-IN")} tone="primary" />
         <Stat label="Commission (₹)" value={sum("commission").toLocaleString("en-IN")} tone="lime" />
       </div>
       <Deposit />

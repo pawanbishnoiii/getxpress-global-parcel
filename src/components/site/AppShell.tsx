@@ -9,6 +9,8 @@ import { useProfile } from "@/hooks/use-profile";
 import { ROLE_LABEL, useRoles } from "@/hooks/use-roles";
 import { supabase } from "@/integrations/supabase/client";
 
+import { NeedHelp } from "./NeedHelp";
+import { Button } from "@/components/ui/button";
 import { navVisible } from "@/lib/access";
 
 type NavItem = { to: string; label: string; icon: typeof Home; staff?: boolean; admin?: boolean; wallet?: boolean; customer?: boolean };
@@ -29,6 +31,7 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     { to: "/tally", label: "Delivery tally", icon: ClipboardCheck, staff: true },
     { to: "/bags", label: "Dispatch center", icon: Boxes, staff: true },
     { to: "/wallet", label: "Wallet", icon: Wallet, wallet: true },
+    { to: "/wallet-transactions", label: "Wallet transactions", icon: History },
     { to: "/analytics", label: "Analytics", icon: BarChart3, staff: true },
     { to: "/admin/staff", label: "Staff & territory map", icon: MapPin, staff: true },
     { to: "/team-prices", label: "Team prices", icon: Coins, staff: true },
@@ -129,6 +132,8 @@ export function AppShell({ children, requirePhone = true, wide = false, skipOnbo
             <div className="flex items-center gap-2">
               <Link to={isStaff ? "/scan" : "/users/dashboard"} className="hidden items-center gap-1.5 rounded-xl border bg-card px-4 py-2 text-sm font-bold sm:flex"><ScanLine className="h-4 w-4" /> Scan</Link>
               <Link to="/users/addorder" className="hidden items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground sm:flex"><PackagePlus className="h-4 w-4" /> Add order</Link>
+              <NeedHelp />
+              <Button variant="outline" size="icon" aria-label="Search pages" title="Search pages" onClick={()=>{if(window.innerWidth<1024)setMenuOpen(true); else document.querySelector<HTMLInputElement>('[aria-label="Find a page"]')?.focus();}}><Search/></Button>
               <FullscreenToggle />
               <Link to="/notifications" aria-label="Notifications" className="grid h-10 w-10 place-items-center rounded-xl border bg-card"><Bell className="h-4 w-4" /></Link>
               
@@ -143,9 +148,10 @@ export function AppShell({ children, requirePhone = true, wide = false, skipOnbo
           <button aria-label="Close menu" className="absolute inset-0 bg-ink/50 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
           <aside className="absolute inset-y-0 left-0 flex w-[82%] max-w-xs flex-col bg-ink text-ink-foreground animate-in slide-in-from-left duration-200">
             <div className="mx-5 mb-3 mt-6"><BrandMark light className="w-40" /></div>
+            <input aria-label="Search mobile pages" placeholder="Find a page…" value={navQ} onChange={e=>setNavQ(e.target.value)} className="mx-4 mb-4 rounded-md border bg-ink px-3 py-2"/>
             <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-6">
               {NAV.map((g) => {
-                const items = g.items.filter(visible);
+                const items = g.items.filter(visible).filter(i=>!navQ||i.label.toLowerCase().includes(navQ.toLowerCase()));
                 if (!items.length) return null;
                 return (
                   <div key={g.group}>

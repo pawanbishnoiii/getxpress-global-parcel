@@ -27,6 +27,7 @@ export type Database = {
           facebook_url: string | null
           footer_text: string | null
           gstin: string | null
+          hero_image_url: string | null
           icon_url: string | null
           id: boolean
           instagram_url: string | null
@@ -61,6 +62,7 @@ export type Database = {
           facebook_url?: string | null
           footer_text?: string | null
           gstin?: string | null
+          hero_image_url?: string | null
           icon_url?: string | null
           id?: boolean
           instagram_url?: string | null
@@ -95,6 +97,7 @@ export type Database = {
           facebook_url?: string | null
           footer_text?: string | null
           gstin?: string | null
+          hero_image_url?: string | null
           icon_url?: string | null
           id?: boolean
           instagram_url?: string | null
@@ -1820,6 +1823,17 @@ export type Database = {
       }
       import_pincodes: { Args: { _rows: Json }; Returns: number }
       is_staff: { Args: { _u: string }; Returns: boolean }
+      manage_staff_assignment: {
+        Args: {
+          _area?: string
+          _enabled: boolean
+          _pin?: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _state?: string
+          _user: string
+        }
+        Returns: undefined
+      }
       manages_state: {
         Args: { _state: string; _user: string }
         Returns: boolean

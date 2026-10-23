@@ -154,3 +154,7 @@
 .enterprise-table td { padding: 14px 12px; border-bottom: 1px solid var(--border); }
 @media(max-width:640px) { .hero-photo { min-height: 350px; } .hero-photo::after { background: linear-gradient(90deg,var(--card),color-mix(in oklab,var(--card) 90%,transparent) 45%,color-mix(in oklab,var(--card) 50%,transparent)); } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation: none !important; transition: none !important; } }
+
+.showcase-hero { min-height: 490px; }
+.showcase-hero .hero-photo-img { pointer-events:none; }
+@media(min-width:768px) { .showcase-hero .hero-photo-img { mask-image:linear-gradient(to right,transparent 0%,black 26%); } }

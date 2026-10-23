@@ -44,6 +44,7 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedTeamPricesRouteImport } from './routes/_authenticated/team-prices'
 import { Route as AuthenticatedVerifyPhoneRouteImport } from './routes/_authenticated/verify-phone'
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
+import { Route as AuthenticatedWalletTransactionsRouteImport } from './routes/_authenticated/wallet-transactions'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 import { Route as AuthenticatedAdminBarcodeRouteImport } from './routes/_authenticated/admin.barcode'
 import { Route as AuthenticatedAdminCommissionsRouteImport } from './routes/_authenticated/admin.commissions'
@@ -248,6 +249,12 @@ const AuthenticatedWalletRoute = AuthenticatedWalletRouteImport.update({
   path: '/wallet',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedWalletTransactionsRoute =
+  AuthenticatedWalletTransactionsRouteImport.update({
+    id: '/wallet-transactions',
+    path: '/wallet-transactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   id: '/admin/audit',
   path: '/admin/audit',
@@ -422,6 +429,7 @@ export interface FileRoutesByFullPath {
   '/team-prices': typeof AuthenticatedTeamPricesRoute
   '/verify-phone': typeof AuthenticatedVerifyPhoneRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/wallet-transactions': typeof AuthenticatedWalletTransactionsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/barcode': typeof AuthenticatedAdminBarcodeRoute
   '/admin/commissions': typeof AuthenticatedAdminCommissionsRoute
@@ -482,6 +490,7 @@ export interface FileRoutesByTo {
   '/team-prices': typeof AuthenticatedTeamPricesRoute
   '/verify-phone': typeof AuthenticatedVerifyPhoneRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/wallet-transactions': typeof AuthenticatedWalletTransactionsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/barcode': typeof AuthenticatedAdminBarcodeRoute
   '/admin/commissions': typeof AuthenticatedAdminCommissionsRoute
@@ -544,6 +553,7 @@ export interface FileRoutesById {
   '/_authenticated/team-prices': typeof AuthenticatedTeamPricesRoute
   '/_authenticated/verify-phone': typeof AuthenticatedVerifyPhoneRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
+  '/_authenticated/wallet-transactions': typeof AuthenticatedWalletTransactionsRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/barcode': typeof AuthenticatedAdminBarcodeRoute
   '/_authenticated/admin/commissions': typeof AuthenticatedAdminCommissionsRoute
@@ -606,6 +616,7 @@ export interface FileRouteTypes {
     | '/team-prices'
     | '/verify-phone'
     | '/wallet'
+    | '/wallet-transactions'
     | '/admin/audit'
     | '/admin/barcode'
     | '/admin/commissions'
@@ -666,6 +677,7 @@ export interface FileRouteTypes {
     | '/team-prices'
     | '/verify-phone'
     | '/wallet'
+    | '/wallet-transactions'
     | '/admin/audit'
     | '/admin/barcode'
     | '/admin/commissions'
@@ -727,6 +739,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team-prices'
     | '/_authenticated/verify-phone'
     | '/_authenticated/wallet'
+    | '/_authenticated/wallet-transactions'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/barcode'
     | '/_authenticated/admin/commissions'
@@ -1018,6 +1031,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWalletRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/wallet-transactions': {
+      id: '/_authenticated/wallet-transactions'
+      path: '/wallet-transactions'
+      fullPath: '/wallet-transactions'
+      preLoaderRoute: typeof AuthenticatedWalletTransactionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/audit': {
       id: '/_authenticated/admin/audit'
       path: '/admin/audit'
@@ -1213,6 +1233,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTeamPricesRoute: typeof AuthenticatedTeamPricesRoute
   AuthenticatedVerifyPhoneRoute: typeof AuthenticatedVerifyPhoneRoute
   AuthenticatedWalletRoute: typeof AuthenticatedWalletRoute
+  AuthenticatedWalletTransactionsRoute: typeof AuthenticatedWalletTransactionsRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminBarcodeRoute: typeof AuthenticatedAdminBarcodeRoute
   AuthenticatedAdminCommissionsRoute: typeof AuthenticatedAdminCommissionsRoute
@@ -1260,6 +1281,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTeamPricesRoute: AuthenticatedTeamPricesRoute,
   AuthenticatedVerifyPhoneRoute: AuthenticatedVerifyPhoneRoute,
   AuthenticatedWalletRoute: AuthenticatedWalletRoute,
+  AuthenticatedWalletTransactionsRoute: AuthenticatedWalletTransactionsRoute,
   AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
   AuthenticatedAdminBarcodeRoute: AuthenticatedAdminBarcodeRoute,
   AuthenticatedAdminCommissionsRoute: AuthenticatedAdminCommissionsRoute,

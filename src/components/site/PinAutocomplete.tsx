@@ -53,7 +53,7 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
         {city && !compact && <span className="block truncate text-xs text-muted-foreground">{city}</span>}
       </label>
       {open && !busy && hits.length === 0 && text.trim().length >= 2 && (
-        <p role="status" className="absolute z-50 mt-1 w-full rounded-lg border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-soft">{failed ? "Location search is unavailable right now. Type the 6-digit PIN and pick state and district below." : /^\d{6}$/.test(text.trim()) ? "This PIN isn't in our list yet — you can still continue and pick state and district below." : "No match. Try a 6-digit PIN or another spelling of the town."}</p>
+        <p role="status" className="absolute z-50 mt-1 w-full rounded-lg border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-soft">{failed ? "Location search is unavailable right now. Type the 6-digit PIN and pick state and district below." : /^\d{6}$/.test(text.trim()) ? "City/State not found for this pincode. Check the PIN or enter the location manually." : "No match. Try a 6-digit PIN or another spelling of the town."}</p>
       )}
       {open && hits.length > 0 && (
         <div className="absolute z-50 mt-1 max-h-72 w-full overflow-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-soft">
@@ -63,7 +63,8 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
               <MapPin className={`mt-0.5 h-4 w-4 shrink-0 ${h.source === "map" ? "text-accent-foreground" : "text-primary"}`} />
               <span className="min-w-0">
                 <span className="font-mono font-bold">{h.pincode}</span> <span className="font-semibold">{h.city}</span>
-                <span className="block truncate text-xs text-muted-foreground">{h.source === "map" ? h.label : `${h.state}${h.zone ? ` · ${h.zone}` : ""}`}</span>
+                <span className="block truncate text-xs text-muted-foreground">{h.source === "map" ? h.label : `${h.state}${h.district ? ` · ${h.district}` : ""}${h.hub_name ? ` · Hub: ${h.hub_name}` : ""}`}</span>
+                {h.areas?.length ? <span className="block truncate text-xs text-muted-foreground">{h.areas.slice(0,3).join(" · ")}</span> : null}
               </span>
             </Button>
           ))}

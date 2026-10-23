@@ -61,6 +61,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
   const checkParty = async (p: BookingDraft["sender"], who: string) => {
     if (p.name.trim().length < 2) { toast.error(`${who}: enter full name / पूरा नाम लिखें`); return false; }
     if (!/^[6-9]\d{9}$/.test(p.phone)) { toast.error(`${who}: enter a valid 10-digit mobile / सही मोबाइल नंबर`); return false; }
+    if(p.alternate_phone&&!/^[6-9]\d{9}$/.test(p.alternate_phone)){toast.error(`${who}: check alternate mobile number`);return false;}
     if (p.house.trim().length < 1) { toast.error(`${who}: enter house / flat number`); return false; }
     if (p.street.trim().length < 2) { toast.error(`${who}: enter street or colony`); return false; }
     if (p.city.trim().length < 2) { toast.error(`${who}: enter city / town`); return false; }
@@ -73,6 +74,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
   const next = async () => {
     if (d.step < 2 && !await checkParty(d.step === 0 ? d.sender : d.receiver, d.step === 0 ? "Sender" : "Receiver")) return;
     if (d.step === 1 && d.sender.phone === d.receiver.phone) { toast.error("Sender and receiver mobile must be different."); return; }
+    if(d.step===1&&!d.billing_same_as_delivery&&(!d.billing||!await checkParty(d.billing,"Billing")))return;
     if (d.step === 2) {
       if (d.pieces.some((p) => p.weight_kg < 0.05 || Object.values(p.dims).some((v) => v < 1))) { toast.error("Enter valid parcel weight and size."); return; }
       const over = d.pieces.find((p) => { const pr = presets.find((x) => x.id === p.preset); return pr && pr.max_kg > 0 && p.weight_kg > pr.max_kg; });
@@ -98,7 +100,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
     if (otpCode.length !== 6) { toast.error("Enter the 6-digit OTP."); return; }
     setBusy(true);
     try {
-      const result = await create({ data: { service: d.service, sender: { name: d.sender.name, phone: d.sender.phone, pincode: d.sender.pincode, city: d.sender.city, address: composeAddress(d.sender),state:d.sender.state,district:d.sender.district,email:d.sender.email }, receiver: { name: d.receiver.name, phone: d.receiver.phone, pincode: d.receiver.pincode, city: d.receiver.city, address: composeAddress(d.receiver),state:d.receiver.state,district:d.receiver.district,email:d.receiver.email }, pieces: d.pieces.map((x) => ({ weight_kg: x.weight_kg, dims: x.dims, box_preset: x.preset })), contents: d.contents, declared_value: d.declared_value, payment_method: d.payment_method, booking_otp: otpCode, policy_accepted:true, is_fragile: d.is_fragile, has_electronics: d.has_electronics, photos, ...(coupon ? { coupon_code: coupon.code } : {}), ...(d.sender.lat != null && d.sender.lng != null ? { pickup: { lat: d.sender.lat, lng: d.sender.lng } } : {}) } });
+      const result = await create({ data: { service: d.service,billing_same_as_delivery:d.billing_same_as_delivery,...(!d.billing_same_as_delivery&&d.billing?{billing:{...d.billing,address:composeAddress(d.billing)}}:{}), sender: { name: d.sender.name, phone: d.sender.phone, pincode: d.sender.pincode, city: d.sender.city, address: composeAddress(d.sender),state:d.sender.state,district:d.sender.district,email:d.sender.email,alternate_phone:d.sender.alternate_phone,country:d.sender.country }, receiver: { name: d.receiver.name, phone: d.receiver.phone, pincode: d.receiver.pincode, city: d.receiver.city, address: composeAddress(d.receiver),state:d.receiver.state,district:d.receiver.district,email:d.receiver.email,alternate_phone:d.receiver.alternate_phone,country:d.receiver.country }, pieces: d.pieces.map((x) => ({ weight_kg: x.weight_kg, dims: x.dims, box_preset: x.preset })), contents: d.contents, declared_value: d.declared_value, payment_method: d.payment_method, booking_otp: otpCode, policy_accepted:true, is_fragile: d.is_fragile, has_electronics: d.has_electronics, photos, ...(coupon ? { coupon_code: coupon.code } : {}), ...(d.sender.lat != null && d.sender.lng != null ? { pickup: { lat: d.sender.lat, lng: d.sender.lng } } : {}) } });
       setOtp(null); setOtpCode(""); localStorage.removeItem(DRAFT_KEY); sessionStorage.removeItem(DRAFT_KEY); qc.invalidateQueries();
       if (result.status === "awaiting_payment") { navigate({ to: "/pay/$shipmentId", params: { shipmentId: result.id } }); return; }
       setDone(result as Done);
@@ -131,6 +133,8 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
         onPick={(p) => setD((x) => ({ ...x, [side]: { ...x[side], pincode: p.pincode, city: p.city, ...(p.lat != null ? { lat: p.lat, lng: p.lng } : {}) } }))} />}
     </div>)}</div>}
 
+    {!compact&&d.step===1&&<div className="border-t pt-4"><label className="flex items-center gap-3 text-sm font-semibold"><input aria-label="Billing details are same as delivery details" type="checkbox" checked={d.billing_same_as_delivery} onChange={e=>update({billing_same_as_delivery:e.target.checked,billing:d.billing??{...d.receiver}})}/>Billing details are same as delivery details</label>{!d.billing_same_as_delivery&&<div className="mt-4"><h3 className="mb-3 font-bold">Billing details</h3><PartyFields side="receiver" party={d.billing??d.receiver} onChange={billing=>update({billing})}/></div>}</div>}
+
     {(compact || d.step === 2) && <div className="mt-6"><ParcelEditor pieces={d.pieces} presets={presets} onChange={(pieces) => update({ pieces })} />
       {!compact && <>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -158,7 +162,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
       <PromoCard code={d.coupon} applied={coupon} disabled={!q} onCode={(c) => update({ coupon: c })} onApply={applyCoupon} onRemove={removeCoupon} />
       {q && !compact && <BillLines rows={[["Delivery charge", q.freight - q.handling], ["Size & special handling", q.handling], ["GST 18%", q.gst], ...(discount ? [[`Promo ${coupon?.code}`, -discount] as [string, number]] : [])]} />}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><div><span className="text-xs text-muted-foreground">Total to pay · कुल रकम (GST सहित)</span><p className="text-3xl font-bold">{q ? `₹${Math.max(0, q.total - discount).toFixed(2)}` : "—"}</p></div>{compact && <Button disabled={!q} className="h-12 px-6" onClick={() => { update({ step: 0 }); navigate({ to: "/ship" }); }}>Book now <ArrowRight /></Button>}</div>
-      {!compact && <div className="mt-4 grid grid-cols-2 gap-3"><Button variant={d.payment_method === "cash_on_pickup" ? "default" : "outline"} disabled={!config?.cashOnPickup} onClick={() => update({ payment_method: "cash_on_pickup" })} className="h-12 whitespace-normal">Pay at pickup{!config?.cashOnPickup ? " · Disabled" : ""}</Button><Button variant={d.payment_method === "online" ? "default" : "outline"} onClick={() => update({ payment_method: "online" })} className="h-12">Online · demo only</Button></div>}
+      {!compact && <div className="mt-4 grid grid-cols-2 gap-3"><Button variant={d.payment_method === "cash_on_pickup" ? "default" : "outline"} disabled={!config?.cashOnPickup} onClick={() => update({ payment_method: "cash_on_pickup" })} className="h-12 whitespace-normal">Pay at pickup{!config?.cashOnPickup ? " · Disabled" : ""}</Button><Button variant={d.payment_method === "online" ? "default" : "outline"} onClick={() => update({ payment_method: "online" })} className="h-12">Prepaid · test payment</Button><Button variant="outline" disabled title="Cash on delivery requires a connected courier and collection amount">Cash on delivery · unavailable</Button></div>}
       {otp && !compact && <div className="mt-5 rounded-2xl border-2 border-dashed border-primary bg-primary/5 p-4 animate-in fade-in slide-in-from-bottom-2"><p className="font-bold">Enter OTP to confirm booking</p><Hi>आपके मोबाइल पर आया 6 अंकों का कोड डालें</Hi><p className="mt-1 text-sm text-muted-foreground">Sent to +91 {otp.phone}{otp.dev && <> · Test code: <b className="font-mono">{otp.dev}</b></>}</p><div className="mt-3 flex flex-wrap gap-2"><input autoFocus aria-label="Booking OTP" inputMode="numeric" maxLength={6} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))} className="h-12 w-40 rounded-md border bg-card px-3 text-center font-mono text-xl tracking-[0.4em]" /><Button className="h-12" onClick={confirm} disabled={busy || otpCode.length !== 6}>{busy ? <Loader2 className="animate-spin" /> : <ShieldCheck />}Verify & book</Button><Button variant="ghost" className="h-12" onClick={() => { setOtp(null); setOtpCode(""); }}>Resend</Button></div></div>}
     </div>}
     {configError && <p className="mt-3 text-sm text-destructive">Delivery prices could not load. Please retry.</p>}
@@ -227,19 +231,20 @@ function PartyFields({ side, party: p, onChange }: { side: "sender" | "receiver"
     if(id!==sequence.current) return;
     if(!post){setPinState("miss");return;}
     setPinState("ok");setAreas(post.areas);
-    onChange({ ...current.current, pincode, district:post.district || current.current.district,state:post.state,city:current.current.city || post.city });
+    onChange({ ...current.current, pincode, district:post.district || current.current.district,state:post.state,city:post.city });
   };
   return <div className="mb-4 space-y-4">
     <div className="grid gap-3 sm:grid-cols-2"><TextField label={`${who} full name`} value={p.name} onChange={(name) => onChange({ ...p, name })} /><TextField label={`${who} WhatsApp mobile`} inputMode="numeric" value={p.phone} onChange={(phone) => onChange({ ...p, phone: phone.replace(/\D/g, "").slice(0, 10) })} /></div>
+    <div className="grid gap-3 sm:grid-cols-2"><TextField label="Alternate mobile number (optional)" inputMode="numeric" value={p.alternate_phone} onChange={alternate_phone=>onChange({...p,alternate_phone:alternate_phone.replace(/\D/g,"").slice(0,10)})}/><label className="block text-xs font-semibold">Country<select aria-label={`${who} country`} value="India" className="mt-1 h-11 w-full rounded-md border bg-background px-3"><option>India</option></select></label></div>
     <TextField label="Email (optional)" value={p.email} onChange={(email) => onChange({ ...p, email: email.trim().slice(0, 120) })} />
     <div className="grid gap-3 sm:grid-cols-2"><RegionFields prefix={who} state={p.state} district={p.district} onChange={(state,district)=>onChange({...p,state,district})}/></div>
     <PinAutocomplete label={`${who} PIN / city / locality`} value={p.pincode} city={p.city} onChange={setPin} onPick={async h=>{const post=await postalLookup(h.pincode);setAreas(post?.areas??[]);setPinState(post?"ok":"idle");onChange({...current.current,pincode:h.pincode,city:h.city,state:post?.state||h.state||current.current.state,district:post?.district||h.zone||current.current.district,...(h.lat!=null?{lat:h.lat,lng:h.lng}:{})});}}/>
-    <p aria-live="polite" className="text-xs text-muted-foreground">{pinState==="loading"?"Looking up postal areas…":pinState==="miss"?"Postal lookup unavailable. Keep your PIN and enter city, state and district.":pinState==="ok"?`Postal areas: ${areas.slice(0,5).join(', ')}${areas.length>5?'…':''}`:""}</p>
+    <p aria-live="polite" className="text-xs text-muted-foreground">{pinState==="loading"?"Looking up postal areas…":pinState==="miss"?"City/State not found for this pincode. Check the PIN or enter your location manually.":pinState==="ok"?`Postal areas: ${areas.slice(0,5).join(', ')}${areas.length>5?'…':''}`:""}</p>
     <div className="grid gap-3 sm:grid-cols-2">
       <TextField label="House / flat no." value={p.house} onChange={(house) => onChange({ ...p, house: house.slice(0, 80) })} />
       <TextField label="Street / colony" value={p.street} onChange={(street) => onChange({ ...p, street: street.slice(0, 120) })} />
       <label className="block text-xs font-semibold">City / town<input aria-label="City / town" list={`${who}-areas`} value={p.city} onChange={e=>onChange({...p,city:e.target.value.slice(0,80)})} className="mt-1 h-11 w-full rounded-md border bg-background px-3"/><datalist id={`${who}-areas`}>{areas.map(a=><option key={a} value={a}/>)}</datalist></label>
-      <TextField label="Nearby landmark" value={p.landmark} onChange={(landmark) => onChange({ ...p, landmark: landmark.slice(0, 80) })} />
+      <TextField label="Landmark (optional)" value={p.landmark} onChange={(landmark) => onChange({ ...p, landmark: landmark.slice(0, 80) })} />
     </div>
     {(p.house || p.street) && <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">{composeAddress(p)}</p>}
     <div><Button type="button" variant="outline" size="sm" onClick={() => setMap(!map)}><MapIcon className="h-4 w-4" />{map ? "Hide map" : "View on map"}</Button>{p.lat != null && !map && <span className="ml-2 text-xs text-primary">Location pinned ✓</span>}</div>

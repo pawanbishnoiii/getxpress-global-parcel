@@ -2,7 +2,7 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { QuoteRequests } from "@/components/site/QuoteRequests";
 import { TrackPanel } from "@/components/site/TrackPanel";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
 import { Crown, MapPin, PackagePlus, PackageSearch, ScanLine, ShieldCheck, Store, Users } from "lucide-react";
 import { AppShell, PageHeader, Stat } from "@/components/site/AppShell";
@@ -11,6 +11,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { ROLE_LABEL, useRoles } from "@/hooks/use-roles";
 import { scoreBooking } from "@/lib/ops-rules";
 import { RoleWorkspace } from "@/components/site/RoleWorkspace";
+import { Button } from "@/components/ui/button";
 import { AdminShipmentTable } from "@/components/site/AdminShipmentTable";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -44,7 +45,7 @@ function Dashboard() {
 
   return (
     <AppShell wide>
-      <PageHeader title={primary ? `${ROLE_LABEL[primary]} workspace` : `Welcome, ${name}`} sub={primary ? `${ROLE_LABEL[primary]} dashboard — data limited to your assigned scope.` : "What are we sending today?"}
+      <PageHeader title={primary ? `${ROLE_LABEL[primary]} workspace` : `Shipping dashboard`} sub={primary ? `${ROLE_LABEL[primary]} dashboard — data limited to your assigned scope.` : "What are we sending today?"}
         action={<div className="flex flex-wrap gap-1.5">{roles.map((r) => <span key={r} className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{ROLE_LABEL[r]}</span>)}</div>} />
 
       {noAdmin && (
@@ -91,7 +92,8 @@ function Dashboard() {
               <div className="sr-only">{max}</div>
             </div>
             <div className="rounded-lg border bg-card p-5">
-              <p className="font-bold">By status</p>
+              <p className="font-bold">Shipment pipeline</p>
+              <div className="mt-4 h-48"><ResponsiveContainer width="100%" height="100%"><BarChart data={Object.entries(sum.by_status).map(([status,count])=>({status:status.replaceAll("_"," "),count}))}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)"/><XAxis dataKey="status" tick={{fontSize:10}}/><YAxis allowDecimals={false} width={28}/><Tooltip/><Bar dataKey="count" fill="var(--chart-2)" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>
               <div className="mt-3 space-y-2">
                 {Object.entries(sum.by_status).map(([k, v]) => (
                   <div key={k} className="flex items-center justify-between text-sm"><span className="capitalize">{k.replaceAll("_", " ")}</span><span className="font-bold">{v}</span></div>

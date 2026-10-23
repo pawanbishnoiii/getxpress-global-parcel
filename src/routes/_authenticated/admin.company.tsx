@@ -32,6 +32,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Building2; fields: F[]
 ];
 
 async function uploadImage(file: File) {
+  if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) throw new Error("Choose a PNG, JPEG or WebP image");
   if (file.size > 5 * 1024 * 1024) throw new Error("Image must be under 5 MB");
   const path = `${crypto.randomUUID()}-${file.name.replace(/[^\w.]/g, "")}`;
   const r = await supabase.storage.from("brand-assets").upload(path, file, { contentType: file.type });
@@ -76,7 +77,7 @@ function CompanyPage() {
       <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
         <nav className="flex gap-1 overflow-x-auto rounded-xl border bg-card p-1 lg:flex-col">
           {[...SECTIONS, { id: "brand", title: "Brand images", icon: ImageIcon }, { id: "status", title: "Website status", icon: Globe2 }].map((x) => (
-            <button key={x.id} onClick={() => setSec(x.id)} className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm font-semibold ${sec === x.id ? "bg-ink text-ink-foreground" : "text-muted-foreground hover:bg-secondary"}`}><x.icon className="h-4 w-4" />{x.title}</button>
+            <Button type="button" variant="ghost" key={x.id} onClick={() => setSec(x.id)} className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm font-semibold ${sec === x.id ? "bg-ink text-ink-foreground" : "text-muted-foreground hover:bg-secondary"}`}><x.icon className="h-4 w-4" />{x.title}</Button>
           ))}
         </nav>
         <form key={sec} onSubmit={save} className="grid gap-4 rounded-xl border bg-card p-5 md:grid-cols-2">
@@ -85,7 +86,7 @@ function CompanyPage() {
             : <label key={k} className="text-sm font-semibold">{l}<input name={k} type={kind === "url" ? "url" : "text"} placeholder={kind === "url" ? "https://" : ""} defaultValue={v(k)} className={field} /></label>)}
           {sec === "brand" && <>
             <div className="rounded-lg border p-4 md:col-span-2"><p className="text-sm font-semibold">Main logo (fixed)</p><img src={logo.url} alt="GetXpress" className="mt-2 h-10 w-auto" /></div>
-            {([["icon_url", "App icon"], ["og_image_url", "Social share image (1200×630)"]] as const).map(([k, l]) => (
+            {([["hero_image_url", "Landing hero image"], ["icon_url", "App icon"], ["og_image_url", "Social share image (1200×630)"]] as const).map(([k, l]) => (
               <label key={k} className="text-sm font-semibold">{l}<input type="file" accept="image/*" onChange={upload(k)} className={field + " pt-2"} />
                 {(imgs[k] ?? v(k)) && <img src={imgs[k] ?? v(k)} alt={l} className="mt-2 h-20 rounded-lg border object-contain" />}</label>))}
           </>}
