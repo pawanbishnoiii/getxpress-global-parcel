@@ -20,3 +20,8 @@
 - Outgoing email uses admin-managed SMTP (smtp_settings + SMTP_PASSWORD/SMTP_USERNAME secrets) via worker-mailer in src/lib/email.functions.ts; worker-mailer uses Cloudflare sockets, so sends only work on the deployed worker.
 - Hub (point role) non-cash bookings debit the hub wallet via a database trigger, so the ledger cannot be skipped by client code.
 - `cloudflare:sockets` is aliased in vite.config.ts to src/lib/cloudflare-sockets-shim.ts, which loads the real module at runtime; bundlers cannot resolve the `cloudflare:` scheme and preview builds fail otherwise.
+
+- Hero image overrides are admin-owned app settings with a bundled supplied-artwork fallback; public company reads project only safe branding fields.
+- Numeric PIN autocomplete uses prebuilt prefix buckets and cached local directory reads so typing never scans the entire list.
+- Staff role grants and territory writes use one admin-authorized database function to prevent partial assignments.
+- Per-role fixtures live in an isolated QA draft, never in the production customer database.
