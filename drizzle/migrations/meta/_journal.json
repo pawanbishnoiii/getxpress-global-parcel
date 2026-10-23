@@ -50,6 +50,13 @@
       "when": 1792753436251,
       "tag": "0006_intl_pickup_markup",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792759826902,
+      "tag": "0007_manual_gateway_payment_details",
+      "breakpoints": true
     }
   ]
 }

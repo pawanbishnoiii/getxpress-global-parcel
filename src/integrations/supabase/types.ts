@@ -41,6 +41,13 @@ export type Database = {
           meta_title: string | null
           og_image_url: string | null
           pan: string | null
+          pay_account_name: string | null
+          pay_account_no: string | null
+          pay_bank_name: string | null
+          pay_ifsc: string | null
+          pay_instructions: string | null
+          pay_upi_id: string | null
+          pay_upi_name: string | null
           pincode: string | null
           site_live: boolean
           state: string | null
@@ -78,6 +85,13 @@ export type Database = {
           meta_title?: string | null
           og_image_url?: string | null
           pan?: string | null
+          pay_account_name?: string | null
+          pay_account_no?: string | null
+          pay_bank_name?: string | null
+          pay_ifsc?: string | null
+          pay_instructions?: string | null
+          pay_upi_id?: string | null
+          pay_upi_name?: string | null
           pincode?: string | null
           site_live?: boolean
           state?: string | null
@@ -115,6 +129,13 @@ export type Database = {
           meta_title?: string | null
           og_image_url?: string | null
           pan?: string | null
+          pay_account_name?: string | null
+          pay_account_no?: string | null
+          pay_bank_name?: string | null
+          pay_ifsc?: string | null
+          pay_instructions?: string | null
+          pay_upi_id?: string | null
+          pay_upi_name?: string | null
           pincode?: string | null
           site_live?: boolean
           state?: string | null
@@ -1795,6 +1816,7 @@ export type Database = {
         Returns: Json
       }
       dashboard_summary: { Args: never; Returns: Json }
+      deposit_instructions: { Args: never; Returns: Json }
       find_user_by_phone: {
         Args: { _phone: string }
         Returns: {

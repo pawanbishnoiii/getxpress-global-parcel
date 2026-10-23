@@ -39,13 +39,15 @@ function Payouts() {
   ];
   return (
     <AppShell wide>
-      <PageHeader title="Hub payouts" sub="Tick requests, then approve, mark paid (wallet is debited automatically) or reject." />
+      <PageHeader title="Manual gateway" sub="Your UPI and bank details shown in every hub wallet, plus deposit and payout approvals. Amounts are real money." />
+      <PayDetails />
+      <Deposits />
+      <div className="mt-8"><PageHeader title="Hub payouts" sub="Tick requests, then approve, mark paid (wallet is debited automatically) or reject." /></div>
       <DataGrid name="hub-payouts" rows={rows} cols={cols} rowKey={(r) => r.id} actions={(sel) => sel.length ? <>
         <Button size="sm" variant="outline" onClick={() => set(sel.filter((r) => r.status === "pending").map((r) => r.id), "approved")}>Approve</Button>
         <Button size="sm" onClick={() => set(sel.filter((r) => r.status !== "paid" && r.status !== "rejected").map((r) => r.id), "paid")}>Mark paid</Button>
         <Button size="sm" variant="destructive" onClick={() => set(sel.filter((r) => r.status === "pending").map((r) => r.id), "rejected")}>Reject</Button>
       </> : null} />
-      <Deposits />
     </AppShell>
   );
 }
@@ -76,5 +78,36 @@ function Deposits() {
         <Button size="sm" variant="destructive" onClick={() => set(sel.filter((r) => r.status === "pending").map((r) => r.id), "rejected")}>Reject</Button>
       </> : null} />
     </div>
+  );
+}
+
+const PAY_FIELDS = [
+  ["pay_upi_id", "UPI ID", "getxpress@upi"], ["pay_upi_name", "UPI name", "GetXpress Pvt Ltd"],
+  ["pay_bank_name", "Bank name", "HDFC Bank"], ["pay_account_name", "Account holder", "GetXpress Pvt Ltd"],
+  ["pay_account_no", "Account number", ""], ["pay_ifsc", "IFSC", "HDFC0000123"],
+  ["pay_instructions", "Note for hubs", "Payments credited within 2 working hours"],
+] as const;
+function PayDetails() {
+  const qc = useQueryClient();
+  const { data } = useQuery({ queryKey: ["pay-details"], queryFn: async () => (await supabase.from("app_settings").select(PAY_FIELDS.map((f) => f[0]).join(",")).eq("id", true).maybeSingle()).data as Record<string, string | null> | null });
+  const save = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget), patch: Record<string, string | null> = {};
+    for (const [k] of PAY_FIELDS) patch[k] = String(f.get(k) ?? "").trim() || null;
+    if (patch["pay_upi_id"] && !/^[\w.-]{2,}@[a-z]{2,}$/i.test(patch["pay_upi_id"])) { toast.error("UPI ID looks wrong (e.g. name@okhdfc)"); return; }
+    if (patch["pay_ifsc"] && !/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(patch["pay_ifsc"])) { toast.error("IFSC must look like HDFC0001234"); return; }
+    const r = await supabase.from("app_settings").update(patch as never).eq("id", true);
+    if (r.error) toast.error(r.error.message); else { toast.success("Payment details saved — hubs see them now"); qc.invalidateQueries({ queryKey: ["pay-details"] }); }
+  };
+  if (data === undefined) return null;
+  return (
+    <form key={JSON.stringify(data)} onSubmit={save} className="mb-8 rounded-2xl border bg-card p-5">
+      <h3 className="font-bold">UPI & bank details for wallet top-ups</h3>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {PAY_FIELDS.map(([k, label, ph]) => <label key={k} className="text-sm font-semibold">{label}<input name={k} defaultValue={data?.[k] ?? ""} placeholder={ph} maxLength={200} className="mt-1 h-10 w-full rounded-lg border bg-background px-3 font-normal" /></label>)}
+      </div>
+      <Button type="submit" className="mt-4">Save details</Button>
+      <p className="mt-2 text-xs text-muted-foreground">Automatic top-ups: turn on Razorpay on the Payment gateways page once you have keys.</p>
+    </form>
   );
 }
