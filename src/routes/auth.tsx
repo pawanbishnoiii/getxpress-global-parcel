@@ -8,7 +8,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
 import { BrandMark } from "@/components/site/BrandMark";
-import { requestLoginOtp, verifyLoginOtp } from "@/lib/phone-login.functions";
+import { requestLoginOtp, verifyLoginOtp, requestEmailOtp } from "@/lib/phone-login.functions";
 import hero from "@/assets/login-courier.jpg";
 
 const safe = (r?: string) => (r && r.startsWith("/") && !r.startsWith("//") ? r : "/dashboard");
@@ -45,6 +45,21 @@ function AuthPage() {
   const [devCode, setDevCode] = useState<string | null>(null);
   const reqOtp = useServerFn(requestLoginOtp);
   const verOtp = useServerFn(verifyLoginOtp);
+  const reqEmail = useServerFn(requestEmailOtp);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailCode, setEmailCode] = useState("");
+  const sendEmailCode = async () => {
+    if (!z.string().email().safeParse(email).success) { toast.error("Enter a valid email"); return; }
+    setBusy(true);
+    try { await reqEmail({ data: { email } }); setEmailSent(true); toast.success("Code sent to your email"); } catch (err) { toast.error((err as Error).message); }
+    setBusy(false);
+  };
+  const verifyEmailCode = async (e: React.FormEvent) => {
+    e.preventDefault(); setBusy(true);
+    const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: emailCode, type: "email" });
+    if (error) { toast.error(error.message); setBusy(false); return; }
+    navigate({ to: target, replace: true });
+  };
 
   useEffect(() => {
     sessionStorage.setItem("dbx_after_auth", target);
@@ -147,12 +162,21 @@ function AuthPage() {
               </form>
             )
           ) : (
+            emailSent ? (
+            <form onSubmit={verifyEmailCode} className="mt-4 space-y-3">
+              <p className="text-sm text-muted-foreground">Code sent to <b className="text-foreground">{email}</b> · <button type="button" className="font-bold text-primary" onClick={() => { setEmailSent(false); setEmailCode(""); }}>Change</button></p>
+              <input value={emailCode} onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoFocus placeholder="6-digit code" className={`${input} text-center font-mono text-xl tracking-[0.5em]`} />
+              <button disabled={busy || emailCode.length !== 6} className="flex h-12 w-full items-center justify-center rounded-2xl bg-primary font-bold text-primary-foreground disabled:opacity-50">{busy ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify & continue"}</button>
+            </form>
+            ) : (
             <form onSubmit={emailSubmit} className="mt-4 space-y-3">
               <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" className={input} />
               <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" className={input} />
               <button disabled={busy} className="h-12 w-full rounded-2xl bg-primary font-bold text-primary-foreground">{mode === "in" ? "Sign in" : "Create account"}</button>
               <button type="button" onClick={() => setMode(mode === "in" ? "up" : "in")} className="w-full text-sm font-semibold text-muted-foreground">{mode === "in" ? "New here? Create an account" : "Have an account? Sign in"}</button>
+              <button type="button" disabled={busy} onClick={sendEmailCode} className="h-11 w-full rounded-2xl border font-bold">Email me a sign-in code instead</button>
             </form>
+            )
           )}
 
           <div className="my-6 flex items-center gap-3 text-xs font-bold text-muted-foreground"><span className="h-px flex-1 bg-border" />OR<span className="h-px flex-1 bg-border" /></div>

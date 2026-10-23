@@ -25,3 +25,4 @@
 - Numeric PIN autocomplete uses prebuilt prefix buckets and cached local directory reads so typing never scans the entire list.
 - Staff role grants and territory writes use one admin-authorized database function to prevent partial assignments.
 - Per-role fixtures live in an isolated QA draft, never in the production customer database.
+- International pickup-service prices are computed only in a server function from src/data/intl-rates.json plus the admin markup in app_settings, so the base rate and margin never reach the browser.

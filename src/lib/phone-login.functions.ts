@@ -60,3 +60,22 @@ export const verifyLoginOtp = createServerFn({ method: "POST" })
     if (link.error || !link.data.properties?.hashed_token) throw new Error(link.error?.message ?? "Sign-in failed");
     return { tokenHash: link.data.properties.hashed_token };
   });
+
+/** Public: email a 6-digit sign-in code through the admin SMTP account (creates the account if new). */
+export const requestEmailOtp = createServerFn({ method: "POST" })
+  .inputValidator((d: { email: string }) => z.object({ email: z.string().trim().toLowerCase().email().max(200) }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let link = await supabaseAdmin.auth.admin.generateLink({ type: "magiclink", email: data.email });
+    if (link.error) {
+      const created = await supabaseAdmin.auth.admin.createUser({ email: data.email, email_confirm: true });
+      if (created.error && !created.error.message.toLowerCase().includes("already")) throw new Error(created.error.message);
+      link = await supabaseAdmin.auth.admin.generateLink({ type: "magiclink", email: data.email });
+    }
+    const otp = link.data?.properties?.email_otp;
+    if (link.error || !otp) throw new Error(link.error?.message ?? "Could not create a code");
+    const { sendSmtp } = await import("@/lib/email.functions");
+    const r = await sendSmtp(data.email, `Your GetXpress sign-in code: ${otp}`, `Your sign-in code is ${otp}\n\nIt expires in 1 hour. If you didn't ask for it, ignore this email.`, { templateKey: "login_otp" });
+    if (!r.sent) throw new Error(`Email could not be sent: ${r.error ?? "unknown error"}`);
+    return { sent: true };
+  });

@@ -31,6 +31,8 @@ export type Database = {
           icon_url: string | null
           id: boolean
           instagram_url: string | null
+          intl_markup_flat: number
+          intl_markup_percent: number
           linkedin_url: string | null
           logo_url: string | null
           maintenance_message: string | null
@@ -66,6 +68,8 @@ export type Database = {
           icon_url?: string | null
           id?: boolean
           instagram_url?: string | null
+          intl_markup_flat?: number
+          intl_markup_percent?: number
           linkedin_url?: string | null
           logo_url?: string | null
           maintenance_message?: string | null
@@ -101,6 +105,8 @@ export type Database = {
           icon_url?: string | null
           id?: boolean
           instagram_url?: string | null
+          intl_markup_flat?: number
+          intl_markup_percent?: number
           linkedin_url?: string | null
           logo_url?: string | null
           maintenance_message?: string | null

@@ -58,3 +58,11 @@
 - [ ] network/state manager/hub dashboards & CRM
 - [ ] Admin on/off for roles and services; email logo + automation upgrade; GSAP scroll effect
 - [x] Tracking question box with code entry on /track; international air-weight + customs checklist; hero regenerated; phone sign-in without photo
+
+## Batch 2026-10-23
+- [x] /calculator with rate card, destination pincode, products, hidden admin margin
+- [x] Shipping desk redesign; torn-poster footer; email sign-in code via SMTP
+- [ ] 5:2 layered hero images + 10 generated icons + more GSAP
+- [ ] Manifest page; barcode tracking upgrade; Shiprocket credential form test
+- [ ] Company-style desktop dashboard; demo-data button; full staff management
+- [ ] Booking form + Need Help end-to-end retest

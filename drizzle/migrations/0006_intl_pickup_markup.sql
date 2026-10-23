@@ -1,0 +1,2 @@
+ALTER TABLE public.app_settings ADD COLUMN IF NOT EXISTS intl_markup_percent numeric NOT NULL DEFAULT 0 CHECK (intl_markup_percent >= 0 AND intl_markup_percent <= 200);
+ALTER TABLE public.app_settings ADD COLUMN IF NOT EXISTS intl_markup_flat numeric NOT NULL DEFAULT 0 CHECK (intl_markup_flat >= 0 AND intl_markup_flat <= 100000);
