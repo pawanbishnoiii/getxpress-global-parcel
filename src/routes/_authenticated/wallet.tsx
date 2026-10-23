@@ -88,6 +88,7 @@ function Deposit() {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const { data: co } = useQuery({ queryKey: ["public-company"], queryFn: async () => ((await supabase.rpc("public_company")).data ?? {}) as Record<string, string | null> });
+  const { data: pay } = useQuery({ queryKey: ["deposit-instructions"], queryFn: async () => ((await supabase.rpc("deposit_instructions")).data ?? null) as Record<string, string | null> | null });
   const { data: reqs = [] } = useQuery({ queryKey: ["my-deposits"], queryFn: async () => (await supabase.from("wallet_deposits").select("*").order("created_at", { ascending: false }).limit(20)).data ?? [] });
   const submit = async () => {
     if (amount < 100) return toast.error("Minimum deposit is ₹100");
@@ -111,7 +112,12 @@ function Deposit() {
   return (
     <div className="mt-5 rounded-2xl border bg-card p-5">
       <h3 className="flex items-center gap-2 font-bold"><Plus className="h-5 w-5 text-primary" />Add money</h3>
-      <p className="text-xs text-muted-foreground">Pay by UPI or bank transfer to {co?.["company_name"] ?? "GetXpress"}{co?.["support_whatsapp"] ? ` (help: ${co["support_whatsapp"]})` : ""}, then enter the UTR and attach the payment screenshot. Admin approves and your balance updates.</p>
+      <p className="text-xs text-muted-foreground">Pay by UPI or bank transfer to {co?.["company_name"] ?? "GetXpress"}{co?.["support_whatsapp"] ? ` (help: ${co["support_whatsapp"]})` : ""}, then enter the UTR and attach the payment screenshot. Admin approves and your balance updates. This is real money.</p>
+      {pay && (pay["upi_id"] || pay["account_no"]) ? <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {pay["upi_id"] && <div className="rounded-xl border bg-muted/40 p-3 text-sm"><p className="text-xs font-bold uppercase text-primary">UPI</p><p className="mt-1 font-mono font-bold">{pay["upi_id"]}</p>{pay["upi_name"] && <p className="text-xs text-muted-foreground">{pay["upi_name"]}</p>}<button type="button" className="mt-1 text-xs font-semibold text-primary" onClick={() => { navigator.clipboard.writeText(pay["upi_id"]!); toast.success("UPI ID copied"); }}>Copy</button></div>}
+        {pay["account_no"] && <div className="rounded-xl border bg-muted/40 p-3 text-sm"><p className="text-xs font-bold uppercase text-primary">Bank transfer</p><p className="mt-1 font-semibold">{pay["account_name"]}</p><p className="font-mono">{pay["account_no"]} · {pay["ifsc"]}</p><p className="text-xs text-muted-foreground">{pay["bank_name"]}</p></div>}
+        {pay["instructions"] && <p className="text-xs text-muted-foreground sm:col-span-2">{pay["instructions"]}</p>}
+      </div> : <p className="mt-3 rounded-xl border border-dashed p-3 text-xs text-muted-foreground">Payment details are not set up yet. Please contact support.</p>}
       <div className="mt-3 grid gap-3 sm:grid-cols-[130px_110px_1fr_1fr_auto]">
         <input aria-label="Deposit amount" type="number" min={100} value={amount} onChange={(e) => setAmount(Number(e.target.value))} className="h-11 rounded-xl border bg-background px-3 font-bold" />
         <select aria-label="Deposit method" value={method} onChange={(e) => setMethod(e.target.value as "upi")} className="h-11 rounded-xl border bg-background px-3"><option value="upi">UPI</option><option value="bank">Bank</option></select>
