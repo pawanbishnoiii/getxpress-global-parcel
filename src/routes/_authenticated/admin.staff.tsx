@@ -7,7 +7,7 @@ import { AppShell, PageHeader } from "@/components/site/AppShell";
 import { Button } from "@/components/ui/button";
 import { useRoles } from "@/hooks/use-roles";
 import { supabase } from "@/integrations/supabase/client";
-import { INDIA_STATES } from "@/lib/india-regions";
+import { INDIAN_STATES } from "@/lib/india-regions";
 import type { Database } from "@/integrations/supabase/types";
 
 const TerritoryMap = lazy(() => import("@/components/site/TerritoryMap"));
@@ -64,7 +64,7 @@ function StaffAssign() {
         <label className="text-xs font-bold md:col-span-1">1. Find user<input className={field} placeholder="Name or phone" value={q} onChange={(e) => setQ(e.target.value)} /></label>
         <label className="text-xs font-bold md:col-span-2">Select user<select aria-label="User" className={field} value={user} onChange={(e) => setUser(e.target.value)}><option value="">— choose —</option>{people.map((p) => <option key={p.id} value={p.id}>{p.full_name || "Unnamed"} · {p.phone ?? ""} {p.city ? `· ${p.city}` : ""}</option>)}</select></label>
         <label className="text-xs font-bold">2. Role<select className={field} value={role} onChange={(e) => setRole(e.target.value as Role)}>{ROLES.map((r) => <option key={r.v} value={r.v}>{r.l}</option>)}</select></label>
-        <label className="text-xs font-bold">3. State<select className={field} value={state} onChange={(e) => setState(e.target.value)}><option value="">— state —</option>{INDIA_STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
+        <label className="text-xs font-bold">3. State<select className={field} value={state} onChange={(e) => setState(e.target.value)}><option value="">— state —</option>{INDIAN_STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
         <label className="text-xs font-bold">4. Area name<input className={field} maxLength={80} value={area} onChange={(e) => setArea(e.target.value)} placeholder="e.g. Malviya Nagar" /></label>
         <label className="text-xs font-bold">5. Hub PIN<input className={field} inputMode="numeric" maxLength={6} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} placeholder="302017" /></label>
         <div className="flex items-end md:col-span-2"><Button className="h-11" onClick={assign}>Assign</Button></div>

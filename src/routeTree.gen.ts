@@ -56,6 +56,7 @@ import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminPincodesRouteImport } from './routes/_authenticated/admin.pincodes'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminSmtpRouteImport } from './routes/_authenticated/admin.smtp'
+import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
 import { Route as AuthenticatedAdminTeamRouteImport } from './routes/_authenticated/admin.team'
 import { Route as AuthenticatedLabelsShipmentIdRouteImport } from './routes/_authenticated/labels.$shipmentId'
 import { Route as AuthenticatedPayShipmentIdRouteImport } from './routes/_authenticated/pay.$shipmentId'
@@ -317,6 +318,11 @@ const AuthenticatedAdminSmtpRoute = AuthenticatedAdminSmtpRouteImport.update({
   path: '/admin/smtp',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminStaffRoute = AuthenticatedAdminStaffRouteImport.update({
+  id: '/admin/staff',
+  path: '/admin/staff',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminTeamRoute = AuthenticatedAdminTeamRouteImport.update({
   id: '/admin/team',
   path: '/admin/team',
@@ -428,6 +434,7 @@ export interface FileRoutesByFullPath {
   '/admin/pincodes': typeof AuthenticatedAdminPincodesRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/smtp': typeof AuthenticatedAdminSmtpRoute
+  '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/team': typeof AuthenticatedAdminTeamRoute
   '/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
   '/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
@@ -487,6 +494,7 @@ export interface FileRoutesByTo {
   '/admin/pincodes': typeof AuthenticatedAdminPincodesRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/smtp': typeof AuthenticatedAdminSmtpRoute
+  '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/team': typeof AuthenticatedAdminTeamRoute
   '/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
   '/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
@@ -548,6 +556,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/pincodes': typeof AuthenticatedAdminPincodesRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/smtp': typeof AuthenticatedAdminSmtpRoute
+  '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/_authenticated/admin/team': typeof AuthenticatedAdminTeamRoute
   '/_authenticated/labels/$shipmentId': typeof AuthenticatedLabelsShipmentIdRoute
   '/_authenticated/pay/$shipmentId': typeof AuthenticatedPayShipmentIdRoute
@@ -609,6 +618,7 @@ export interface FileRouteTypes {
     | '/admin/pincodes'
     | '/admin/settings'
     | '/admin/smtp'
+    | '/admin/staff'
     | '/admin/team'
     | '/labels/$shipmentId'
     | '/pay/$shipmentId'
@@ -668,6 +678,7 @@ export interface FileRouteTypes {
     | '/admin/pincodes'
     | '/admin/settings'
     | '/admin/smtp'
+    | '/admin/staff'
     | '/admin/team'
     | '/labels/$shipmentId'
     | '/pay/$shipmentId'
@@ -728,6 +739,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/pincodes'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/smtp'
+    | '/_authenticated/admin/staff'
     | '/_authenticated/admin/team'
     | '/_authenticated/labels/$shipmentId'
     | '/_authenticated/pay/$shipmentId'
@@ -1090,6 +1102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSmtpRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/staff': {
+      id: '/_authenticated/admin/staff'
+      path: '/admin/staff'
+      fullPath: '/admin/staff'
+      preLoaderRoute: typeof AuthenticatedAdminStaffRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/team': {
       id: '/_authenticated/admin/team'
       path: '/admin/team'
@@ -1206,6 +1225,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminPincodesRoute: typeof AuthenticatedAdminPincodesRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminSmtpRoute: typeof AuthenticatedAdminSmtpRoute
+  AuthenticatedAdminStaffRoute: typeof AuthenticatedAdminStaffRoute
   AuthenticatedAdminTeamRoute: typeof AuthenticatedAdminTeamRoute
   AuthenticatedLabelsShipmentIdRoute: typeof AuthenticatedLabelsShipmentIdRoute
   AuthenticatedPayShipmentIdRoute: typeof AuthenticatedPayShipmentIdRoute
@@ -1252,6 +1272,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminPincodesRoute: AuthenticatedAdminPincodesRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminSmtpRoute: AuthenticatedAdminSmtpRoute,
+  AuthenticatedAdminStaffRoute: AuthenticatedAdminStaffRoute,
   AuthenticatedAdminTeamRoute: AuthenticatedAdminTeamRoute,
   AuthenticatedLabelsShipmentIdRoute: AuthenticatedLabelsShipmentIdRoute,
   AuthenticatedPayShipmentIdRoute: AuthenticatedPayShipmentIdRoute,

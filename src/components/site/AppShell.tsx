@@ -30,6 +30,7 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     { to: "/bags", label: "Dispatch center", icon: Boxes, staff: true },
     { to: "/wallet", label: "Wallet", icon: Wallet, wallet: true },
     { to: "/analytics", label: "Analytics", icon: BarChart3, staff: true },
+    { to: "/admin/staff", label: "Staff & territory map", icon: MapPin, staff: true },
     { to: "/team-prices", label: "Team prices", icon: Coins, staff: true },
     { to: "/onboarding", label: "My profile", icon: UserRound },
   ] },
