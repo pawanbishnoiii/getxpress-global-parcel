@@ -76,6 +76,6 @@ export const requestEmailOtp = createServerFn({ method: "POST" })
     if (link.error || !otp) throw new Error(link.error?.message ?? "Could not create a code");
     const { sendSmtp } = await import("@/lib/email.functions");
     const r = await sendSmtp(data.email, `Your GetXpress sign-in code: ${otp}`, `Your sign-in code is ${otp}\n\nIt expires in 1 hour. If you didn't ask for it, ignore this email.`, { templateKey: "login_otp" });
-    if (r && typeof r === "object" && "ok" in r && !(r as { ok: boolean }).ok) throw new Error("Email could not be sent. Try again or use mobile OTP.");
+    if (!r.sent) throw new Error(`Email could not be sent: ${r.error ?? "unknown error"}`);
     return { sent: true };
   });
