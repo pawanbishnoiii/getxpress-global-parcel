@@ -66,3 +66,13 @@
 - [ ] Manifest page; barcode tracking upgrade; Shiprocket credential form test
 - [ ] Company-style desktop dashboard; demo-data button; full staff management
 - [ ] Booking form + Need Help end-to-end retest
+
+## Oct 23 batch
+- [x] International live prices (GetXpress.in names, customer price only, admin key + hidden margin)
+- [x] Manual gateway: admin UPI/bank details shown in hub wallet; UTR deposits approved by admin
+- [ ] Email OTP for signup via SMTP
+- [ ] Hero redesign (5:2 layered), 10 icons, more GSAP
+- [ ] Manifest page, barcode tracking upgrade
+- [ ] Company-style dashboard, demo data button, staff management upgrade
+- [ ] Booking form + Need Help end-to-end test; Shiprocket form test
+- [ ] Hubs managing international shipping
