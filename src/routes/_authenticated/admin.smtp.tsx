@@ -61,7 +61,7 @@ function SmtpForm() {
   const [provider, setProvider] = useState<keyof typeof PRESETS | null>(null);
   const [to, setTo] = useState("");
   const [testing, setTesting] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; msg: string; at: string; ms: number } | null>(null);
+  const [result, setResult] = useState<{ ok: boolean; msg: string; at: string; ms: number; detail?: string } | null>(null);
   if (!s) return null;
   const p = provider ?? (s.provider as keyof typeof PRESETS);
   const preset = provider ? PRESETS[provider] : s;
@@ -92,13 +92,17 @@ function SmtpForm() {
           const started = Date.now();
           const r = await test({ data: { to } }).catch((e) => ({ sent: false, error: (e as Error).message }));
           setTesting(false);
-          setResult({ ok: !!r.sent, msg: r.sent ? `Delivered to the mail server for ${to}` : String((r as { error?: string }).error ?? "Unknown error"), at: new Date().toLocaleTimeString("en-IN"), ms: Date.now() - started });
+          const x = r as { sent?: boolean; error?: string; host?: string; port?: number; messageId?: string; response?: string; via?: string };
+          setResult({ ok: !!x.sent, msg: x.sent ? `Accepted by ${x.host}:${x.port} for ${to}. Check the inbox (and spam folder).` : String(x.error ?? "Unknown error"), at: new Date().toLocaleTimeString("en-IN"), ms: Date.now() - started, detail: [x.response && `Server reply: ${x.response}`, x.messageId && `Message ID: ${x.messageId}`, x.via && `Sender: ${x.via === "worker" ? "published site" : "preview fallback"}`].filter(Boolean).join(" · ") });
+          qc.invalidateQueries({ queryKey: ["email-logs"] });
         }}>{testing ? "Sending…" : "Send test"}</Button>
         {result && (
           <div role="status" className={`mt-4 rounded-lg border p-3 text-sm ${result.ok ? "border-primary/40 bg-primary/10" : "border-destructive/40 bg-destructive/10"}`}>
             <p className="font-bold">{result.ok ? "✓ Sent successfully" : "✕ Not sent"}</p>
             <p className="mt-1 break-words text-xs">{result.msg}</p>
+            {result.detail && <p className="mt-1 break-words text-[11px] text-muted-foreground">{result.detail}</p>}
             <p className="mt-1 text-[11px] text-muted-foreground">{result.at} · {result.ms} ms</p>
+            {!result.ok && /timed? ?out|ETIMEDOUT|ECONNREFUSED|ENOTFOUND/i.test(result.msg) && <p className="mt-2 text-[11px]">Could not reach the mail server. Check host, port and security (Gmail: 465 SSL, Hostinger: smtp.hostinger.com 465 SSL).</p>}
             {!result.ok && /cloudflare:sockets|sockets/i.test(result.msg) && <p className="mt-2 text-[11px]">Email sending works on the published site; publish and test again there.</p>}
             {!result.ok && /auth|535|credentials|password/i.test(result.msg) && <p className="mt-2 text-[11px]">The username or app password was rejected. For Gmail, create a new App Password.</p>}
           </div>
