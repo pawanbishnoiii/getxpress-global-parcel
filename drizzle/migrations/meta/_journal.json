@@ -15,6 +15,13 @@
       "when": 1792724212147,
       "tag": "0001_track_international_quote",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792724268942,
+      "tag": "0002_admin_users_include_all_accounts",
+      "breakpoints": true
     }
   ]
 }
