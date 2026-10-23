@@ -37,7 +37,7 @@ export async function sendSmtp(to: string, subject: string, body: string, opts: 
   try {
     const from = { name: smtp.from_name ?? company, email: smtp.from_email || username };
     const html = brandedHtml(body, company, app?.logo_url, opts.image);
-    let usedWorker = false;
+    let usedWorker = false; let via = "worker"; let messageId: string | undefined; let response: string | undefined;
     try {
       const { WorkerMailer } = await import("worker-mailer");
       const mailer = await WorkerMailer.connect({
@@ -49,7 +49,7 @@ export async function sendSmtp(to: string, subject: string, body: string, opts: 
         authType: "plain",
       });
       usedWorker = true;
-      await mailer.send({ from, to, subject, text: body, html });
+      const r: any = await mailer.send({ from, to, subject, text: body, html }); messageId = r?.messageId; response = r?.response;
       await mailer.close();
     } catch (e) {
       // Outside Cloudflare (preview/dev on Node) `cloudflare:sockets` is missing — use nodemailer instead.
@@ -57,15 +57,15 @@ export async function sendSmtp(to: string, subject: string, body: string, opts: 
       const mod = "nodemailer";
       const nm = (await import(/* @vite-ignore */ mod)) as typeof import("nodemailer");
       const t = (nm.default ?? nm).createTransport({ host: smtp.host, port: smtp.port, secure: smtp.secure === "ssl", requireTLS: smtp.secure === "starttls", auth: { user: username, pass: password } });
-      await t.sendMail({ from: `"${from.name}" <${from.email}>`, to, subject, text: body, html });
+      via = "node"; const info = await t.sendMail({ from: `"${from.name}" <${from.email}>`, to, subject, text: body, html }); messageId = info.messageId; response = info.response;
     }
     await log("sent");
-    return { sent: true };
+    return { sent: true, via, messageId, response, host: smtp.host, port: smtp.port, from: from.email };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("SMTP send failed:", msg);
     await log("failed", msg.slice(0, 500));
-    return { sent: false, error: msg };
+    return { sent: false as const, error: msg, host: smtp.host, port: smtp.port };
   }
 }
 
