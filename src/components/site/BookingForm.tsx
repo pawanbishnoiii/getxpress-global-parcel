@@ -47,7 +47,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
   const { data: presets = DEFAULT_PRESETS } = useQuery(parcelPresetsOptions);
   const create = useServerFn(createShipment), couponPreview = useServerFn(previewCoupon), sendOtp = useServerFn(sendPhoneOtp);
   const [otp, setOtp] = useState<{ phone: string; dev: string | null } | null>(null), [otpCode, setOtpCode] = useState("");
-  useEffect(() => { setD(readDraft(localStorage) ?? initialDraft()); setReady(true); }, []);
+  useEffect(() => { setD(readDraft(localStorage) ?? readDraft(sessionStorage) ?? initialDraft()); setReady(true); }, []);
   useEffect(() => { if (ready) { try { saveDraft(localStorage, d); saveDraft(sessionStorage, d); } catch { /* storage full or private mode */ } } }, [d, ready]);
   const update = (patch: Partial<BookingDraft>) => setD((x) => ({ ...x, ...patch }));
   const validPins = /^\d{6}$/.test(d.sender.pincode) && /^\d{6}$/.test(d.receiver.pincode) && !!d.sender.city && !!d.receiver.city;

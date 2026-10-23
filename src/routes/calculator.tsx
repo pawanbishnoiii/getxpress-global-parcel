@@ -67,6 +67,7 @@ function CalculatorPage() {
             </div>
             <div>
               <p className="mb-2 text-sm font-semibold">Products</p>
+              <div className="mb-1 grid grid-cols-[1fr_64px_80px_96px_36px] gap-2 text-[11px] font-bold uppercase text-muted-foreground"><span>Product name</span><span>Qty (pcs)</span><span>Weight / pc (kg)</span><span>Value / pc (₹)</span><span /></div>
               <div className="space-y-2">
                 {items.map((it, i) => (
                   <div key={i} className="grid grid-cols-[1fr_64px_80px_96px_36px] gap-2">
