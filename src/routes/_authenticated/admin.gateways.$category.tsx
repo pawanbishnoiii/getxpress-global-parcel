@@ -34,6 +34,7 @@ const P: Prov[] = [
   { id: "ekart", name: "Ekart", category: "courier", fields: [{ k: "client_id", label: "Client ID" }, { k: "api_key", label: "API key", secret: true }, { k: "merchant_code", label: "Merchant code" }] },
   { id: "shiprocket", name: "Shiprocket", category: "courier", fields: [{ k: "email", label: "API user email" }, { k: "password", label: "API user password", secret: true }, { k: "pickup_location", label: "Pickup location" }] },
   { id: "shadowfax", name: "Shadowfax", category: "courier", fields: [{ k: "api_token", label: "API token", secret: true }, { k: "client_code", label: "Client code" }, { k: "warehouse_id", label: "Warehouse ID" }] },
+  { id: "shipglobal", name: "International live rates (ShipGlobal)", category: "courier", note: "Powers /calculator international prices. Customers only see the final GetXpress.in price.", fields: [{ k: "base_url", label: "API base URL", placeholder: "https://shipglobal-rate-spark.lovable.app" }, { k: "api_key", label: "API key", secret: true, placeholder: "sgk_…" }] },
 ];
 const TABS = [["payment", "Payment"], ["sms", "SMS OTP"], ["whatsapp", "WhatsApp"], ["deliverypartners", "Delivery partners"]] as const;
 const SLUG: Record<string, Prov["category"]> = { payment: "payment", sms: "otp", whatsapp: "whatsapp", deliverypartners: "courier" };
