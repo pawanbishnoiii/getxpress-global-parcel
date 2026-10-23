@@ -25,6 +25,8 @@ export function useLandingMotion(root: RefObject<HTMLElement | null>) {
         gsap.from(".hero-rise", { y: 44, opacity: 0, duration: 1, stagger: 0.09, ease: "power4.out" });
         gsap.fromTo(".hero-photo-img", { scale: 1.08, opacity: 0.6 }, { scale: 1, opacity: 1, duration: 2.2, ease: "power2.out" });
         gsap.to(".hero-photo-img", { yPercent: 6, ease: "none", scrollTrigger: { trigger: ".hero-shell", start: "top top", end: "bottom top", scrub: 1 } });
+        gsap.fromTo(".hero-bg", { scale: 1.12 }, { scale: 1, duration: 2.6, ease: "power2.out" });
+        gsap.to(".hero-bg", { yPercent: 12, ease: "none", scrollTrigger: { trigger: ".hero-shell", start: "top top", end: "bottom top", scrub: 1 } });
         gsap.from(".hero-chip", { y: 24, opacity: 0, scale: 0.9, duration: 0.8, delay: 0.7, stagger: 0.25, ease: "back.out(1.8)" });
         gsap.to(".hero-chip", { y: -8, duration: 2.4, repeat: -1, yoyo: true, ease: "sine.inOut", stagger: 0.6, delay: 1.6 });
         gsap.from(".service-icon", { y: 20, opacity: 0, duration: 0.6, stagger: 0.05, delay: 0.5, ease: "power3.out" });
