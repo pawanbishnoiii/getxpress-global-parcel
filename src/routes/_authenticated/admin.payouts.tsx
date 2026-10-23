@@ -39,13 +39,15 @@ function Payouts() {
   ];
   return (
     <AppShell wide>
-      <PageHeader title="Hub payouts" sub="Tick requests, then approve, mark paid (wallet is debited automatically) or reject." />
+      <PageHeader title="Manual gateway" sub="Your UPI and bank details shown in every hub wallet, plus deposit and payout approvals. Amounts are real money." />
+      <PayDetails />
+      <Deposits />
+      <div className="mt-8"><PageHeader title="Hub payouts" sub="Tick requests, then approve, mark paid (wallet is debited automatically) or reject." /></div>
       <DataGrid name="hub-payouts" rows={rows} cols={cols} rowKey={(r) => r.id} actions={(sel) => sel.length ? <>
         <Button size="sm" variant="outline" onClick={() => set(sel.filter((r) => r.status === "pending").map((r) => r.id), "approved")}>Approve</Button>
         <Button size="sm" onClick={() => set(sel.filter((r) => r.status !== "paid" && r.status !== "rejected").map((r) => r.id), "paid")}>Mark paid</Button>
         <Button size="sm" variant="destructive" onClick={() => set(sel.filter((r) => r.status === "pending").map((r) => r.id), "rejected")}>Reject</Button>
       </> : null} />
-      <Deposits />
     </AppShell>
   );
 }
