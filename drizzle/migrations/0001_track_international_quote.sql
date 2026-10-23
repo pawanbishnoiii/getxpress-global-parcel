@@ -1,8 +1,0 @@
-CREATE OR REPLACE FUNCTION public.track_quote(_ref text)
-RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
-  SELECT jsonb_build_object('reference', reference, 'status', status, 'created_at', created_at,
-    'from_country', sender->>'country', 'to_country', receiver->>'country', 'to_city', receiver->>'city',
-    'weight_kg', weight_kg)
-  FROM public.international_quote_requests WHERE upper(reference) = upper(trim(_ref)) LIMIT 1
-$$;
-GRANT EXECUTE ON FUNCTION public.track_quote(text) TO anon, authenticated;
