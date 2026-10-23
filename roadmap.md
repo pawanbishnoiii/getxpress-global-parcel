@@ -1,5 +1,14 @@
 # GetXpress roadmap
 
+## Current requested batch
+- [ ] Supplied landing hero with admin replacement control and branded banners
+- [ ] Faster indexed PIN search and booking contact/billing fields
+- [ ] Staff role and territory management
+- [ ] Company dashboard charts and wallet transaction sheet with search/help
+- [ ] Isolated role-test environment and admin demo fixtures
+- [ ] Shiprocket documented configuration; live calls require credentials
+- [ ] Preview and regression verification
+
 ## Done
 - New GetXpress logo everywhere (light version on dark sidebar)
 - Onboarding: no placeholder email, verified phone chip, state + district only
