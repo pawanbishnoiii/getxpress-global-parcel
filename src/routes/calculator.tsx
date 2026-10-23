@@ -39,7 +39,7 @@ function CalculatorPage() {
 
   const run = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (items.some((i) => !i.name.trim())) return toast.error("Add a name for each product");
+    if (items.some((i) => !i.name.trim())) { toast.error("Add a name for each product"); return; }
     setBusy(true);
     try { setRes(await quote({ data: { country, postal, items, ...dims } })); } catch (err) { toast.error((err as Error).message); }
     setBusy(false);
