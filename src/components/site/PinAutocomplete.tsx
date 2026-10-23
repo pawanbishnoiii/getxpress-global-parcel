@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, MapPin, CheckCircle2 } from "lucide-react";
 import { lookupPins, type PinHit } from "@/lib/pin-lookup";
+import { preloadPins } from "@/lib/india-directory";
 import { Button } from '@/components/ui/button';
 
 /** Pincode / city / locality box with instant suggestions from the pincode master and OpenStreetMap. */
@@ -16,6 +17,7 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
   const [failed, setFailed] = useState(false);
   const seq = useRef(0);
   useEffect(() => { if(value || !open) setText(value); }, [value]);
+  useEffect(() => { preloadPins(); }, []);
 
   useEffect(() => {
     const my = ++seq.current;
@@ -27,7 +29,7 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
       let err = false;
       const r = await lookupPins(q).catch(() => { err = true; return [] as PinHit[]; });
       if (my === seq.current) { setFailed(err); setHits(r); setActive(0); setBusy(false); }
-    }, /^\d+$/.test(q) ? 90 : 220);
+    }, /^\d+$/.test(q) ? 40 : 120);
     return () => { clearTimeout(t); seq.current++; };
   }, [text, open]);
 

@@ -2,7 +2,7 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { QuoteRequests } from "@/components/site/QuoteRequests";
 import { TrackPanel } from "@/components/site/TrackPanel";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
 import { Crown, MapPin, PackagePlus, PackageSearch, ScanLine, ShieldCheck, Store, Users } from "lucide-react";
 import { AppShell, PageHeader, Stat } from "@/components/site/AppShell";
@@ -78,15 +78,17 @@ function Dashboard() {
           <div className="mt-4 grid gap-3 lg:grid-cols-2">
             <div className="rounded-lg border bg-card p-5">
               <p className="font-bold">Bookings — last 7 days</p>
-              <div className="mt-4 flex h-36 items-end gap-2">
-                {sum.last7.map((x) => (
-                  <div key={x.d} className="flex flex-1 flex-col items-center gap-1">
-                    <span className="text-xs font-bold">{x.n}</span>
-                    <motion.div initial={{ height: 0 }} animate={{ height: `${(x.n / max) * 100}%` }} className="w-full min-h-1 rounded-t-lg bg-primary" />
-                    <span className="text-[10px] text-muted-foreground">{new Date(x.d).toLocaleDateString("en-IN", { weekday: "short" })}</span>
-                  </div>
-                ))}
+              <div className="mt-4 h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={sum.last7.map((x) => ({ day: new Date(x.d).toLocaleDateString("en-IN", { weekday: "short" }), n: x.n }))}>
+                    <defs><linearGradient id="gx" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--primary)" stopOpacity={0.5} /><stop offset="100%" stopColor="var(--primary)" stopOpacity={0} /></linearGradient></defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="day" fontSize={11} /><YAxis allowDecimals={false} fontSize={11} width={28} /><Tooltip />
+                    <Area type="monotone" dataKey="n" name="Bookings" stroke="var(--primary)" fill="url(#gx)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
+              <div className="sr-only">{max}</div>
             </div>
             <div className="rounded-lg border bg-card p-5">
               <p className="font-bold">By status</p>
