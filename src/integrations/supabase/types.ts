@@ -1812,6 +1812,7 @@ export type Database = {
         }[]
       }
       touch_last_seen: { Args: never; Returns: undefined }
+      track_quote: { Args: { _ref: string }; Returns: Json }
       track_shipment: { Args: { _tracking: string }; Returns: Json }
       transfer_pincode: {
         Args: { _allocation_id: string; _new_holder: string; _note?: string }
