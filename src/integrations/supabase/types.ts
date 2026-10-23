@@ -835,6 +835,7 @@ export type Database = {
       }
       pincode_allocations: {
         Row: {
+          area: string | null
           assigned_by: string
           created_at: string
           effective_from: string
@@ -847,6 +848,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          area?: string | null
           assigned_by: string
           created_at?: string
           effective_from?: string
@@ -859,6 +861,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          area?: string | null
           assigned_by?: string
           created_at?: string
           effective_from?: string

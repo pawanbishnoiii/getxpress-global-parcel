@@ -29,6 +29,13 @@
       "when": 1792725040638,
       "tag": "0003_wallet_manual_deposits",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792725071862,
+      "tag": "0004_admin_manage_pincode_allocations",
+      "breakpoints": true
     }
   ]
 }
