@@ -1,35 +1,48 @@
 import { useMemo, useRef, useState, useEffect } from "react";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { allCountries, searchCountries } from "@/lib/countries";
 
-/** Searchable country picker with flags; search by name, ISO code or dialing code. */
+/** Type-to-search country picker with flags; matches name, ISO code (US, UAE) or dialing code (+1). */
 export function CountrySelect({ value, onChange, label }: { value: string; onChange: (name: string) => void; label: string }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  const [active, setActive] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
-  const list = useMemo(() => searchCountries(q), [q]);
+  const list = useMemo(() => searchCountries(q).slice(0, 60), [q]);
   const current = useMemo(() => allCountries().find((c) => c.name === value), [value]);
   useEffect(() => {
-    const h = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
+    const h = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) { setOpen(false); setQ(""); } };
     document.addEventListener("mousedown", h); return () => document.removeEventListener("mousedown", h);
   }, []);
+  const pick = (name: string) => { onChange(name); setOpen(false); setQ(""); };
   return (
     <div ref={ref} className="relative mt-1">
-      <button type="button" aria-label={label} aria-expanded={open} onClick={() => setOpen((o) => !o)} className="flex h-11 w-full items-center gap-2 rounded-md border bg-card px-3 text-left text-sm font-normal">
-        {current ? <><span className="text-lg">{current.flag}</span><span className="flex-1 truncate">{current.name}</span><span className="text-xs text-muted-foreground">{current.code} {current.dial}</span></> : <span className="flex-1 text-muted-foreground">Select country</span>}
+      <div className="flex h-11 w-full items-center gap-2 rounded-md border bg-card px-3 text-sm font-normal focus-within:ring-2 focus-within:ring-ring">
+        {!open && current && <span className="text-lg">{current.flag}</span>}
+        <input
+          aria-label={label} role="combobox" aria-expanded={open} autoComplete="off"
+          value={open ? q : current ? current.name : ""}
+          placeholder={current ? `${current.flag} ${current.name}` : "Type country, code (US) or +1"}
+          onFocus={() => { setOpen(true); setActive(0); }}
+          onChange={(e) => { setQ(e.target.value); setOpen(true); setActive(0); }}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(a + 1, list.length - 1)); }
+            else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
+            else if ((e.key === "Enter" || (e.key === "Tab" && q)) && open && list[active]) { if (e.key === "Enter") e.preventDefault(); pick(list[active]!.name); }
+            else if (e.key === "Escape") { setOpen(false); setQ(""); }
+          }}
+          className="h-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+        />
+        {!open && current && <span className="text-xs text-muted-foreground">{current.code} {current.dial}</span>}
         <ChevronDown className="h-4 w-4 opacity-60" />
-      </button>
-      <input tabIndex={-1} required value={value} onChange={() => {}} className="pointer-events-none absolute inset-0 opacity-0" aria-hidden />
+      </div>
       {open && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
-          <div className="flex items-center gap-2 border-b px-3"><Search className="h-4 w-4 opacity-60" /><input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Country, code (US) or +1" className="h-10 w-full bg-transparent text-sm font-normal outline-none" /></div>
-          <ul role="listbox" className="max-h-64 overflow-y-auto py-1">
-            {list.map((c) => (
-              <li key={c.code}><button type="button" onClick={() => { onChange(c.name); setOpen(false); setQ(""); }} className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-normal hover:bg-secondary ${c.name === value ? "bg-secondary" : ""}`}><span className="text-lg">{c.flag}</span><span className="flex-1">{c.name}</span><span className="text-xs text-muted-foreground">{c.code} · {c.dial}</span></button></li>
-            ))}
-            {!list.length && <li className="px-3 py-3 text-sm text-muted-foreground">No country matches “{q}”</li>}
-          </ul>
-        </div>
+        <ul role="listbox" className="absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-md border bg-popover py-1 shadow-lg">
+          {list.map((c, i) => (
+            <li key={c.code}><button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => pick(c.name)} className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-normal hover:bg-secondary ${i === active || c.name === value ? "bg-secondary" : ""}`}><span className="text-lg">{c.flag}</span><span className="flex-1">{c.name}</span><span className="text-xs text-muted-foreground">{c.code} · {c.dial}</span></button></li>
+          ))}
+          {!list.length && <li className="px-3 py-3 text-sm text-muted-foreground">No country matches “{q}”</li>}
+        </ul>
       )}
     </div>
   );
