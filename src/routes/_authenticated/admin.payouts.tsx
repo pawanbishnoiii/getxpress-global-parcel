@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin/payouts")({
   head: () => ({ meta: [
-    { title: "Hub payouts — GetXpress Admin" },
+    { title: "Wallet deposits & payouts — GetXpress Admin" },
     { name: "description", content: "Approve, pay or reject hub wallet withdrawal requests." },
     { property: "og:title", content: "GetXpress hub payouts" },
     { property: "og:description", content: "Hub wallet withdrawal approvals." },
@@ -45,6 +45,36 @@ function Payouts() {
         <Button size="sm" onClick={() => set(sel.filter((r) => r.status !== "paid" && r.status !== "rejected").map((r) => r.id), "paid")}>Mark paid</Button>
         <Button size="sm" variant="destructive" onClick={() => set(sel.filter((r) => r.status === "pending").map((r) => r.id), "rejected")}>Reject</Button>
       </> : null} />
+      <Deposits />
     </AppShell>
+  );
+}
+
+type Dep = { id: string; user_id: string; amount: number; utr: string; method: string; proof_path: string | null; status: string; created: string };
+function Deposits() {
+  const qc = useQueryClient();
+  const { data: rows = [] } = useQuery({ queryKey: ["deposits"], queryFn: async () => ((await supabase.from("wallet_deposits").select("*").order("created_at", { ascending: false }).limit(2000)).data ?? []).map((r): Dep => ({ id: r.id, user_id: r.user_id, amount: Number(r.amount), utr: r.utr, method: r.method, proof_path: r.proof_path, status: r.status, created: new Date(r.created_at).toLocaleString("en-IN") })) });
+  const view = async (path: string | null) => { if (!path) return; const r = await supabase.storage.from("deposit-proofs").createSignedUrl(path, 300); if (r.data) window.open(r.data.signedUrl, "_blank", "noopener"); else toast.error("Photo unavailable"); };
+  const set = async (ids: string[], status: string) => {
+    if (!ids.length) return toast.error("Only pending deposits can be reviewed");
+    const r = await supabase.from("wallet_deposits").update({ status }).in("id", ids);
+    if (r.error) toast.error(r.error.message); else { toast.success(`${ids.length} ${status}`); qc.invalidateQueries({ queryKey: ["deposits"] }); }
+    return undefined;
+  };
+  const cols: Col<Dep>[] = [
+    { key: "created", label: "Submitted" }, { key: "amount", label: "Amount ₹", render: (r) => `₹${r.amount.toLocaleString("en-IN")}` },
+    { key: "utr", label: "UTR", render: (r) => <span className="font-mono text-xs">{r.utr}</span> }, { key: "method", label: "Method" },
+    { key: "proof_path", label: "Proof", render: (r) => r.proof_path ? <button className="text-primary underline" onClick={() => view(r.proof_path)}>View photo</button> : "—" },
+    { key: "status", label: "Status", render: (r) => <span className="rounded bg-secondary px-2 py-0.5 text-xs font-semibold capitalize">{r.status}</span> },
+    { key: "user_id", label: "User", render: (r) => <span className="font-mono text-xs">{r.user_id.slice(0, 8)}</span> },
+  ];
+  return (
+    <div className="mt-8">
+      <PageHeader title="Wallet deposits" sub="Check the UTR and photo against your bank statement, then approve to credit the wallet." />
+      <DataGrid name="wallet-deposits" rows={rows} cols={cols} rowKey={(r) => r.id} actions={(sel) => sel.length ? <>
+        <Button size="sm" onClick={() => set(sel.filter((r) => r.status === "pending").map((r) => r.id), "approved")}>Approve & credit</Button>
+        <Button size="sm" variant="destructive" onClick={() => set(sel.filter((r) => r.status === "pending").map((r) => r.id), "rejected")}>Reject</Button>
+      </> : null} />
+    </div>
   );
 }

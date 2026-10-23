@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Loader2, MessageCircleQuestion } from "lucide-react";
 
 /** Ask a question about a shipment; answered from its current tracking status. */
-export function TrackAssistant({ tracking }: { tracking: string }) {
+export function TrackAssistant({ tracking: initial = "" }: { tracking?: string }) {
+  const [tracking, setTracking] = useState(initial);
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [items, setItems] = useState<{ q: string; a: string; err?: boolean }[]>([]);
   const ask = async (question: string) => {
     if (!question.trim() || busy) return;
+    if (tracking.trim().length < 6) { setItems((s) => [...s, { q: question, a: "Enter your tracking code first.", err: true }]); return; }
     setBusy(true); setQ("");
     try {
       const r = await fetch("/api/public/track-assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tracking, question }) });
@@ -18,7 +20,8 @@ export function TrackAssistant({ tracking }: { tracking: string }) {
   };
   return (
     <div className="mt-6 rounded-[28px] border bg-card p-5">
-      <p className="flex items-center gap-2 font-bold"><MessageCircleQuestion className="h-5 w-5 text-primary" /> Ask about this parcel</p>
+      <p className="flex items-center gap-2 font-bold"><MessageCircleQuestion className="h-5 w-5 text-primary" /> Ask about your parcel</p>
+      <input aria-label="Tracking code" value={tracking} onChange={(e) => setTracking(e.target.value.toUpperCase().slice(0, 30))} placeholder="Tracking code, e.g. GX261010000001" className="mt-3 h-11 w-full rounded-xl border bg-background px-3 font-mono text-sm" />
       <div className="mt-3 flex flex-wrap gap-2">
         {["When will it arrive?", "Where is my parcel now?", "Why is it delayed?"].map((s) => (
           <button key={s} type="button" onClick={() => ask(s)} className="rounded-full border px-3 py-1 text-xs font-semibold hover:bg-muted">{s}</button>

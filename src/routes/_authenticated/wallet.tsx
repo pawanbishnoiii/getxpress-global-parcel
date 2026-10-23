@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowDownLeft, ArrowUpRight, Plus, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Plus } from "lucide-react";
 import { AppShell, PageHeader, Stat } from "@/components/site/AppShell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +14,6 @@ export const Route = createFileRoute("/_authenticated/wallet")({
 
 function WalletPage() {
   const qc = useQueryClient();
-  const [amt, setAmt] = useState(1000);
   const { data: me } = useQuery({ queryKey: ["me-id"], queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? "" });
   const { data: tx = [], error } = useQuery({
     queryKey: ["wallet", me], enabled: !!me,
@@ -26,10 +25,6 @@ function WalletPage() {
   }, [qc]);
   const sum = (k: string) => tx.filter((t) => t.kind === k).reduce((a, t) => a + Number(t.amount), 0);
   const balance = tx.reduce((a, t) => a + Number(t.amount), 0);
-  const topup = async () => {
-    const r = await supabase.rpc("wallet_topup", { _amount: amt, _ref: `DEMO-${Date.now()}` });
-    if (r.error) toast.error(r.error.message); else { toast.success(`₹${amt} added`); qc.invalidateQueries({ queryKey: ["wallet"] }); }
-  };
   return (
     <AppShell wide>
       <PageHeader title="Wallet" sub="Bookings are paid from this wallet; commissions are credited here." />
@@ -39,13 +34,7 @@ function WalletPage() {
         <Stat label="Bookings (₹)" value={Math.abs(sum("booking")).toLocaleString("en-IN")} tone="primary" />
         <Stat label="Commission (₹)" value={sum("commission").toLocaleString("en-IN")} tone="lime" />
       </div>
-      <div className="mt-5 flex flex-wrap items-end gap-3 rounded-2xl border bg-card p-5">
-        <Wallet className="h-8 w-8 text-primary" />
-        <label className="flex-1"><span className="text-xs font-bold text-muted-foreground">Add money (₹)</span><input aria-label="Top-up amount" type="number" min={100} value={amt} onChange={(e) => setAmt(Number(e.target.value))} className="mt-1 h-12 w-full rounded-xl border bg-background px-4 font-bold" /></label>
-        {[500, 1000, 5000].map((v) => <Button key={v} variant="outline" className="h-12" onClick={() => setAmt(v)}>₹{v}</Button>)}
-        <Button className="h-12" onClick={topup}><Plus /> Add money</Button>
-        <p className="w-full text-xs text-muted-foreground">Online deposit through Razorpay switches on once the admin adds Razorpay keys in Gateways. Until then this records a test top-up.</p>
-      </div>
+      <Deposit />
       <Withdraw balance={balance} />
       
       {error && <p className="mt-4 text-destructive">Wallet could not load.</p>}
@@ -86,6 +75,50 @@ function Withdraw({ balance }: { balance: number }) {
         <Button className="h-11" onClick={submit}>Request payout</Button>
       </div>
       {reqs.length > 0 && <ul className="mt-4 divide-y text-sm">{reqs.map((r) => <li key={r.id} className="flex justify-between py-2"><span>{new Date(r.created_at).toLocaleDateString("en-IN")} · {r.payout_method.toUpperCase()}</span><span className="font-semibold">₹{Number(r.amount).toLocaleString("en-IN")} · <span className="capitalize">{r.status}</span></span></li>)}</ul>}
+    </div>
+  );
+}
+
+function Deposit() {
+  const qc = useQueryClient();
+  const [amount, setAmount] = useState(1000);
+  const [utr, setUtr] = useState("");
+  const [method, setMethod] = useState<"upi" | "bank">("upi");
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const { data: co } = useQuery({ queryKey: ["public-company"], queryFn: async () => ((await supabase.rpc("public_company")).data ?? {}) as Record<string, string | null> });
+  const { data: reqs = [] } = useQuery({ queryKey: ["my-deposits"], queryFn: async () => (await supabase.from("wallet_deposits").select("*").order("created_at", { ascending: false }).limit(20)).data ?? [] });
+  const submit = async () => {
+    if (amount < 100) return toast.error("Minimum deposit is ₹100");
+    const u = utr.trim().toUpperCase();
+    if (!/^[A-Z0-9]{8,22}$/.test(u)) return toast.error("Enter the UTR / reference number from your payment (8–22 letters or digits)");
+    if (!file) return toast.error("Attach a screenshot or photo of the payment");
+    if (file.size > 5 * 1024 * 1024) return toast.error("Photo must be under 5 MB");
+    setBusy(true);
+    try {
+      const uid = (await supabase.auth.getUser()).data.user?.id;
+      const path = `${uid}/${Date.now()}-${file.name.replace(/[^a-z0-9.]/gi, "_")}`;
+      const up = await supabase.storage.from("deposit-proofs").upload(path, file, { contentType: file.type });
+      if (up.error) throw up.error;
+      const r = await supabase.from("wallet_deposits").insert({ amount, utr: u, method, proof_path: path });
+      if (r.error) throw new Error(r.error.code === "23505" ? "This UTR was already submitted" : r.error.message);
+      toast.success("Deposit sent for approval"); setUtr(""); setFile(null);
+      qc.invalidateQueries({ queryKey: ["my-deposits"] });
+    } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
+    return undefined;
+  };
+  return (
+    <div className="mt-5 rounded-2xl border bg-card p-5">
+      <h3 className="flex items-center gap-2 font-bold"><Plus className="h-5 w-5 text-primary" />Add money</h3>
+      <p className="text-xs text-muted-foreground">Pay by UPI or bank transfer to {co?.["company_name"] ?? "GetXpress"}{co?.["support_whatsapp"] ? ` (help: ${co["support_whatsapp"]})` : ""}, then enter the UTR and attach the payment screenshot. Admin approves and your balance updates.</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-[130px_110px_1fr_1fr_auto]">
+        <input aria-label="Deposit amount" type="number" min={100} value={amount} onChange={(e) => setAmount(Number(e.target.value))} className="h-11 rounded-xl border bg-background px-3 font-bold" />
+        <select aria-label="Deposit method" value={method} onChange={(e) => setMethod(e.target.value as "upi")} className="h-11 rounded-xl border bg-background px-3"><option value="upi">UPI</option><option value="bank">Bank</option></select>
+        <input aria-label="UTR number" maxLength={22} value={utr} onChange={(e) => setUtr(e.target.value)} placeholder="UTR / reference no." className="h-11 rounded-xl border bg-background px-3 font-mono" />
+        <input aria-label="Payment photo" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="h-11 rounded-xl border bg-background px-3 py-2 text-xs" />
+        <Button className="h-11" disabled={busy} onClick={submit}>{busy ? "Sending…" : "Submit"}</Button>
+      </div>
+      {reqs.length > 0 && <ul className="mt-4 divide-y text-sm">{reqs.map((r) => <li key={r.id} className="flex justify-between py-2"><span>{new Date(r.created_at).toLocaleDateString("en-IN")} · <span className="font-mono">{r.utr}</span></span><span className="font-semibold">₹{Number(r.amount).toLocaleString("en-IN")} · <span className={r.status === "rejected" ? "text-destructive capitalize" : "capitalize"}>{r.status}</span></span></li>)}</ul>}
     </div>
   );
 }
