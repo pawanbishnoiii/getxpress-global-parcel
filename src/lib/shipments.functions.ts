@@ -8,6 +8,8 @@ import { shippingDeclaration } from './shipping-safety';
 const party = {
   name: z.string().trim().min(2).max(100),
   phone: z.string().regex(/^[6-9]\d{9}$/),
+  alternate_phone:z.string().regex(/^$|^[6-9]\d{9}$/).default(""),
+  country:z.literal("India").default("India"),
   address: z.string().trim().min(8).max(400),
   pincode: z.string().regex(/^\d{6}$/),
   city: z.string().trim().min(2).max(80),
@@ -20,6 +22,8 @@ const input = z.object({
   service: z.enum(["standard", "express", "same_day"]),
   sender: z.object(party),
   receiver: z.object(party),
+  billing_same_as_delivery:z.boolean().default(true),
+  billing:z.object(party).optional(),
   pieces: z.array(z.object({ weight_kg: z.number().min(0.05).max(100), dims: z.object({l:z.number().min(1).max(300),w:z.number().min(1).max(300),h:z.number().min(1).max(300)}).optional(), box_preset:z.string().max(40).optional() })).min(1).max(50),
   contents: shippingDeclaration.shape.contents,
   policy_accepted: shippingDeclaration.shape.policy_accepted,
@@ -60,6 +64,7 @@ export const createShipment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: z.input<typeof input>) => input.parse(d))
   .handler(async ({ data, context }) => {
+    if(!data.billing_same_as_delivery&&!data.billing)throw new Error("Enter billing details");
     const sb = context.supabase;
     const { data: profile } = await sb.from("profiles").select("phone_verified").eq("id", context.userId).maybeSingle();
     if (!profile?.phone_verified) throw new Error("Verify your mobile number before booking.");
@@ -88,6 +93,8 @@ export const createShipment = createServerFn({ method: "POST" })
     const [from, to] = await Promise.all([resolvePin(data.sender.pincode), resolvePin(data.receiver.pincode)]);
     if (!from?.active) throw new Error(`Pickup pincode ${data.sender.pincode} could not be found. Please check it.`);
     if (!to?.active) throw new Error(`Delivery pincode ${data.receiver.pincode} could not be found. Please check it.`);
+
+    if(from.state.toLowerCase()!==data.sender.state.toLowerCase()||to.state.toLowerCase()!==data.receiver.state.toLowerCase())throw new Error("The selected state does not match the PIN code");
 
     // Missing rate/setting rows fall back to the defaults in pricing.ts and pay-at-pickup enabled.
     const [{data:rateRows,error:rateError},{data:settings,error:settingsError}] = await Promise.all([sb.from("service_rates").select("*"),sb.from("app_settings").select("cash_on_pickup").eq("id",true).maybeSingle()]);
@@ -136,7 +143,7 @@ export const createShipment = createServerFn({ method: "POST" })
       payment_status: "pending",
       status: online ? "awaiting_payment" : "booked",
       origin_point_id: originPoint,
-      routing_snapshot: { origin_state: from.state, origin_zone: from.zone, dest_state: to.state, dest_zone: to.zone, origin_point_user: alloc?.holder_user_id ?? null, quote: q },
+      routing_snapshot: { contacts:{sender_alternate_phone:data.sender.alternate_phone,receiver_alternate_phone:data.receiver.alternate_phone}, billing_same_as_delivery:data.billing_same_as_delivery,billing:data.billing_same_as_delivery?data.receiver:data.billing??null,country:"India", origin_state: from.state, origin_zone: from.zone, dest_state: to.state, dest_zone: to.zone, origin_point_user: alloc?.holder_user_id ?? null, quote: q },
     }).select("id, tracking_number, price, status").single();
     if (error) throw new Error(error.message);
     if (cp) {
