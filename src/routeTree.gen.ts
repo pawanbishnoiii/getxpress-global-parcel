@@ -33,6 +33,7 @@ import { Route as AuthenticatedCouponsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDiagnosticsRouteImport } from './routes/_authenticated/diagnostics'
 import { Route as AuthenticatedGatewaysRouteImport } from './routes/_authenticated/gateways'
+import { Route as AuthenticatedManifestRouteImport } from './routes/_authenticated/manifest'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
@@ -191,6 +192,11 @@ const AuthenticatedDiagnosticsRoute =
 const AuthenticatedGatewaysRoute = AuthenticatedGatewaysRouteImport.update({
   id: '/gateways',
   path: '/gateways',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedManifestRoute = AuthenticatedManifestRouteImport.update({
+  id: '/manifest',
+  path: '/manifest',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedNotificationsRoute =
@@ -424,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/gateways': typeof AuthenticatedGatewaysRoute
+  '/manifest': typeof AuthenticatedManifestRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/orders': typeof AuthenticatedOrdersRoute
@@ -486,6 +493,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/gateways': typeof AuthenticatedGatewaysRoute
+  '/manifest': typeof AuthenticatedManifestRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/orders': typeof AuthenticatedOrdersRoute
@@ -550,6 +558,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/_authenticated/gateways': typeof AuthenticatedGatewaysRoute
+  '/_authenticated/manifest': typeof AuthenticatedManifestRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRoute
@@ -614,6 +623,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/diagnostics'
     | '/gateways'
+    | '/manifest'
     | '/notifications'
     | '/onboarding'
     | '/orders'
@@ -676,6 +686,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/diagnostics'
     | '/gateways'
+    | '/manifest'
     | '/notifications'
     | '/onboarding'
     | '/orders'
@@ -739,6 +750,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/diagnostics'
     | '/_authenticated/gateways'
+    | '/_authenticated/manifest'
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/orders'
@@ -965,6 +977,13 @@ declare module '@tanstack/react-router' {
       path: '/gateways'
       fullPath: '/gateways'
       preLoaderRoute: typeof AuthenticatedGatewaysRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/manifest': {
+      id: '/_authenticated/manifest'
+      path: '/manifest'
+      fullPath: '/manifest'
+      preLoaderRoute: typeof AuthenticatedManifestRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notifications': {
@@ -1241,6 +1260,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDiagnosticsRoute: typeof AuthenticatedDiagnosticsRoute
   AuthenticatedGatewaysRoute: typeof AuthenticatedGatewaysRoute
+  AuthenticatedManifestRoute: typeof AuthenticatedManifestRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRoute
@@ -1289,6 +1309,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDiagnosticsRoute: AuthenticatedDiagnosticsRoute,
   AuthenticatedGatewaysRoute: AuthenticatedGatewaysRoute,
+  AuthenticatedManifestRoute: AuthenticatedManifestRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedOrdersRoute: AuthenticatedOrdersRoute,
