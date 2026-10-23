@@ -30,7 +30,7 @@ function UserDashboard() {
   const spent = rows.filter((r) => r.status !== "cancelled").reduce((a, r) => a + Number(r.price), 0);
   return (
     <AppShell wide>
-      <PageHeader title={`Namaste, ${name.split(" ")[0]}`} sub="Your shipping at a glance." />
+      <PageHeader title="My shipments" sub="Your shipping at a glance." />
       <div className="mb-5 flex flex-wrap gap-3 rounded-2xl border bg-card p-4 text-sm">
         <span className="flex items-center gap-1.5 font-bold"><UserRound className="h-4 w-4 text-primary" />{name}</span>
         <span className="flex items-center gap-1.5 font-mono"><Phone className="h-4 w-4 text-primary" />{me?.profile?.phone ?? "—"}</span>
