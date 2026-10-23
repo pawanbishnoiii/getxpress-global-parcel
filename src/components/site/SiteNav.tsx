@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight, Menu, Plane, X, PackageSearch, Truck, Store, Globe2 } from "lucide-react";
+import { ArrowRight, Menu, Plane, X, PackageSearch, Truck, Store, Globe2, Calculator } from "lucide-react";
 import { BrandMark } from "./BrandMark";
 import { useSession } from "@/hooks/use-session";
 
@@ -8,6 +8,7 @@ const LINKS = [
   { to: "/track", label: "Track", icon: PackageSearch, sub: "Live parcel status" },
   { to: "/ship", label: "Ship now", icon: Truck, sub: "Doorstep pickup in India" },
   { to: "/international", label: "International", icon: Globe2, sub: "Air parcels abroad" },
+  { to: "/calculator", label: "Rates", icon: Calculator, sub: "Compare international prices" },
   { to: "/point-partner", label: "Become a Hub", icon: Store, sub: "Earn with GetXpress" },
 ] as const;
 
