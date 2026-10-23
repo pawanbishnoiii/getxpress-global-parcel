@@ -41,7 +41,7 @@ function CalculatorPage() {
     e.preventDefault();
     if (items.some((i) => !i.name.trim())) { toast.error("Add a name for each product"); return; }
     setBusy(true);
-    try { setRes(await quote({ data: { country, postal, items, ...dims } })); } catch (err) { toast.error((err as Error).message); }
+    try { setRes(await quote({ data: { country, code: meta?.code || codeOf(country), postal, items, ...dims } })); } catch (err) { toast.error((err as Error).message); }
     setBusy(false);
   };
   const set = (i: number, p: Partial<Row>) => setItems((r) => r.map((x, j) => (j === i ? { ...x, ...p } : x)));
@@ -58,7 +58,7 @@ function CalculatorPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm font-semibold">Destination country
                 <select value={country} onChange={(e) => { setCountry(e.target.value); setPostal(""); setRes(null); }} className="mt-1 h-11 w-full rounded-md border bg-background px-3">
-                  {countries.map((c) => { const code = codeOf(c.name); return <option key={c.name} value={c.name}>{code ? flagOf(code) : "🌐"} {c.name}</option>; })}
+                  {countries.map((c) => { const code = c.code || codeOf(c.name); return <option key={c.name} value={c.name}>{code ? flagOf(code) : "🌐"} {c.name}</option>; })}
                 </select>
               </label>
               <label className="text-sm font-semibold">Destination pincode{meta?.needsPostal ? "" : " (optional)"}
@@ -90,11 +90,11 @@ function CalculatorPage() {
             {!res ? <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground"><Globe2 className="mx-auto mb-3 h-8 w-8 text-primary" />Prices appear here.</div>
               : !res.ok ? <div role="alert" className="rounded-2xl border border-destructive/40 bg-destructive/5 p-5 text-sm">{res.error} <Link to="/international" className="font-bold text-primary">Request a quote</Link></div>
               : <>
-                <div className="rounded-2xl border bg-card p-4 text-sm"><p>Chargeable weight <b>{res.chargeableKg} kg</b>{res.zone && <> · {res.zone}</>}</p><p className="text-muted-foreground">Actual {res.actualKg} kg · volumetric {res.volumetricKg} kg · declared ₹{res.declared.toLocaleString("en-IN")}</p></div>
+                <p className="text-sm font-semibold text-muted-foreground">Customer price · {res.chargeableKg} kg</p>
                 {res.options.map((o, i) => (
                   <div key={o.id} className={`rounded-2xl border p-5 ${i === 0 ? "border-primary bg-primary/5" : "bg-card"}`}>
                     <div className="flex items-center justify-between"><p className="font-bold">{o.name}</p><p className="text-2xl font-extrabold">₹{o.price.toLocaleString("en-IN")}</p></div>
-                    <p className="mt-1 text-xs text-muted-foreground">{o.days} · duties may apply</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{o.days}</p>
                   </div>
                 ))}
                 <Button asChild className="w-full"><Link to="/international">Book this shipment</Link></Button>
