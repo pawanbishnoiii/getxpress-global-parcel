@@ -4,9 +4,11 @@ import { AppShell,PageHeader,Stat } from '@/components/site/AppShell';
 import { DataGrid } from '@/components/site/DataGrid';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { useRoles } from '@/hooks/use-roles';
 
 export const Route=createFileRoute('/_authenticated/wallet-transactions')({head:()=>({meta:[{title:'Wallet transactions — GetXpress'},{name:'description',content:'Search and export your GetXpress wallet ledger, deposits and booking deductions.'},{property:'og:title',content:'GetXpress wallet transactions'},{property:'og:description',content:'Your wallet ledger, deposits and booking deductions.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),component:Transactions});
-function Transactions(){
+function Transactions(){const roles=useRoles();if(!roles.isLoading&&!roles.isAdmin&&!roles.isStaff)return <AppShell><PageHeader title='Wallet transactions' sub='This ledger is only available to hubs, network partners and managers.'/></AppShell>;return <Ledger/>;}
+function Ledger(){
  const {data,error}=useQuery({queryKey:['wallet-ledger'],queryFn:async()=>{
   const {data:auth,error:authError}=await supabase.auth.getUser();if(authError||!auth.user)throw new Error('Sign in to view transactions');
   const [ledger,balance]=await Promise.all([supabase.from('wallet_transactions').select('*').eq('user_id',auth.user.id).order('created_at',{ascending:false}).limit(1000),supabase.rpc('wallet_balance',{_user:auth.user.id})]);

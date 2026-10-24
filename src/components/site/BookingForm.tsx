@@ -13,7 +13,7 @@ import { composeAddress, initialDraft, readDraft, saveDraft, DRAFT_KEY, type Boo
 import { quote, services, serviceAllowed, type ServiceLevel } from "@/lib/pricing";
 import { bookingConfigOptions } from "@/lib/booking-config";
 import { parcelPresetsOptions, handlingFee, DEFAULT_PRESETS } from "@/lib/parcel-presets";
-import { createShipment, previewCoupon } from "@/lib/shipments.functions";
+import { createShipment, previewCoupon, previewCouponPublic } from "@/lib/shipments.functions";
 import { sendPhoneOtp } from "@/lib/otp.functions";
 import { pinInfo } from "@/lib/pin-lookup";
 import { postalLookup } from "@/lib/postal";
@@ -45,7 +45,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
   const { user } = useSession(); const navigate = useNavigate(), qc = useQueryClient();
   const { data: config, error: configError } = useQuery(bookingConfigOptions);
   const { data: presets = DEFAULT_PRESETS } = useQuery(parcelPresetsOptions);
-  const create = useServerFn(createShipment), couponPreview = useServerFn(previewCoupon), sendOtp = useServerFn(sendPhoneOtp);
+  const create = useServerFn(createShipment), couponPreview = useServerFn(previewCoupon), couponPreviewPublic = useServerFn(previewCouponPublic), sendOtp = useServerFn(sendPhoneOtp);
   const [otp, setOtp] = useState<{ phone: string; dev: string | null } | null>(null), [otpCode, setOtpCode] = useState("");
   useEffect(() => { setD(readDraft(localStorage) ?? readDraft(sessionStorage) ?? initialDraft()); setReady(true); }, []);
   useEffect(() => { if (ready) { try { saveDraft(localStorage, d); saveDraft(sessionStorage, d); } catch { /* storage full or private mode */ } } }, [d, ready]);
@@ -109,13 +109,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
 
   const applyCoupon = async () => {
     if (!q || !d.coupon) return;
-    if (!user) {
-      const { data: c, error } = await supabase.from("coupons").select("code,description,discount_type,discount_value,max_discount,min_order,active,starts_at,expires_at,max_uses,used_count").eq("code", d.coupon.toUpperCase()).maybeSingle();
-      if (error || !c || !c.active || new Date(c.starts_at) > new Date() || (c.expires_at && new Date(c.expires_at) < new Date()) || (c.max_uses != null && c.used_count >= c.max_uses) || q.total < Number(c.min_order)) { toast.error("Coupon unavailable or minimum order not met."); return; }
-      setCoupon({ code: c.code, description: c.description, discount: Math.min(q.total, c.max_discount ?? q.total, c.discount_type === "percent" ? q.total * Number(c.discount_value) / 100 : Number(c.discount_value)) });
-      return;
-    }
-    try { const r = await couponPreview({ data: { code: d.coupon, total: q.total } }); setCoupon(r); toast.success(`${r.code} applied`); } catch (e) { toast.error((e as Error).message); }
+    try { const r = await (user ? couponPreview : couponPreviewPublic)({ data: { code: d.coupon, total: q.total } }); setCoupon(r); toast.success(`${r.code} applied`); } catch (e) { toast.error((e as Error).message); }
   };
   const removeCoupon = () => { setCoupon(null); update({ coupon: "" }); };
 

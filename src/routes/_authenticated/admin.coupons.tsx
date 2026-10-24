@@ -29,6 +29,9 @@ function Coupons() {
     if (error) toast.error(error.message); else { toast.success("Coupon created"); setF({ ...f, code: "", description: "" }); qc.invalidateQueries({ queryKey: ["coupons"] }); }
   };
   const toggle = async (id: string, active: boolean) => { await supabase.from("coupons").update({ active }).eq("id", id); qc.invalidateQueries({ queryKey: ["coupons"] }); };
+  const remove = async (id: string, code: string) => { if (!confirm(`Delete coupon ${code}?`)) return; const { error } = await supabase.from("coupons").delete().eq("id", id); if (error) toast.error(error.message); else { toast.success("Coupon deleted"); qc.invalidateQueries({ queryKey: ["coupons"] }); } };
+  const [edit, setEdit] = useState<{ id: string; description: string; discount_value: string; max_discount: string; min_order: string; max_uses: string } | null>(null);
+  const saveEdit = async () => { if (!edit) return; const { error } = await supabase.from("coupons").update({ description: edit.description || null, discount_value: Number(edit.discount_value), max_discount: edit.max_discount ? Number(edit.max_discount) : null, min_order: Number(edit.min_order) || 0, max_uses: edit.max_uses ? Number(edit.max_uses) : null }).eq("id", edit.id); if (error) toast.error(error.message); else { toast.success("Coupon updated"); setEdit(null); qc.invalidateQueries({ queryKey: ["coupons"] }); } };
   const inp = "h-11 rounded-xl border bg-background px-3 text-sm font-semibold outline-none";
   return (
     <AppShell wide>
@@ -57,7 +60,20 @@ function Coupons() {
             <p className="mt-1 font-bold">{c.discount_type === "percent" ? `${c.discount_value}% off` : `₹${c.discount_value} off`}{c.max_discount ? ` (max ₹${c.max_discount})` : ""}</p>
             <p className="text-sm text-muted-foreground">{c.description}</p>
             <p className="mt-2 text-xs text-muted-foreground">Min ₹{c.min_order} · used {c.used_count}{c.max_uses ? `/${c.max_uses}` : ""} · {c.expires_at ? `till ${new Date(c.expires_at).toLocaleDateString("en-IN")}` : "no expiry"}</p>
-            {isAdmin && <button onClick={() => toggle(c.id, !c.active)} className="mt-3 rounded-xl border px-3 py-1.5 text-xs font-bold">{c.active ? "Deactivate" : "Activate"}</button>}
+            {isAdmin && edit?.id === c.id && <div className="mt-3 grid grid-cols-2 gap-2">
+              <input className={inp} placeholder="Value" value={edit.discount_value} onChange={(e) => setEdit({ ...edit, discount_value: e.target.value })} />
+              <input className={inp} placeholder="Max discount ₹" value={edit.max_discount} onChange={(e) => setEdit({ ...edit, max_discount: e.target.value })} />
+              <input className={inp} placeholder="Min order ₹" value={edit.min_order} onChange={(e) => setEdit({ ...edit, min_order: e.target.value })} />
+              <input className={inp} placeholder="Total uses" value={edit.max_uses} onChange={(e) => setEdit({ ...edit, max_uses: e.target.value })} />
+              <input className={`${inp} col-span-2`} placeholder="Description" value={edit.description} onChange={(e) => setEdit({ ...edit, description: e.target.value })} />
+              <button onClick={saveEdit} className="h-10 rounded-xl bg-primary text-xs font-bold text-primary-foreground">Save</button>
+              <button onClick={() => setEdit(null)} className="h-10 rounded-xl border text-xs font-bold">Cancel</button>
+            </div>}
+            {isAdmin && <div className="mt-3 flex flex-wrap gap-2">
+              <button onClick={() => toggle(c.id, !c.active)} className="rounded-xl border px-3 py-1.5 text-xs font-bold">{c.active ? "Deactivate" : "Activate"}</button>
+              <button onClick={() => setEdit({ id: c.id, description: c.description ?? "", discount_value: String(c.discount_value), max_discount: c.max_discount == null ? "" : String(c.max_discount), min_order: String(c.min_order), max_uses: c.max_uses == null ? "" : String(c.max_uses) })} className="rounded-xl border px-3 py-1.5 text-xs font-bold">Edit</button>
+              <button onClick={() => remove(c.id, c.code)} className="rounded-xl border border-destructive px-3 py-1.5 text-xs font-bold text-destructive">Delete</button>
+            </div>}
           </div>
         ))}
         {data.length === 0 && <p className="rounded-3xl border border-dashed p-10 text-center text-muted-foreground sm:col-span-3">No coupons yet.</p>}

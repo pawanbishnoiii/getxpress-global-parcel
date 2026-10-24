@@ -76,3 +76,14 @@
 - [ ] Company-style dashboard, demo data button, staff management upgrade
 - [ ] Booking form + Need Help end-to-end test; Shiprocket form test
 - [ ] Hubs managing international shipping
+
+## Oct 24 batch
+- [x] Coupon check works for signed-out users (server-side validation)
+- [x] Tab/Enter picks highlighted PIN/location suggestion
+- [x] Wallet transactions hidden from customers (hub/staff/admin only)
+- [x] Admin can edit and delete offers
+- [ ] Email sign-up code via SMTP
+- [ ] /international: two-step form, city/postal suggestions, icons, separate calculator button
+- [ ] Admin international price gateway page (host URL, API key, webhook, result renaming)
+- [ ] Dashboard search, AI help tickets, company dashboard + demo data, staff/hub intl controls, barcode upgrade
+- [ ] E2E tests: booking, Need Help, Shiprocket
