@@ -13,7 +13,7 @@ import { composeAddress, initialDraft, readDraft, saveDraft, DRAFT_KEY, type Boo
 import { quote, services, serviceAllowed, type ServiceLevel } from "@/lib/pricing";
 import { bookingConfigOptions } from "@/lib/booking-config";
 import { parcelPresetsOptions, handlingFee, DEFAULT_PRESETS } from "@/lib/parcel-presets";
-import { createShipment, previewCoupon } from "@/lib/shipments.functions";
+import { createShipment, previewCoupon, previewCouponPublic } from "@/lib/shipments.functions";
 import { sendPhoneOtp } from "@/lib/otp.functions";
 import { pinInfo } from "@/lib/pin-lookup";
 import { postalLookup } from "@/lib/postal";
@@ -45,7 +45,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
   const { user } = useSession(); const navigate = useNavigate(), qc = useQueryClient();
   const { data: config, error: configError } = useQuery(bookingConfigOptions);
   const { data: presets = DEFAULT_PRESETS } = useQuery(parcelPresetsOptions);
-  const create = useServerFn(createShipment), couponPreview = useServerFn(previewCoupon), sendOtp = useServerFn(sendPhoneOtp);
+  const create = useServerFn(createShipment), couponPreview = useServerFn(previewCoupon), couponPreviewPublic = useServerFn(previewCouponPublic), sendOtp = useServerFn(sendPhoneOtp);
   const [otp, setOtp] = useState<{ phone: string; dev: string | null } | null>(null), [otpCode, setOtpCode] = useState("");
   useEffect(() => { setD(readDraft(localStorage) ?? readDraft(sessionStorage) ?? initialDraft()); setReady(true); }, []);
   useEffect(() => { if (ready) { try { saveDraft(localStorage, d); saveDraft(sessionStorage, d); } catch { /* storage full or private mode */ } } }, [d, ready]);
