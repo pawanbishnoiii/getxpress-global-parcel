@@ -13,7 +13,8 @@ export async function searchWorldPlaces(q: string, countryName: string): Promise
   const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(`${q} ${countryName}`.slice(0, 120))}&limit=25&lang=en`;
   const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
   if (!res.ok) throw new Error("search failed");
-  const j = (await res.json()) as { features?: { properties: Record<string, string> }[] };
+  type P = { countrycode?: string; city?: string; town?: string; village?: string; osm_value?: string; type?: string; name?: string; postcode?: string; state?: string; county?: string };
+  const j = (await res.json()) as { features?: { properties: P }[] };
   const seen = new Set<string>();
   const out: WorldPlace[] = [];
   for (const f of j.features ?? []) {
