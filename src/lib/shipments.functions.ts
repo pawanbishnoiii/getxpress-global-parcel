@@ -60,6 +60,20 @@ export const previewCoupon = createServerFn({ method: "POST" })
     return { code: r.coupon.code, discount: r.discount, description: r.coupon.description };
   });
 
+/** Signed-out preview: validity + minimum order only; per-user limits are re-checked at booking. */
+export const previewCouponPublic = createServerFn({ method: "POST" })
+  .inputValidator((d: { code: string; total: number }) => z.object({ code: z.string().trim().toUpperCase().min(2).max(30), total: z.number().min(0).max(1e7) }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: c } = await supabaseAdmin.from("coupons").select("code,description,active,starts_at,expires_at,max_uses,used_count,discount_type,discount_value,max_discount,min_order").eq("code", data.code).maybeSingle();
+    const now = Date.now();
+    if (!c || !c.active || new Date(c.starts_at).getTime() > now || (c.expires_at && new Date(c.expires_at).getTime() < now)) throw new Error("Coupon is invalid or expired.");
+    if (c.max_uses != null && c.used_count >= c.max_uses) throw new Error("Coupon usage limit reached.");
+    const d = couponDiscount(data.total, { discount_type: c.discount_type, discount_value: Number(c.discount_value), max_discount: c.max_discount == null ? null : Number(c.max_discount), min_order: Number(c.min_order) });
+    if (d <= 0) throw new Error(`Minimum order ₹${c.min_order} for this coupon.`);
+    return { code: c.code, discount: d, description: c.description };
+  });
+
 export const createShipment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: z.input<typeof input>) => input.parse(d))

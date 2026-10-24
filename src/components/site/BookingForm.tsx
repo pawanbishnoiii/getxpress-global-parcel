@@ -109,13 +109,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
 
   const applyCoupon = async () => {
     if (!q || !d.coupon) return;
-    if (!user) {
-      const { data: c, error } = await supabase.from("coupons").select("code,description,discount_type,discount_value,max_discount,min_order,active,starts_at,expires_at,max_uses,used_count").eq("code", d.coupon.toUpperCase()).maybeSingle();
-      if (error || !c || !c.active || new Date(c.starts_at) > new Date() || (c.expires_at && new Date(c.expires_at) < new Date()) || (c.max_uses != null && c.used_count >= c.max_uses) || q.total < Number(c.min_order)) { toast.error("Coupon unavailable or minimum order not met."); return; }
-      setCoupon({ code: c.code, description: c.description, discount: Math.min(q.total, c.max_discount ?? q.total, c.discount_type === "percent" ? q.total * Number(c.discount_value) / 100 : Number(c.discount_value)) });
-      return;
-    }
-    try { const r = await couponPreview({ data: { code: d.coupon, total: q.total } }); setCoupon(r); toast.success(`${r.code} applied`); } catch (e) { toast.error((e as Error).message); }
+    try { const r = await (user ? couponPreview : couponPreviewPublic)({ data: { code: d.coupon, total: q.total } }); setCoupon(r); toast.success(`${r.code} applied`); } catch (e) { toast.error((e as Error).message); }
   };
   const removeCoupon = () => { setCoupon(null); update({ coupon: "" }); };
 

@@ -46,7 +46,7 @@ export function PinAutocomplete({ label, value, city, onChange, onPick, compact 
             if (!hits.length) return;
             if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(a + 1, hits.length - 1)); }
             if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
-            if ((e.key === "Enter" || e.key === "Tab") && open) { const hit = hits[active]; if (hit && text.trim() && text !== value) { if (e.key === "Enter") e.preventDefault(); pick(hit); } }
+            if ((e.key === "Enter" || e.key === "Tab") && open) { const hit = hits[active]; if (hit && text.trim() && !(ok && text === value)) { if (e.key === "Enter") e.preventDefault(); pick(hit); } }
           }}
           onChange={(e) => { const v = e.target.value.slice(0, 40); setText(v); setOpen(true); onChange(/^\d+$/.test(v) ? v.slice(0, 6) : ""); }}
           className="w-full bg-transparent text-base font-bold text-ink outline-none placeholder:font-medium placeholder:text-muted-foreground/60" />
